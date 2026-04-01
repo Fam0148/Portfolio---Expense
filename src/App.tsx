@@ -46,7 +46,6 @@ function App() {
     if (!userChoice) {
       return (
         <OnboardingChoice 
-          userName={session.user.user_metadata?.full_name || session.user.email} 
           onSelect={setUserChoice}
         />
       )
