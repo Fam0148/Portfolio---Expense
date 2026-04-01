@@ -121,7 +121,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
   return (
     <Background>
       <div className="w-full max-w-[540px] mx-auto px-4 text-[#171717]">
-        <Card className="border-none shadow-[0_40px_100px_-20px_rgba(0,0,0,0.15)] rounded-2xl bg-white overflow-hidden p-10 md:p-12">
+        <Card className="border border-gray-100 rounded-2xl bg-white overflow-hidden p-10 md:p-12">
           {/* Header & Global Errors */}
           <div className="flex flex-col items-center text-center space-y-6 mb-10">
             <div className="w-20 h-20 flex items-center justify-center rounded-2xl bg-[#171717] shadow-xl">

@@ -39,7 +39,7 @@ export const OnboardingChoice = ({ onSelect }: OnboardingChoiceProps) => {
   return (
     <Background>
       <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 font-sans">
-        <div className="w-full max-w-[600px] bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-7">
+        <div className="w-full max-w-[600px] bg-white rounded-2xl border border-gray-100 p-8 space-y-7">
           
           <h1 className="text-[28px] font-serif font-bold text-[#171717]">
             Select Module
@@ -51,11 +51,8 @@ export const OnboardingChoice = ({ onSelect }: OnboardingChoiceProps) => {
 
           {/* Module Selection Segmented Control */}
           <div className="space-y-3">
-            <label className="text-sm font-bold text-gray-700 block">
-              Application Module
-            </label>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 border border-gray-200 rounded-2xl bg-white shadow-[0_2px_4px_rgba(0,0,0,0.02)] h-auto min-h-[170px]">
+            <div className="grid grid-cols-1 md:grid-cols-3 border border-gray-200 rounded-2xl bg-white h-auto min-h-[170px]">
               {choices.map((item, idx) => {
                 const isSelected = selected === item.id;
                 return (
@@ -65,7 +62,7 @@ export const OnboardingChoice = ({ onSelect }: OnboardingChoiceProps) => {
                     className={`relative p-5 cursor-pointer flex flex-col items-center justify-center text-center transition-all duration-300 ease-in-out ${
                        !isSelected && idx !== 2 ? 'md:border-r border-b md:border-b-0 border-gray-100 ' : ''
                     } ${
-                       isSelected ? 'bg-white scale-[1.04] shadow-[0_8px_30px_rgb(0,0,0,0.08)] ring-1 ring-[#171717] rounded-[18px] z-20' : 'bg-transparent hover:bg-gray-50'
+                       isSelected ? 'bg-white scale-[1.04] ring-1 ring-[#171717] rounded-[18px] z-20' : 'bg-transparent hover:bg-gray-50'
                     } ${
                        idx === 0 && !isSelected ? 'rounded-t-2xl md:rounded-l-2xl md:rounded-tr-none' : ''
                     } ${
@@ -78,7 +75,7 @@ export const OnboardingChoice = ({ onSelect }: OnboardingChoiceProps) => {
                     )}
                     
                     {/* Icon container */}
-                    <div className="w-10 h-10 mb-3 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center">
+                    <div className="w-10 h-10 mb-3 bg-white rounded-xl border border-gray-100 flex items-center justify-center">
                       <div className={isSelected ? 'text-[#171717]' : 'text-gray-500'}>
                          {item.id === 'portfolio' ? (
                           <LayoutDashboard className="w-5 h-5" />

@@ -27,22 +27,7 @@ export const Background = ({ children }: { children: React.ReactNode }) => {
         }}
       />
 
-      {/* Large Dashed Grid Lines - Horizontal (Subtle Pulse) */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="h-full w-full flex flex-col justify-between py-[12vh] opacity-[0.35]">
-          <div className="w-full border-t border-dashed border-gray-400" />
-          <div className="w-full border-t border-dashed border-gray-400" />
-          <div className="w-full border-t border-dashed border-gray-400" />
-        </div>
-      </div>
 
-      {/* Large Dashed Grid Lines - Vertical */}
-      <div className="absolute inset-0 pointer-events-none flex justify-center">
-        <div className="h-full w-[1000px] flex justify-between opacity-[0.35]">
-          <div className="h-full border-l border-dashed border-gray-400" />
-          <div className="h-full border-l border-dashed border-gray-400" />
-        </div>
-      </div>
 
       {/* 
         CINEMATIC LAYER 3: Smooth Content Entry 
