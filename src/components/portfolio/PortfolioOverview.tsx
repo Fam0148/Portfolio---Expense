@@ -4,14 +4,13 @@ import { NumberTicker } from "./NumberTicker"
 
 interface PortfolioCardProps {
   title: string
-  value: string
   numericValue: number
   illustration: string
   profitPercent?: string
   delay?: number
 }
 
-const PortfolioCard = ({ title, value, numericValue, illustration, profitPercent, delay = 0 }: PortfolioCardProps) => {
+const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0 }: PortfolioCardProps) => {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -54,7 +53,6 @@ export const PortfolioOverview = () => {
   const cards = [
     {
       title: "Total Portfolio Value",
-      value: "₹1,42,500",
       numericValue: 142500,
       illustration: "/assets/Total Portfolio.png",
       profitPercent: "+12.5%",
@@ -62,7 +60,6 @@ export const PortfolioOverview = () => {
     },
     {
       title: "Total Stock Profit",
-      value: "₹34,200",
       numericValue: 34200,
       illustration: "/assets/Stock Profit.png",
       profitPercent: "+24.8%",
@@ -70,14 +67,12 @@ export const PortfolioOverview = () => {
     },
     {
       title: "Monthly Passive Income",
-      value: "₹1,850",
       numericValue: 1850,
       illustration: "/assets/Passive inccome.png",
       delay: 0.3
     },
     {
       title: "Total Mutual Fund Value",
-      value: "₹22,400",
       numericValue: 22400,
       illustration: "/assets/Bonds.png",
       profitPercent: "+4.2%",
