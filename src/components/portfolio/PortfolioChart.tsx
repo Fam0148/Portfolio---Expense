@@ -73,7 +73,7 @@ export const PortfolioChart = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </div>
-          <h2 className="text-lg font-serif font-bold text-gray-700 tracking-tight">Portfolio Value History</h2>
+          <h2 className="text-lg font-serif font-bold text-[#171717] tracking-tight">Portfolio Value History</h2>
         </div>
         <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
           <span className="text-[10px] sm:text-[11px] font-sans font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full whitespace-nowrap">+12.5% YoY</span>
@@ -98,8 +98,8 @@ export const PortfolioChart = () => {
           >
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#4b5563" stopOpacity={0.05} />
-                <stop offset="95%" stopColor="#4b5563" stopOpacity={0} />
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -130,12 +130,12 @@ export const PortfolioChart = () => {
             <Area
               type="monotone"
               dataKey="value"
-              stroke="#4b5563"
-              strokeWidth={2.5}
+              stroke="#10b981"
+              strokeWidth={3}
               fillOpacity={1}
               fill="url(#colorValue)"
               animationDuration={1500}
-              activeDot={{ r: 4, fill: '#4b5563', stroke: '#fff', strokeWidth: 2 }}
+              activeDot={{ r: 5, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>

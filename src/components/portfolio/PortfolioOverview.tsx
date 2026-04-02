@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { PortfolioChart } from "./PortfolioChart"
 import { NumberTicker } from "./NumberTicker"
+import { AssetManagement } from "./AssetManagement"
 import { supabase } from "../../lib/supabase"
 
 interface PortfolioCardProps {
@@ -122,9 +123,18 @@ export const PortfolioOverview = () => {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className="pb-12"
+        className="pb-4"
       >
         <PortfolioChart />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.7 }}
+        className="pb-12"
+      >
+        <AssetManagement />
       </motion.div>
     </div>
   )
