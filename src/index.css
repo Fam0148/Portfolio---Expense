@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 
 @source "./**/*.{js,ts,jsx,tsx,mdx}";
 
@@ -135,13 +135,16 @@
       transform: scale(2.5) rotate(-8deg);
       opacity: 0;
     }
+
     40% {
       transform: scale(0.92) rotate(2deg);
       opacity: 1;
     }
+
     65% {
       transform: scale(1.08) rotate(-1deg);
     }
+
     100% {
       transform: scale(1) rotate(0deg);
       opacity: 1;
@@ -163,6 +166,7 @@
   .animate-cinematic-in {
     animation: zoom-in 1.2s var(--ease-out-expo) forwards;
   }
+
   .animate-stamp {
     animation: stamp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }

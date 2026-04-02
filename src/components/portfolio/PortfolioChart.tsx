@@ -73,7 +73,7 @@ export const PortfolioChart = () => {
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </div>
-          <h2 className="text-sm font-sans font-semibold text-gray-700 tracking-tight">Portfolio Value History</h2>
+          <h2 className="text-lg font-serif font-bold text-gray-700 tracking-tight">Portfolio Value History</h2>
         </div>
         <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
           <span className="text-[10px] sm:text-[11px] font-sans font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full whitespace-nowrap">+12.5% YoY</span>

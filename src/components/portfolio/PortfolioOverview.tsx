@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { PortfolioChart } from "./PortfolioChart"
 import { NumberTicker } from "./NumberTicker"
+import { supabase } from "../../lib/supabase"
 
 interface PortfolioCardProps {
   title: string
@@ -50,6 +52,22 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
 }
 
 export const PortfolioOverview = () => {
+  const [userName, setUserName] = useState<string>("there")
+
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const name = user.user_metadata?.full_name || user.email?.split('@')[0]
+        if (name) {
+          // Capitalize first letter
+          setUserName(name.charAt(0).toUpperCase() + name.slice(1))
+        }
+      }
+    }
+    getUser()
+  }, [])
+
   const cards = [
     {
       title: "Total Portfolio Value",
@@ -88,7 +106,9 @@ export const PortfolioOverview = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="flex flex-col space-y-0 mb-8 sm:mb-10 text-center sm:text-left"
       >
-        <h1 className="text-[26px] sm:text-[32px] font-serif font-bold text-[#171717] leading-tight">Portfolio Management</h1>
+        <h1 className="text-[26px] sm:text-[32px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center sm:justify-start gap-2">
+          Hi, {userName}
+        </h1>
         <p className="text-gray-500 text-xs sm:text-sm font-sans mt-1">Track your stocks, bonds, and mutual funds in one place.</p>
       </motion.div>
 
