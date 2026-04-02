@@ -6,7 +6,7 @@ import type { Session } from '@supabase/supabase-js'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
-  const [isLogin, setIsLogin] = useState(false)
+  const [isLogin, setIsLogin] = useState(true)
   const [verificationSuccess, setVerificationSuccess] = useState(false)
   const [userChoice, setUserChoice] = useState<'portfolio' | 'expense' | 'profile' | null>(null)
 
