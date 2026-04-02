@@ -1,23 +1,33 @@
+import { motion } from "framer-motion"
 import { PortfolioChart } from "./PortfolioChart"
+import { NumberTicker } from "./NumberTicker"
 
 interface PortfolioCardProps {
   title: string
   value: string
+  numericValue: number
   illustration: string
   profitPercent?: string
+  delay?: number
 }
 
-const PortfolioCard = ({ title, value, illustration, profitPercent }: PortfolioCardProps) => {
+const PortfolioCard = ({ title, value, numericValue, illustration, profitPercent, delay = 0 }: PortfolioCardProps) => {
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-[16px] border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
+      className="bg-white p-4 sm:p-6 rounded-[20px] border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4"
+    >
       <div className="flex flex-col space-y-1.5 flex-1">
         <h3 className="font-serif text-[16px] text-gray-500 leading-tight">
           {title}
         </h3>
         <div className="flex items-baseline gap-2">
-          <p className="font-display font-bold text-[28px] text-[#171717] tracking-tight">
-            {value}
-          </p>
+          <div className="flex items-baseline font-display font-bold text-[28px] text-[#171717] tracking-tight">
+            <span>₹</span>
+            <NumberTicker value={numericValue} />
+          </div>
           {profitPercent && (
             <span className="text-[11px] font-sans font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">
               {profitPercent}
@@ -26,7 +36,7 @@ const PortfolioCard = ({ title, value, illustration, profitPercent }: PortfolioC
         </div>
       </div>
 
-      <div className="w-14 h-14 flex-shrink-0 flex items-center justify-center">
+      <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center">
         <img
           src={illustration}
           alt={title}
@@ -36,7 +46,7 @@ const PortfolioCard = ({ title, value, illustration, profitPercent }: PortfolioC
           }}
         />
       </div>
-    </div>
+    </motion.div>
   )
 }
 
@@ -45,41 +55,62 @@ export const PortfolioOverview = () => {
     {
       title: "Total Portfolio Value",
       value: "₹1,42,500",
+      numericValue: 142500,
       illustration: "/assets/Total Portfolio.png",
-      profitPercent: "+12.5%"
+      profitPercent: "+12.5%",
+      delay: 0.1
     },
     {
       title: "Total Stock Profit",
       value: "₹34,200",
+      numericValue: 34200,
       illustration: "/assets/Stock Profit.png",
-      profitPercent: "+24.8%"
+      profitPercent: "+24.8%",
+      delay: 0.2
     },
     {
       title: "Monthly Passive Income",
       value: "₹1,850",
-      illustration: "/assets/Passive inccome.png"
+      numericValue: 1850,
+      illustration: "/assets/Passive inccome.png",
+      delay: 0.3
     },
     {
-      title: "Historical Bond Profit",
-      value: "₹12,400",
+      title: "Total Mutual Fund Value",
+      value: "₹22,400",
+      numericValue: 22400,
       illustration: "/assets/Bonds.png",
-      profitPercent: "+4.2%"
+      profitPercent: "+4.2%",
+      delay: 0.4
     }
   ]
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
-      <div className="flex flex-col space-y-0 mb-8 sm:mb-10 text-center sm:text-left">
+      <motion.div 
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="flex flex-col space-y-0 mb-8 sm:mb-10 text-center sm:text-left"
+      >
         <h1 className="text-[26px] sm:text-[32px] font-serif font-bold text-[#171717] leading-tight">Portfolio Management</h1>
         <p className="text-gray-500 text-xs sm:text-sm font-sans mt-1">Track your stocks, bonds, and mutual funds in one place.</p>
-      </div>
+      </motion.div>
 
-      <PortfolioChart />
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 sm:mt-6 pb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 sm:mb-6">
         {cards.map((card, idx) => (
           <PortfolioCard key={idx} {...card} />
         ))}
       </div>
+
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="pb-12"
+      >
+        <PortfolioChart />
+      </motion.div>
     </div>
   )
 }

@@ -68,9 +68,10 @@ export const PortfolioChart = () => {
   return (
     <div className="bg-white p-4 sm:p-6 rounded-[20px] border border-gray-100/80 shadow-sm flex flex-col space-y-6">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-5 flex items-center justify-center">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
           </div>
           <h2 className="text-sm font-sans font-semibold text-gray-700 tracking-tight">Portfolio Value History</h2>
         </div>
@@ -97,8 +98,8 @@ export const PortfolioChart = () => {
           >
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.1} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <stop offset="5%" stopColor="#4b5563" stopOpacity={0.05} />
+                <stop offset="95%" stopColor="#4b5563" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -124,16 +125,17 @@ export const PortfolioChart = () => {
             />
             <Tooltip
               content={<CustomTooltip />}
-              cursor={{ stroke: '#3b82f6', strokeWidth: 1, strokeDasharray: '4 4' }}
+              cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '4 4' }}
             />
             <Area
               type="monotone"
               dataKey="value"
-              stroke="#2563eb"
-              strokeWidth={3}
+              stroke="#4b5563"
+              strokeWidth={2.5}
               fillOpacity={1}
               fill="url(#colorValue)"
-              animationDuration={1000}
+              animationDuration={1500}
+              activeDot={{ r: 4, fill: '#4b5563', stroke: '#fff', strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>

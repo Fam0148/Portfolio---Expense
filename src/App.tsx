@@ -9,7 +9,17 @@ function App() {
   const [session, setSession] = useState<Session | null>(null)
   const [isLogin, setIsLogin] = useState(true)
   const [verificationSuccess, setVerificationSuccess] = useState(false)
-  const [userChoice, setUserChoice] = useState<'portfolio' | 'expense' | 'profile' | null>(null)
+  const [userChoice, setUserChoice] = useState<'portfolio' | 'expense' | 'profile' | null>(() => {
+    return localStorage.getItem('user_choice') as 'portfolio' | 'expense' | 'profile' | null
+  })
+
+  useEffect(() => {
+    if (userChoice) {
+      localStorage.setItem('user_choice', userChoice)
+    } else {
+      localStorage.removeItem('user_choice')
+    }
+  }, [userChoice])
 
   useEffect(() => {
     // Check initial session
@@ -24,6 +34,9 @@ function App() {
         return
       }
       setSession(session)
+      if (!session) {
+        setUserChoice(null)
+      }
     })
 
     return () => subscription.unsubscribe()
@@ -44,6 +57,7 @@ function App() {
   const handleLogout = async () => {
     await supabase.auth.signOut()
     setUserChoice(null)
+    localStorage.removeItem('user_choice')
   }
 
   // Render Logic
