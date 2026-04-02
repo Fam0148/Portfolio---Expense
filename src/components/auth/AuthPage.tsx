@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -25,6 +25,21 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showSignupSuccess, setShowSignupSuccess] = useState(false)
+  const [isEmailInDB, setIsEmailInDB] = useState(false)
+
+  // Reset form when switching modes
+  useEffect(() => {
+    setFormData({
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    })
+    setErrorMsg(null)
+    setShowPassword(false)
+    setShowConfirmPassword(false)
+    setIsEmailInDB(false)
+  }, [mode])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,6 +50,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
     try {
       if (mode === "signup") {
         // 1. Sign up the user in Supabase Auth
+        localStorage.setItem('signup_in_progress', 'true')
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
           password: formData.password,
@@ -46,7 +62,10 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
           },
         })
 
-        if (authError) throw authError
+        if (authError) {
+          localStorage.removeItem('signup_in_progress')
+          throw authError
+        }
 
         // 2. Store additional profile data in the "profiles" table
         if (authData.user) {
@@ -65,6 +84,9 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
         }
 
         // 🔄 Switch to Sign In page after account creation
+        // We sign out to ensure they go through the Sign In page as requested
+        await supabase.auth.signOut()
+        localStorage.removeItem('signup_in_progress')
         setShowSignupSuccess(true)
         onToggle()
       } else {
@@ -81,6 +103,45 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
       setIsLoading(false)
     }
   }
+
+  // Real-time Email existence check
+  useEffect(() => {
+    // Reset immediately on every change
+    setIsEmailInDB(false)
+
+    const email = formData.email.trim()
+
+    // Basic validation
+    if (!email || !email.includes("@") || !email.endsWith("@gmail.com")) {
+      return
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        console.log("Checking email:", email)
+        const { data, error, status } = await supabase
+          .from('profiles')
+          .select('email')
+          .ilike('email', email)
+          .maybeSingle()
+
+        console.log("DB Response →", { data, error, status })
+
+        if (!error && data) {
+          setIsEmailInDB(true)
+          console.log("✅ Email found in DB")
+        } else {
+          setIsEmailInDB(false)
+          if (error) console.warn("DB error:", error.code, error.message)
+          else console.log("❌ Email not found, status:", status)
+        }
+      } catch (err) {
+        console.error("Unexpected check error:", err)
+      }
+    }, 600)
+
+    return () => clearTimeout(timer)
+  }, [formData.email])
 
   // Gmail Validation Logic
   const emailError = useMemo(() => {
@@ -177,24 +238,37 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
             <div className="space-y-1.5">
               <div className="flex items-center justify-between px-0.5">
                 <Label htmlFor="email" className="text-sm font-semibold text-[#171717]">Email address</Label>
-                {emailError && (
-                  <span className="text-[12px] font-medium text-red-500/80 flex items-center gap-1 transition-all">
-                    <AlertCircle className="w-3 h-3" /> {emailError}
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {isEmailInDB && mode === "login" && (
+                    <div
+                      key={formData.email}
+                      className="animate-stamp flex items-center justify-center pointer-events-none"
+                    >
+                      <CheckCircle2 className="w-5 h-5 text-green-600" strokeWidth={2.5} />
+                    </div>
+                  )}
+                  {emailError && (
+                    <span className="text-[12px] font-medium text-red-500/80 flex items-center gap-1 transition-all">
+                      <AlertCircle className="w-3 h-3" /> {emailError}
+                    </span>
+                  )}
+                </div>
               </div>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className={`transition-all rounded-lg h-11 px-4 text-sm ${emailError
-                  ? "border-red-100 bg-red-50/10 focus:border-red-300"
-                  : "border-gray-200 bg-white focus:ring-0 focus:border-[#171717]"
+              <div className="relative">
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="Email address"
+                  disabled={isLoading}
+                  className={`transition-all rounded-lg h-11 px-4 text-sm ${
+                    emailError
+                      ? "border-red-100 bg-red-50/10 focus:border-red-300"
+                      : "border-gray-200 bg-white focus:ring-0 focus:border-[#171717]"
                   }`}
-                placeholder="Email address"
-                disabled={isLoading}
-              />
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5 relative">

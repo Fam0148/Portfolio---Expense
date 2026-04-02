@@ -3,6 +3,7 @@ import { AuthPage } from './components/auth/AuthPage'
 import { OnboardingChoice } from './components/onboarding/OnboardingChoice'
 import { supabase } from './lib/supabase'
 import type { Session } from '@supabase/supabase-js'
+import { PortfolioOverview } from './components/portfolio/PortfolioOverview'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -18,6 +19,10 @@ function App() {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      // Prevent flicker: if we just signed up, ignore the auto-login session
+      if (session && localStorage.getItem('signup_in_progress')) {
+        return
+      }
       setSession(session)
     })
 
@@ -42,12 +47,20 @@ function App() {
   }
 
   // Render Logic
-  if (session) {
+  if (session && isLogin) {
     if (!userChoice) {
       return (
         <OnboardingChoice 
           onSelect={setUserChoice}
         />
+      )
+    }
+
+    if (userChoice === 'portfolio') {
+      return (
+        <div className="min-h-screen bg-[#F8F8F8]">
+          <PortfolioOverview />
+        </div>
       )
     }
 
