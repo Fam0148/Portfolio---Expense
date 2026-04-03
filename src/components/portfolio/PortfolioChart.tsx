@@ -54,15 +54,22 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-export const PortfolioChart = () => {
+export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5 }: { currentValue?: number; profitPercent?: number }) => {
   const [timeframe, setTimeframe] = useState('1Y')
 
   const getChartData = () => {
-    switch (timeframe) {
-      case '6M': return sixMonthData
-      case '30D': return thirtyDayData
-      default: return yearData
-    }
+    let baseData = timeframe === '6M' ? sixMonthData : timeframe === '30D' ? thirtyDayData : yearData
+    
+    // Scale the data so the last point matches the real current value
+    const lastBaseValue = baseData[baseData.length - 1].value
+    const scale = currentValue / lastBaseValue
+    
+    return baseData.map((d, idx) => ({
+      ...d,
+      // If it's the last point, use the exact real value. 
+      // For others, scale them to maintain the trend shape leading to reality.
+      value: idx === baseData.length - 1 ? currentValue : Math.round(d.value * scale)
+    }))
   }
 
   return (
@@ -76,7 +83,9 @@ export const PortfolioChart = () => {
           <h2 className="text-lg font-serif font-bold text-[#171717] tracking-tight">Portfolio Value History</h2>
         </div>
         <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
-          <span className="text-[10px] sm:text-[11px] font-sans font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full whitespace-nowrap">+12.5% YoY</span>
+          <span className={`text-[10px] sm:text-[11px] font-sans font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${profitPercent >= 0 ? 'text-green-600 bg-green-50' : 'text-rose-600 bg-rose-50'}`}>
+            {profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(1)}% Overall
+          </span>
           <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value)}

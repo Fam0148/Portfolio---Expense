@@ -14,6 +14,7 @@ interface PortfolioCardProps {
 }
 
 const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0 }: PortfolioCardProps) => {
+  const isNegative = numericValue < 0
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -26,12 +27,12 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
           {title}
         </h3>
         <div className="flex items-baseline gap-2">
-          <div className="flex items-baseline font-display font-bold text-[28px] text-[#171717] tracking-tight">
-            <span>₹</span>
-            <NumberTicker value={numericValue} />
+          <div className={`flex items-baseline font-display font-bold text-[28px] tracking-tight ${isNegative ? 'text-rose-500' : 'text-[#171717]'}`}>
+            <span>{isNegative ? '-₹' : '₹'}</span>
+            <NumberTicker value={Math.abs(numericValue)} />
           </div>
           {profitPercent && (
-            <span className="text-[11px] font-sans font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded-full">
+            <span className={`text-[11px] font-sans font-bold px-1.5 py-0.5 rounded-full ${isNegative ? 'text-rose-600 bg-rose-50' : 'text-green-600 bg-green-50'}`}>
               {profitPercent}
             </span>
           )}
@@ -69,32 +70,125 @@ export const PortfolioOverview = () => {
     getUser()
   }, [])
 
+  const [stats, setStats] = useState({
+    totalValue: 0,
+    totalProfit: 0,
+    monthlyIncome: 0,
+    mfValue: 0,
+    profitPercent: 0,
+    stockYield: 0
+  })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        const { data } = await supabase.from('stocks').select('*').eq('user_id', user.id)
+        if (!data) return
+
+        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+        const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+        const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/stock-search`
+
+        // Fetch live prices in parallel
+        const withPrices = await Promise.all(data.map(async (s) => {
+          const type = s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
+          let current = s.purchase_price
+          
+          if (type !== 'BOND') {
+            try {
+              const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
+              const r = await fetch(`${FUNCTION_URL}?action=price&q=${encodeURIComponent(sym)}`,
+                { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } })
+              if (r.ok) {
+                const d = await r.json()
+                if (d?.price) current = d.price
+              } else {
+                 const p = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`)}`)
+                 const d = await p.json()
+                 const lp = d?.chart?.result?.[0]?.meta?.regularMarketPrice
+                 if (lp) current = parseFloat(lp)
+              }
+            } catch { /* skip */ }
+          }
+          return { ...s, current_p: current, asset_type_c: type }
+        }))
+
+        let totalInvested = 0
+        let totalCurrent = 0
+        let stockInvested = 0
+        let stockCurrent = 0
+        let mfVal = 0
+        let interestIncome = 0
+
+        withPrices.forEach(s => {
+          const type = s.asset_type_c
+          const current = s.current_p
+          const totalAtPurchase = s.purchase_price * s.quantity
+          const totalAtCurrent = current * s.quantity
+
+          totalInvested += totalAtPurchase
+          totalCurrent += totalAtCurrent
+
+          if (type === 'STOCK') {
+            stockInvested += totalAtPurchase
+            stockCurrent += totalAtCurrent
+          }
+          if (type === 'MF') mfVal += totalAtCurrent
+          if (type === 'BOND' && s.ytm) {
+            const ytm = parseFloat(s.ytm)
+            if (!isNaN(ytm)) interestIncome += (totalAtCurrent * (ytm / 100)) / 12
+          }
+        })
+
+        const totalProfitVal = totalCurrent - totalInvested
+        const pPercent = totalInvested > 0 ? (totalProfitVal / totalInvested) * 100 : 0
+        
+        const stockProfitValue = stockCurrent - stockInvested
+        const sYield = stockInvested > 0 ? (stockProfitValue / stockInvested) * 100 : 0
+
+        setStats({
+          totalValue: totalCurrent,
+          totalProfit: stockProfitValue,
+          monthlyIncome: interestIncome,
+          mfValue: mfVal,
+          profitPercent: pPercent,
+          stockYield: sYield
+        })
+      } catch (err) { console.error('Error fetching stats:', err) }
+    }
+    fetchStats()
+    // Refresh every 30s to match live price updates
+    const interval = setInterval(fetchStats, 30000)
+    return () => clearInterval(interval)
+  }, [])
+
   const cards = [
     {
       title: "Total Portfolio Value",
-      numericValue: 142500,
+      numericValue: stats.totalValue,
       illustration: "/assets/Total Portfolio.png",
-      profitPercent: "+12.5%",
+      profitPercent: stats.profitPercent >= 0 ? `+${stats.profitPercent.toFixed(1)}%` : `${stats.profitPercent.toFixed(1)}%`,
       delay: 0.1
     },
     {
       title: "Total Stock Profit",
-      numericValue: 34200,
+      numericValue: stats.totalProfit,
       illustration: "/assets/Stock Profit.png",
-      profitPercent: "+24.8%",
+      profitPercent: `${stats.stockYield.toFixed(1)}% Yield`,
       delay: 0.2
     },
     {
       title: "Monthly Passive Income",
-      numericValue: 1850,
+      numericValue: stats.monthlyIncome,
       illustration: "/assets/Passive inccome.png",
       delay: 0.3
     },
     {
       title: "Total Mutual Fund Value",
-      numericValue: 22400,
+      numericValue: stats.mfValue,
       illustration: "/assets/Bonds.png",
-      profitPercent: "+4.2%",
       delay: 0.4
     }
   ]
@@ -123,9 +217,9 @@ export const PortfolioOverview = () => {
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
-        className="pb-4"
+        className="mb-8"
       >
-        <PortfolioChart />
+        <PortfolioChart currentValue={stats.totalValue} profitPercent={stats.profitPercent} />
       </motion.div>
 
       <motion.div

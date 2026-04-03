@@ -189,4 +189,26 @@
   h6 {
     @apply font-serif;
   }
+
+  /* Hide native form clutter for a cleaner mobile-first experience */
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 0;
+    cursor: pointer;
+    position: absolute;
+    right: 12px;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    height: 100%;
+  }
+
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  input[type=number] {
+    -moz-appearance: textfield;
+  }
 }
