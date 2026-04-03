@@ -114,12 +114,11 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
                   </div>
                 ) : logs.map((log) => (
                   <div key={log.id} className="relative pl-10">
-                    <div className={`absolute left-1.5 top-1.5 w-3 h-3 rounded-full ring-4 ring-white ${
-                      log.type === 'BUY' ? 'bg-[#171717]' : log.type === 'AVERAGE' ? 'bg-blue-500' :
+                    <div className={`absolute left-1.5 top-1.5 w-3 h-3 rounded-full ring-4 ring-white ${log.type === 'BUY' ? 'bg-[#171717]' : log.type === 'AVERAGE' ? 'bg-blue-500' :
                       log.type === 'UPDATE' ? 'bg-amber-500' : 'bg-red-500'}`} />
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
                       {log.type === 'BUY' ? 'Initial Position' : log.type === 'AVERAGE' ? 'Units Added (Averaged)' :
-                       log.type === 'UPDATE' ? 'Position Updated' : 'Asset Removed'} —{' '}
+                        log.type === 'UPDATE' ? 'Position Updated' : 'Asset Removed'} —{' '}
                       {new Date(log.transaction_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                     </p>
                     <p className="text-sm font-bold text-[#171717]">{log.quantity} units @ ₹{Number(log.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
@@ -191,14 +190,14 @@ export const AssetManagement = () => {
       const { data, error } = await supabase.from('stocks').select('*')
         .eq('user_id', user.id).order('created_at', { ascending: false })
       if (error) throw error
-      
+
       const rawStocks = data || []
-      
+
       // Fetch live prices for non-bonds
       const withPrice = await Promise.all(rawStocks.map(async (s: Stock) => {
         const type = s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
         let current = s.purchase_price
-        
+
         if (type !== 'BOND') {
           try {
             const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
@@ -208,15 +207,15 @@ export const AssetManagement = () => {
               const d = await r.json()
               if (d?.price) current = d.price
             } else {
-               // Second fallback to Yahoo Chart API directly via proxy
-               const p = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`)}`)
-               const d = await p.json()
-               const lp = d?.chart?.result?.[0]?.meta?.regularMarketPrice
-               if (lp) current = parseFloat(lp)
+              // Second fallback to Yahoo Chart API directly via proxy
+              const p = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`)}`)
+              const d = await p.json()
+              const lp = d?.chart?.result?.[0]?.meta?.regularMarketPrice
+              if (lp) current = parseFloat(lp)
             }
           } catch { /* keep purchase price as fallback */ }
         }
-        
+
         return { ...s, asset_type: type as any, current_price: current }
       }))
 
@@ -442,11 +441,10 @@ export const AssetManagement = () => {
             { id: 'BOND', label: 'Bonds', icon: ShieldCheck }
           ] as const).map((tab) => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isAdding && !editingId) handleCancel() }}
-              className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === tab.id
-                  ? 'bg-white text-[#171717] shadow-sm text-[13px] border border-gray-100'
-                  : 'text-gray-400 hover:text-gray-600'
-              }`}>
+              className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
+                ? 'bg-white text-[#171717] shadow-sm text-[13px] border border-gray-100'
+                : 'text-gray-400 hover:text-gray-600'
+                }`}>
               <tab.icon size={15} />
               {tab.label}
             </button>
@@ -848,7 +846,7 @@ export const AssetManagement = () => {
             </div>
           )
         })()
-      , document.body)}
+        , document.body)}
     </div>
   )
 }
