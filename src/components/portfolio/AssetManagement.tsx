@@ -3,7 +3,7 @@ import { createPortal } from "react-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "../../lib/supabase"
 import {
-  Pencil, Trash2, History, Plus, X, Search, Calendar,
+  Pencil, Trash2, History, X, Search, Calendar,
   BadgeIndianRupee, Hash, MoreVertical, ShieldCheck,
   TrendingUp, Timer, Percent
 } from "lucide-react"
@@ -230,8 +230,34 @@ export const AssetManagement = () => {
     if (!stock.ytm) return 0;
     const ytm = parseFloat(stock.ytm);
     if (isNaN(ytm)) return 0;
-    // Monthly Interest = (Principal * YearlyYTM%) / 12
-    return (stock.purchase_price * (ytm / 100)) / 12;
+    return (stock.purchase_price * stock.quantity * (ytm / 100)) / 12;
+  };
+
+  const calculateTotalRepayment = (stock: Stock) => {
+    const type = stock.asset_type || (stock.ytm || stock.tenure ? 'BOND' : 'STOCK');
+    if (!stock.ytm || type !== 'BOND') return 0;
+    const ytm = parseFloat(stock.ytm);
+    if (isNaN(ytm)) return 0;
+
+    // Safely parse date to avoid format discrepancies
+    const [pYear, pMonth, pDay] = stock.purchase_date.split('-').map(Number);
+
+    const now = new Date();
+
+    let count = 0;
+    let tempDate = new Date(pYear, pMonth - 1, 10); // Start on the 10th of the purchase month
+
+    // If bought on or after the 10th, the first payout is the NEXT month's 10th
+    if (pDay >= 10) {
+      tempDate.setMonth(tempDate.getMonth() + 1);
+    }
+
+    while (tempDate <= now) {
+      count++;
+      tempDate.setMonth(tempDate.getMonth() + 1);
+    }
+
+    return (stock.purchase_price * stock.quantity * (ytm / 100)) * (count / 12);
   };
 
   useEffect(() => { fetchStocks() }, [])
@@ -385,11 +411,10 @@ export const AssetManagement = () => {
       if (error) throw error
       if (stockToDelete) {
         try {
-          await supabase.from('stock_logs').insert([{
-            user_id: user.id, symbol: stockToDelete.symbol,
-            quantity: stockToDelete.quantity, price: stockToDelete.purchase_price,
-            transaction_date: new Date().toISOString().split('T')[0], type: 'DELETE'
-          }])
+          await supabase.from('stock_logs')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('symbol', stockToDelete.symbol)
         } catch { /* skip */ }
       }
       fetchStocks()
@@ -424,13 +449,6 @@ export const AssetManagement = () => {
             <h2 className="text-2xl font-serif font-bold text-[#171717]">Asset Management</h2>
             <p className="text-sm text-gray-500 font-sans mt-1">Manage your holdings and track performance across your portfolio.</p>
           </div>
-          <button
-            onClick={() => { if (isAdding && !editingId) { handleCancel() } else if (!isAdding) { setIsAdding(true); setEditingId(null) } }}
-            className="flex items-center justify-center gap-2 bg-[#171717] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-black hover:scale-105 active:scale-95 shadow-sm"
-          >
-            {isAdding && !editingId ? <X size={18} /> : <Plus size={18} />}
-            {isAdding && !editingId ? "Cancel" : `Add New ${activeTab === 'STOCK' ? 'Stock' : 'Bond'}`}
-          </button>
         </div>
 
         {/* ── Tab Switcher ── */}
@@ -554,20 +572,20 @@ export const AssetManagement = () => {
           )}
         </AnimatePresence>
 
-        {/* ── ADD NEW MODAL (floating overlay) ── */}
+        {/* ── ADD NEW FORM (inline) ── */}
         <AnimatePresence>
-          {isAdding && !editingId && (
-            <div className="fixed inset-0 z-[400] flex items-center justify-center p-4">
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                onClick={handleCancel} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
-              <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                className="relative bg-white p-6 sm:p-8 rounded-[28px] border border-gray-100 shadow-2xl max-w-4xl w-full overflow-visible z-10">
+          {!editingId && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="mb-8 overflow-visible"
+            >
+              <div className="bg-gray-50/50 p-6 sm:p-8 rounded-[28px] border border-gray-100 w-full overflow-visible">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-serif font-bold text-[#171717]">
                     Add New {activeTab === 'STOCK' ? 'Stock' : 'Bond'}
                   </h3>
-                  <button onClick={handleCancel} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X size={20} /></button>
                 </div>
                 <form onSubmit={handleAddOrUpdate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {/* Symbol */}
@@ -579,7 +597,7 @@ export const AssetManagement = () => {
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/search:text-[#171717] transition-colors" size={16} />
                       <input type="text" placeholder={activeTab === 'STOCK' ? "e.g. RELIANCE" : "e.g. HDFC Bond"}
                         autoComplete="off"
-                        className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all placeholder:text-gray-300"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                         value={form.symbol}
                         onChange={e => {
                           setForm({ ...form, symbol: e.target.value.toUpperCase() })
@@ -611,7 +629,7 @@ export const AssetManagement = () => {
                     <div className="relative group/date">
                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/date:text-[#171717] transition-colors" size={16} />
                       <input type="date"
-                        className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all cursor-pointer"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all cursor-pointer text-[#171717]"
                         value={form.purchase_date} onChange={e => setForm({ ...form, purchase_date: e.target.value })} />
                     </div>
                   </div>
@@ -623,7 +641,7 @@ export const AssetManagement = () => {
                     <div className="relative group/price">
                       <BadgeIndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/price:text-[#171717] transition-colors" size={16} />
                       <input type="number" placeholder="0.00" step="0.01"
-                        className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all placeholder:text-gray-300"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                         value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
                     </div>
                   </div>
@@ -635,7 +653,7 @@ export const AssetManagement = () => {
                         <div className="relative group/tenure">
                           <Timer className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/tenure:text-[#171717] transition-colors" size={16} />
                           <input type="text" placeholder="e.g. 12 Months"
-                            className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all placeholder:text-gray-300"
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                             value={form.tenure} onChange={e => setForm({ ...form, tenure: e.target.value })} />
                         </div>
                       </div>
@@ -644,8 +662,17 @@ export const AssetManagement = () => {
                         <div className="relative group/ytm">
                           <Percent className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/ytm:text-[#171717] transition-colors" size={16} />
                           <input type="text" placeholder="e.g. 10.25"
-                            className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all placeholder:text-gray-300"
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                             value={form.ytm} onChange={e => setForm({ ...form, ytm: e.target.value })} />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5 text-left lg:col-span-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Est. Monthly Repayment</label>
+                        <div className="w-full px-4 py-[13px] bg-emerald-50/50 border border-emerald-100 rounded-xl text-sm font-bold text-emerald-700 flex items-center justify-between">
+                          <span>Calculated Repayment</span>
+                          <span>₹{form.price && form.ytm && !isNaN(parseFloat(form.price)) && !isNaN(parseFloat(form.ytm))
+                            ? ((parseFloat(form.price) * (parseFloat(form.ytm) / 100)) / 12).toLocaleString('en-IN', { maximumFractionDigits: 0 })
+                            : '0'}</span>
                         </div>
                       </div>
                     </>
@@ -657,25 +684,21 @@ export const AssetManagement = () => {
                       <div className="relative group/qty">
                         <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/qty:text-[#171717] transition-colors" size={16} />
                         <input type="number" placeholder="0"
-                          className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all placeholder:text-gray-300"
+                          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                           value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} />
                       </div>
                     </div>
                   )}
                   {/* Submit */}
                   <div className="lg:col-span-4 mt-2 flex justify-end gap-3">
-                    <button type="button" onClick={handleCancel}
-                      className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-400 hover:bg-gray-50 transition-all">
-                      Cancel
-                    </button>
                     <button type="submit"
                       className="px-8 py-2.5 rounded-xl bg-[#171717] text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
                       Add {activeTab === 'BOND' ? 'Bond' : 'Stock'}
                     </button>
                   </div>
                 </form>
-              </motion.div>
-            </div>
+              </div>
+            </motion.div>
           )}
         </AnimatePresence>
 
@@ -701,7 +724,7 @@ export const AssetManagement = () => {
                   <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Current Price</th>
                 )}
                 {activeTab === 'BOND' && (
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Monthly Repayment</th>
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Repayment</th>
                 )}
                 <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Total Value</th>
                 <th className="text-right py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
@@ -715,7 +738,8 @@ export const AssetManagement = () => {
                   No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
                 </td></tr>
               ) : visibleStocks.map((stock) => {
-                const totalValue = stock.quantity * (stock.current_price || stock.purchase_price)
+                const repayment = calculateTotalRepayment(stock)
+                const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + repayment
                 const invested = stock.quantity * stock.purchase_price
                 const absolutePnl = totalValue - invested
                 const pnl = (absolutePnl / invested) * 100

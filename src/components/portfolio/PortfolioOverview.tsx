@@ -17,7 +17,7 @@ interface PortfolioCardProps {
 const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0 }: PortfolioCardProps) => {
   const isNegative = numericValue < 0
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
@@ -102,7 +102,7 @@ export const PortfolioOverview = () => {
         const withPrices = await Promise.all(data.map(async (s) => {
           const type = s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
           let current = s.purchase_price
-          
+
           if (type !== 'BOND') {
             try {
               const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
@@ -112,10 +112,10 @@ export const PortfolioOverview = () => {
                 const d = await r.json()
                 if (d?.price) current = d.price
               } else {
-                 const p = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`)}`)
-                 const d = await p.json()
-                 const lp = d?.chart?.result?.[0]?.meta?.regularMarketPrice
-                 if (lp) current = parseFloat(lp)
+                const p = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`)}`)
+                const d = await p.json()
+                const lp = d?.chart?.result?.[0]?.meta?.regularMarketPrice
+                if (lp) current = parseFloat(lp)
               }
             } catch { /* skip */ }
           }
@@ -149,26 +149,36 @@ export const PortfolioOverview = () => {
             if (!isNaN(ytm)) {
               totalBondInvested += totalAtPurchase
               interestIncome += (totalAtCurrent * (ytm / 100)) / 12
-              
-              const purchaseDate = new Date(s.purchase_date)
-              const monthsElapsed = Math.max(0,
-                (now.getFullYear() - purchaseDate.getFullYear()) * 12 +
-                (now.getMonth() - purchaseDate.getMonth())
-              )
-              bondProfitAccrued += totalAtPurchase * (ytm / 100) * (monthsElapsed / 12)
+
+              // Calculate repayment: increment each month on the 10th
+              const [pYear, pMonth, pDay] = s.purchase_date.split('-').map(Number);
+              let monthsCounted = 0
+              let tempDate = new Date(pYear, pMonth - 1, 10)
+
+              if (pDay >= 10) {
+                tempDate.setMonth(tempDate.getMonth() + 1)
+              }
+
+              while (tempDate <= now) {
+                monthsCounted++
+                tempDate.setMonth(tempDate.getMonth() + 1)
+              }
+
+              bondProfitAccrued += totalAtPurchase * (ytm / 100) * (monthsCounted / 12)
             }
           }
         })
 
-        const totalProfitVal = totalCurrent - totalInvested
-        const pPercent = totalInvested > 0 ? (totalProfitVal / totalInvested) * 100 : 0
-        
         const stockProfitValue = stockCurrent - stockInvested
         const sYield = stockInvested > 0 ? (stockProfitValue / stockInvested) * 100 : 0
         const bYield = totalBondInvested > 0 ? (bondProfitAccrued / totalBondInvested) * 100 : 0
 
+        // Total Value = Market Value of Stocks + Invested Principal of Bonds + Bond Repayments (Interest)
+        const finalTotalValue = totalCurrent + bondProfitAccrued
+        const pPercent = totalInvested > 0 ? ((finalTotalValue - totalInvested) / totalInvested) * 100 : 0
+
         setStats({
-          totalValue: totalCurrent,
+          totalValue: finalTotalValue,
           totalProfit: stockProfitValue,
           monthlyIncome: interestIncome,
           profitPercent: pPercent,
@@ -215,7 +225,7 @@ export const PortfolioOverview = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
@@ -228,7 +238,7 @@ export const PortfolioOverview = () => {
           <p className="text-gray-500 text-xs sm:text-sm font-sans mt-1">Track your stocks and bonds in one place.</p>
         </div>
 
-        <button 
+        <button
           onClick={handleLogOut}
           className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-sm active:scale-95 group shadow-sm sm:mb-1"
         >
@@ -243,8 +253,7 @@ export const PortfolioOverview = () => {
         ))}
       </div>
 
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.98 }}
+      <motion.div
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 0.5 }}
         className="mb-8"
