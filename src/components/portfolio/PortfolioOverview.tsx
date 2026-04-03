@@ -16,7 +16,7 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={`bg-white p-5 sm:p-6 rounded-[24px] border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 ${className}`}
+      className={`bg-white p-5 sm:p-6 rounded-[24px] border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 group transition-all duration-300 ${className}`}
     >
       <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
         <h3 className="font-serif text-[16px] text-gray-500 leading-tight truncate">
@@ -56,10 +56,19 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
       </div>
 
       <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0 flex items-center justify-center relative">
-        <img
+        <motion.img
+          animate={{ 
+            y: [0, -8, 0],
+            filter: ["saturate(0.4)", "saturate(1)", "saturate(0.4)"]
+          }}
+          transition={{ 
+            duration: 4 + Math.random() * 2, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
           src={illustration}
           alt={title}
-          className="w-full h-full object-contain"
+          className="w-full h-full object-contain transition-all duration-500"
           onError={() => {
             console.error(`Failed to load asset: ${illustration}`);
           }}
