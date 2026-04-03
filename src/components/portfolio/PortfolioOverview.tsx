@@ -4,7 +4,8 @@ import { PortfolioChart } from "./PortfolioChart"
 import { NumberTicker } from "./NumberTicker"
 import { AssetManagement } from "./AssetManagement"
 import { supabase } from "../../lib/supabase"
-import { LogOut } from "lucide-react"
+import { LogOut, FileText } from "lucide-react"
+import { StatementView } from "./StatementView"
 
 
 
@@ -16,7 +17,7 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={`bg-white p-5 sm:p-6 rounded-[24px] border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 group transition-all duration-300 ${className}`}
+      className={`bg-white p-5 sm:p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 group transition-all duration-300 ${className}`}
     >
       <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
         <h3 className="font-serif text-[16px] text-gray-500 leading-tight truncate">
@@ -56,19 +57,10 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
       </div>
 
       <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0 flex items-center justify-center relative">
-        <motion.img
-          animate={{ 
-            y: [0, -8, 0],
-            filter: ["saturate(0.4)", "saturate(1)", "saturate(0.4)"]
-          }}
-          transition={{ 
-            duration: 4 + Math.random() * 2, 
-            repeat: Infinity, 
-            ease: "easeInOut" 
-          }}
+        <img
           src={illustration}
           alt={title}
-          className="w-full h-full object-contain transition-all duration-500"
+          className="w-full h-full object-contain transition-all duration-500 hover:scale-105 rotate-[5deg]"
           onError={() => {
             console.error(`Failed to load asset: ${illustration}`);
           }}
@@ -110,8 +102,15 @@ export const PortfolioOverview = () => {
     bondYield: 0,
     stockWeight: 0,
     bondWeight: 0,
-    historicalData: [] as any[]
+    historicalData: [] as any[],
+    totalInvested: 0,
+    stockInvested: 0,
+    bondInvested: 0,
+    bondProfitDetails: {} as Record<string, number>,
+    userId: ""
   })
+
+  const [stocksData, setStocksData] = useState<any[]>([])
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -251,8 +250,24 @@ export const PortfolioOverview = () => {
           bondYield: bYield,
           stockWeight: finalTotalValue > 0 ? (stockCurrent / finalTotalValue) * 100 : 0,
           bondWeight: finalTotalValue > 0 ? (totalBondValue / finalTotalValue) * 100 : 0,
-          historicalData
+          historicalData,
+          totalInvested,
+          stockInvested,
+          bondInvested: totalBondInvested,
+          bondProfitDetails: withPrices.reduce((acc, s) => {
+            if (s.asset_type_c === 'BOND') {
+               const ytm = parseFloat(s.ytm)
+               const [pYear, pMonth, pDay] = s.purchase_date.split('-').map(Number);
+               let count = 0; let tempDate = new Date(pYear, pMonth - 1, 10);
+               if (pDay >= 10) tempDate.setMonth(tempDate.getMonth() + 1);
+               while (tempDate <= now) { count++; tempDate.setMonth(tempDate.getMonth() + 1); }
+               acc[s.id] = (s.purchase_price * s.quantity * (ytm / 100)) * (count / 12);
+            }
+            return acc;
+          }, {} as any),
+          userId: user.id
         })
+        setStocksData(withPrices)
       } catch (err) { console.error('Error fetching stats:', err) }
     }
     fetchStats()
@@ -299,6 +314,7 @@ export const PortfolioOverview = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
+      <div className="no-print">
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -312,13 +328,22 @@ export const PortfolioOverview = () => {
           <p className="text-gray-500 text-xs sm:text-sm font-sans mt-1">Track your stocks and bonds in one place.</p>
         </div>
 
-        <button
-          onClick={handleLogOut}
-          className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-sm active:scale-95 group shadow-sm sm:mb-1"
-        >
-          <LogOut size={16} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
-          Sign Out
-        </button>
+        <div className="flex items-center gap-3 sm:mb-1">
+          <button
+            onClick={() => { setTimeout(() => { window.print(); }, 500); }}
+            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all font-bold text-sm active:scale-95 group shadow-md shadow-blue-100"
+          >
+            <FileText size={16} className="text-blue-100 group-hover:text-white transition-colors" />
+            Export Statement
+          </button>
+          <button
+            onClick={handleLogOut}
+            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-sm active:scale-95 group shadow-sm"
+          >
+            <LogOut size={16} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
+            Sign Out
+          </button>
+        </div>
       </motion.div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
@@ -357,6 +382,12 @@ export const PortfolioOverview = () => {
       >
         <AssetManagement />
       </motion.div>
+      </div>
+
+      {/* Printable Area (Managed via .print-only-container styles in StatementView) */}
+      <div className="print-only-container">
+        <StatementView userName={userName} stocks={stocksData} stats={stats} />
+      </div>
     </div>
   )
 }

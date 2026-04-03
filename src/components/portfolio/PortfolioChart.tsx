@@ -90,7 +90,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
   })()
 
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-[20px] border border-gray-100/80 shadow-sm flex flex-col space-y-6">
+    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-col space-y-6">
       <style>{`
         @keyframes pulse-ring {
           0% { transform: scale(0.33); opacity: 1; }

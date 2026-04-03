@@ -36,7 +36,7 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: {
           onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="relative bg-white p-6 sm:p-8 rounded-[28px] border border-gray-100 shadow-2xl max-w-sm w-full text-center z-10">
+          className="relative bg-white p-6 sm:p-8 rounded-2xl border border-gray-100 shadow-2xl max-w-sm w-full text-center z-10">
           <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-red-500">
             <Trash2 size={28} />
           </div>
@@ -96,7 +96,7 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
             onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
           <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative bg-white p-6 sm:p-8 rounded-[28px] border border-gray-100 shadow-2xl max-w-sm w-full z-10">
+            className="relative bg-white p-6 sm:p-8 rounded-2xl border border-gray-100 shadow-2xl max-w-sm w-full z-10">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-serif font-bold text-[#171717]">Asset History</h3>
               <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X size={20} /></button>
@@ -239,11 +239,13 @@ export const AssetManagement = () => {
     const ytm = parseFloat(stock.ytm);
     if (isNaN(ytm)) return 0;
 
+    // Parse tenure to numeric months - handle "12 Months" or "12"
+    const tenureMonths = stock.tenure ? parseInt(stock.tenure.replace(/\D/g, '')) || 12 : 12;
+
     // Safely parse date to avoid format discrepancies
     const [pYear, pMonth, pDay] = stock.purchase_date.split('-').map(Number);
 
     const now = new Date();
-
     let count = 0;
     let tempDate = new Date(pYear, pMonth - 1, 10); // Start on the 10th of the purchase month
 
@@ -255,6 +257,9 @@ export const AssetManagement = () => {
     while (tempDate <= now) {
       count++;
       tempDate.setMonth(tempDate.getMonth() + 1);
+      
+      // Stop counting if tenure is reached
+      if (count >= tenureMonths) break;
     }
 
     return (stock.purchase_price * stock.quantity * (ytm / 100)) * (count / 12);
@@ -428,7 +433,7 @@ export const AssetManagement = () => {
   })
 
   return (
-    <div className="bg-white rounded-[24px] border border-gray-100 shadow-sm text-left">
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm text-left">
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, id: "" })}
@@ -452,7 +457,7 @@ export const AssetManagement = () => {
         </div>
 
         {/* ── Tab Switcher ── */}
-        <div className="flex items-center gap-2 p-1.5 bg-gray-50/80 rounded-[18px] w-fit mb-8 border border-gray-100">
+        <div className="flex items-center gap-2 p-1.5 bg-gray-50/80 rounded-xl w-fit mb-8 border border-gray-100">
           {([
             { id: 'STOCK', label: 'Stocks', icon: TrendingUp },
             { id: 'BOND', label: 'Bonds', icon: ShieldCheck }
@@ -581,7 +586,7 @@ export const AssetManagement = () => {
               exit={{ opacity: 0, height: 0 }}
               className="mb-8 overflow-visible"
             >
-              <div className="bg-gray-50/50 p-6 sm:p-8 rounded-[28px] border border-gray-100 w-full overflow-visible">
+              <div className="bg-gray-50/50 p-6 sm:p-8 rounded-2xl border border-gray-100 w-full overflow-visible">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-serif font-bold text-[#171717]">
                     Add New {activeTab === 'STOCK' ? 'Stock' : 'Bond'}
@@ -859,6 +864,21 @@ export const AssetManagement = () => {
                 <Pencil size={16} className="text-gray-400 shrink-0" />
                 <span>Edit Asset</span>
               </button>
+              {activeStock.asset_type === 'BOND' && (
+                <button type="button"
+                  onClick={async () => {
+                    if (confirm("Reset payout tracking? This will treat today as the new interest start date for historical profit calculation.")) {
+                      const today = new Date().toISOString().split('T')[0];
+                      await supabase.from('stocks').update({ purchase_date: today }).eq('id', activeStock.id);
+                      fetchStocks();
+                      setOpenMenuId(null);
+                    }
+                  }}
+                  className="w-full px-4 py-2.5 flex items-center gap-3 text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition-colors text-left">
+                  <Timer size={16} className="text-emerald-400 shrink-0" />
+                  <span>Reset Payouts</span>
+                </button>
+              )}
               <div className="h-px bg-gray-100 mx-3 my-1" />
               <button type="button"
                 onClick={() => { setDeleteModal({ isOpen: true, id: activeStock.id }); setOpenMenuId(null) }}
