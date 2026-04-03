@@ -6,41 +6,56 @@ import { AssetManagement } from "./AssetManagement"
 import { supabase } from "../../lib/supabase"
 import { LogOut } from "lucide-react"
 
-interface PortfolioCardProps {
-  title: string
-  numericValue: number
-  illustration: string
-  profitPercent?: string
-  delay?: number
-}
 
-const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0 }: PortfolioCardProps) => {
-  const isNegative = numericValue < 0
+
+
+const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0, customDisplay = false, stats, className = "" }: any) => {
+  const isNegative = !customDisplay && numericValue < 0
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className="bg-white p-4 sm:p-6 rounded-[20px] border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4"
+      className={`bg-white p-5 sm:p-6 rounded-[24px] border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 ${className}`}
     >
-      <div className="flex flex-col space-y-1.5 flex-1">
-        <h3 className="font-serif text-[16px] text-gray-500 leading-tight">
+      <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
+        <h3 className="font-serif text-[16px] text-gray-500 leading-tight truncate">
           {title}
         </h3>
-        <div className="flex items-baseline gap-2">
-          <div className={`flex items-baseline font-display font-bold text-[28px] tracking-tight ${isNegative ? 'text-rose-500' : 'text-[#171717]'}`}>
-            <span>{isNegative ? '-₹' : '₹'}</span>
-            <NumberTicker value={Math.abs(numericValue)} />
+        {customDisplay ? (
+          <div className="flex flex-col gap-3 mt-1">
+              <div className="flex flex-row items-center gap-6">
+                <div className="flex flex-row items-baseline gap-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stocks</span>
+                  <span className="text-2xl font-display font-bold text-blue-600">{stats?.stockWeight.toFixed(0)}%</span>
+                </div>
+                <div className="h-6 w-[1px] bg-gray-100" />
+                <div className="flex flex-row items-baseline gap-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Bonds</span>
+                  <span className="text-2xl font-display font-bold text-green-600">{stats?.bondWeight.toFixed(0)}%</span>
+                </div>
+              </div>
+            <div className="w-full h-2 bg-gray-50 rounded-full overflow-hidden flex">
+              <div className="h-full bg-blue-600" style={{ width: `${stats?.stockWeight}%` }} />
+              <div className="h-full bg-green-500" style={{ width: `${stats?.bondWeight}%` }} />
+            </div>
           </div>
-          {profitPercent && (
-            <span className={`text-[11px] font-sans font-bold px-1.5 py-0.5 rounded-full ${isNegative ? 'text-rose-600 bg-rose-50' : 'text-green-600 bg-green-50'}`}>
-              {profitPercent}
-            </span>
-          )}
-        </div>
+        ) : (
+          <div className="flex flex-row items-baseline gap-2 mt-1">
+            <div className="flex items-baseline font-display font-bold text-[26px] sm:text-[30px] tracking-tight text-[#171717]">
+              <span className="text-[18px] sm:text-[22px] mr-1 font-bold">{isNegative ? '-₹' : '₹'}</span>
+              <NumberTicker value={Math.abs(numericValue)} />
+            </div>
+            {profitPercent && (
+              <span className={`text-[11px] font-display font-normal px-2 py-0.5 rounded-full ${isNegative ? 'text-rose-600 bg-rose-50' : 'text-green-600 bg-green-50'}`}>
+                {profitPercent}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
-      <div className="w-20 h-20 flex-shrink-0 flex items-center justify-center">
+      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0 flex items-center justify-center relative">
         <img
           src={illustration}
           alt={title}
@@ -83,7 +98,9 @@ export const PortfolioOverview = () => {
     profitPercent: 0,
     stockYield: 0,
     bondProfit: 0,
-    bondYield: 0
+    bondYield: 0,
+    stockWeight: 0,
+    bondWeight: 0
   })
 
   useEffect(() => {
@@ -129,6 +146,7 @@ export const PortfolioOverview = () => {
         let interestIncome = 0
         let bondProfitAccrued = 0
         let totalBondInvested = 0
+        let totalBondValue = 0 // Principal + Repayments
         const now = new Date()
 
         withPrices.forEach(s => {
@@ -164,7 +182,9 @@ export const PortfolioOverview = () => {
                 tempDate.setMonth(tempDate.getMonth() + 1)
               }
 
-              bondProfitAccrued += totalAtPurchase * (ytm / 100) * (monthsCounted / 12)
+              const accrued = totalAtPurchase * (ytm / 100) * (monthsCounted / 12)
+              bondProfitAccrued += accrued
+              totalBondValue += totalAtPurchase + accrued
             }
           }
         })
@@ -184,7 +204,9 @@ export const PortfolioOverview = () => {
           profitPercent: pPercent,
           stockYield: sYield,
           bondProfit: bondProfitAccrued,
-          bondYield: bYield
+          bondYield: bYield,
+          stockWeight: finalTotalValue > 0 ? (stockCurrent / finalTotalValue) * 100 : 0,
+          bondWeight: finalTotalValue > 0 ? (totalBondValue / finalTotalValue) * 100 : 0
         })
       } catch (err) { console.error('Error fetching stats:', err) }
     }
@@ -220,6 +242,13 @@ export const PortfolioOverview = () => {
       illustration: "/assets/Bonds.png",
       profitPercent: `${stats.bondYield.toFixed(1)}% Return`,
       delay: 0.4
+    },
+    {
+      title: "Asset Allocation",
+      numericValue: 0,
+      illustration: "/assets/asset allocation.png",
+      customDisplay: true,
+      delay: 0.5
     }
   ]
 
@@ -247,10 +276,20 @@ export const PortfolioOverview = () => {
         </button>
       </motion.div>
 
-      <div className="grid grid-cols-2 gap-3 mb-4 sm:mb-6">
-        {cards.map((card, idx) => (
-          <PortfolioCard key={idx} {...card} />
-        ))}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+        {cards.map((card, idx) => {
+          // If it's the last card (the 5th one), make it span the full width to fill the row
+          const isLastCard = idx === cards.length - 1;
+
+          return (
+            <PortfolioCard
+              key={idx}
+              {...card}
+              stats={stats}
+              className={isLastCard ? "lg:col-span-2" : ""}
+            />
+          );
+        })}
       </div>
 
       <motion.div
