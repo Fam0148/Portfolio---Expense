@@ -109,7 +109,8 @@ export const PortfolioOverview = () => {
     bondProfit: 0,
     bondYield: 0,
     stockWeight: 0,
-    bondWeight: 0
+    bondWeight: 0,
+    historicalData: [] as any[]
   })
 
   useEffect(() => {
@@ -206,6 +207,40 @@ export const PortfolioOverview = () => {
         const finalTotalValue = totalCurrent + bondProfitAccrued
         const pPercent = totalInvested > 0 ? ((finalTotalValue - totalInvested) / totalInvested) * 100 : 0
 
+        // --- Calculate Historical Data ---
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const currentYear = now.getFullYear();
+        
+        const historicalData = months.map((monthLabel, mIdx) => {
+          let monthValue = 0;
+          const monthEndDate = new Date(currentYear, mIdx + 1, 0); // Last day of month
+
+          withPrices.forEach(s => {
+            const pDate = new Date(s.purchase_date);
+            if (pDate <= monthEndDate) {
+              const totalAtPurchase = s.purchase_price * s.quantity;
+              monthValue += totalAtPurchase;
+
+              // Accrue bond interest up to this specific month
+              if (s.asset_type_c === 'BOND' && s.ytm) {
+                const ytm = parseFloat(s.ytm);
+                const [buyYear, buyMonth, buyDay] = s.purchase_date.split('-').map(Number);
+                let firstRepaymentDate = new Date(buyYear, buyMonth - 1, 10);
+                if (buyDay >= 10) firstRepaymentDate.setMonth(firstRepaymentDate.getMonth() + 1);
+
+                let monthsPassedInPoint = 0;
+                let tempDate = new Date(firstRepaymentDate);
+                while (tempDate <= monthEndDate && tempDate <= now) {
+                  monthsPassedInPoint++;
+                  tempDate.setMonth(tempDate.getMonth() + 1);
+                }
+                monthValue += totalAtPurchase * (ytm / 100) * (monthsPassedInPoint / 12);
+              }
+            }
+          });
+          return { label: monthLabel, value: Math.round(monthValue), isFuture: mIdx > now.getMonth() };
+        }).filter(d => !d.isFuture);
+
         setStats({
           totalValue: finalTotalValue,
           totalProfit: stockProfitValue,
@@ -215,7 +250,8 @@ export const PortfolioOverview = () => {
           bondProfit: bondProfitAccrued,
           bondYield: bYield,
           stockWeight: finalTotalValue > 0 ? (stockCurrent / finalTotalValue) * 100 : 0,
-          bondWeight: finalTotalValue > 0 ? (totalBondValue / finalTotalValue) * 100 : 0
+          bondWeight: finalTotalValue > 0 ? (totalBondValue / finalTotalValue) * 100 : 0,
+          historicalData
         })
       } catch (err) { console.error('Error fetching stats:', err) }
     }
@@ -306,7 +342,11 @@ export const PortfolioOverview = () => {
         transition={{ duration: 0.5, delay: 0.5 }}
         className="mb-8"
       >
-        <PortfolioChart currentValue={stats.totalValue} profitPercent={stats.profitPercent} />
+        <PortfolioChart 
+          currentValue={stats.totalValue} 
+          profitPercent={stats.profitPercent} 
+          data={stats.historicalData}
+        />
       </motion.div>
 
       <motion.div

@@ -10,18 +10,18 @@ import {
 } from 'recharts'
 
 const yearData = [
-  { label: 'Jan', value: 92000 },
-  { label: 'Feb', value: 98500 },
-  { label: 'Mar', value: 104000 },
-  { label: 'Apr', value: 99000 },
-  { label: 'May', value: 108000 },
-  { label: 'Jun', value: 115000 },
-  { label: 'Jul', value: 122000 },
-  { label: 'Aug', value: 118000 },
-  { label: 'Sep', value: 126000 },
-  { label: 'Oct', value: 135000 },
-  { label: 'Nov', value: 139000 },
-  { label: 'Dec', value: 142500 }
+  { label: 'Jan', value: 0 },
+  { label: 'Feb', value: 15000 },
+  { label: 'Mar', value: 35000 },
+  { label: 'Apr', value: 42000 },
+  { label: 'May', value: 45000 },
+  { label: 'Jun', value: 52000 },
+  { label: 'Jul', value: 58000 },
+  { label: 'Aug', value: 55000 },
+  { label: 'Sep', value: 62000 },
+  { label: 'Oct', value: 68000 },
+  { label: 'Nov', value: 72000 },
+  { label: 'Dec', value: 75000 }
 ]
 
 const sixMonthData = [
@@ -54,26 +54,53 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null
 }
 
-export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5 }: { currentValue?: number; profitPercent?: number }) => {
+const CustomDot = (props: any) => {
+  const { cx, cy, payload, index, data } = props;
+  const isLast = index === data.length - 1;
+
+  if (isLast) {
+    return (
+      <g key={`dot-${index}`}>
+        <circle cx={cx} cy={cy} r={8} fill="#10b981" fillOpacity={0.2} className="animate-pulse" />
+        <circle cx={cx} cy={cy} r={4} fill="#10b981" stroke="#fff" strokeWidth={2} />
+      </g>
+    );
+  }
+
+  return null;
+};
+
+export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, data }: { currentValue?: number; profitPercent?: number; data?: any[] }) => {
   const [timeframe, setTimeframe] = useState('1Y')
 
-  const getChartData = () => {
+  const chartData = (() => {
+    // If we have real DB historical data and timeframe is 1Y, use it!
+    if (timeframe === '1Y' && data && data.length > 0) {
+      return data;
+    }
+
     let baseData = timeframe === '6M' ? sixMonthData : timeframe === '30D' ? thirtyDayData : yearData
-    
-    // Scale the data so the last point matches the real current value
     const lastBaseValue = baseData[baseData.length - 1].value
     const scale = currentValue / lastBaseValue
     
     return baseData.map((d, idx) => ({
       ...d,
-      // If it's the last point, use the exact real value. 
-      // For others, scale them to maintain the trend shape leading to reality.
       value: idx === baseData.length - 1 ? currentValue : Math.round(d.value * scale)
     }))
-  }
+  })()
 
   return (
     <div className="bg-white p-4 sm:p-6 rounded-[20px] border border-gray-100/80 shadow-sm flex flex-col space-y-6">
+      <style>{`
+        @keyframes pulse-ring {
+          0% { transform: scale(0.33); opacity: 1; }
+          80%, 100% { opacity: 0; }
+        }
+        .animate-pulse {
+          animation: pulse-ring 2s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+          transform-origin: center;
+        }
+      `}</style>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
         <div className="flex items-center gap-3">
           <div className="relative flex h-2 w-2">
@@ -101,7 +128,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5 }: 
       <div className="h-[280px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
-            data={getChartData()}
+            data={chartData}
             margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             key={timeframe} // Force re-render for animation
           >
@@ -144,6 +171,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5 }: 
               fillOpacity={1}
               fill="url(#colorValue)"
               animationDuration={1500}
+              dot={<CustomDot data={chartData} />}
               activeDot={{ r: 5, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
             />
           </AreaChart>
