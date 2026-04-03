@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "../../lib/supabase"
 import {
   Pencil, Trash2, History, Plus, X, Search, Calendar,
-  BadgeIndianRupee, Hash, MoreVertical, Layers, ShieldCheck,
+  BadgeIndianRupee, Hash, MoreVertical, ShieldCheck,
   TrendingUp, Timer, Percent
 } from "lucide-react"
 
@@ -16,7 +16,7 @@ interface Stock {
   purchase_price: number
   quantity: number
   current_price?: number
-  asset_type?: 'STOCK' | 'BOND' | 'MF'
+  asset_type?: 'STOCK' | 'BOND'
   tenure?: string
   ytm?: string
 }
@@ -153,7 +153,7 @@ export const AssetManagement = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
   const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
   const menuRef = useRef<HTMLDivElement | null>(null)
-  const [activeTab, setActiveTab] = useState<'STOCK' | 'BOND' | 'MF'>('STOCK')
+  const [activeTab, setActiveTab] = useState<'STOCK' | 'BOND'>('STOCK')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
 
@@ -429,7 +429,7 @@ export const AssetManagement = () => {
             className="flex items-center justify-center gap-2 bg-[#171717] text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-black hover:scale-105 active:scale-95 shadow-sm"
           >
             {isAdding && !editingId ? <X size={18} /> : <Plus size={18} />}
-            {isAdding && !editingId ? "Cancel" : `Add New ${activeTab === 'STOCK' ? 'Stock' : activeTab === 'MF' ? 'Mutual Fund' : 'Bond'}`}
+            {isAdding && !editingId ? "Cancel" : `Add New ${activeTab === 'STOCK' ? 'Stock' : 'Bond'}`}
           </button>
         </div>
 
@@ -437,7 +437,6 @@ export const AssetManagement = () => {
         <div className="flex items-center gap-2 p-1.5 bg-gray-50/80 rounded-[18px] w-fit mb-8 border border-gray-100">
           {([
             { id: 'STOCK', label: 'Stocks', icon: TrendingUp },
-            { id: 'MF', label: 'Mutual Funds', icon: Layers },
             { id: 'BOND', label: 'Bonds', icon: ShieldCheck }
           ] as const).map((tab) => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isAdding && !editingId) handleCancel() }}
@@ -528,7 +527,7 @@ export const AssetManagement = () => {
                   ) : (
                     <div className="space-y-1">
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {activeTab === 'MF' ? 'Units' : 'Quantity'}
+                        Quantity
                       </label>
                       <div className="relative">
                         <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
@@ -566,7 +565,7 @@ export const AssetManagement = () => {
                 className="relative bg-white p-6 sm:p-8 rounded-[28px] border border-gray-100 shadow-2xl max-w-4xl w-full overflow-visible z-10">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-serif font-bold text-[#171717]">
-                    Add New {activeTab === 'STOCK' ? 'Stock' : activeTab === 'MF' ? 'Mutual Fund' : 'Bond'}
+                    Add New {activeTab === 'STOCK' ? 'Stock' : 'Bond'}
                   </h3>
                   <button onClick={handleCancel} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X size={20} /></button>
                 </div>
@@ -574,11 +573,11 @@ export const AssetManagement = () => {
                   {/* Symbol */}
                   <div className="space-y-1.5 text-left stock-search-group">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
-                      {activeTab === 'STOCK' ? 'Symbol' : activeTab === 'MF' ? 'Fund Name' : 'Bond Name'}
+                      {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
                     </label>
                     <div className="relative group/search">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/search:text-[#171717] transition-colors" size={16} />
-                      <input type="text" placeholder={activeTab === 'STOCK' ? "e.g. RELIANCE" : "e.g. Quant MF"}
+                      <input type="text" placeholder={activeTab === 'STOCK' ? "e.g. RELIANCE" : "e.g. HDFC Bond"}
                         autoComplete="off"
                         className="w-full pl-11 pr-4 py-3 bg-gray-50 border-none rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all placeholder:text-gray-300"
                         value={form.symbol}
@@ -619,7 +618,7 @@ export const AssetManagement = () => {
                   {/* Price */}
                   <div className="space-y-1.5 text-left">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
-                      {activeTab === 'BOND' ? 'Total Investment (₹)' : activeTab === 'MF' ? 'Unit NAV (₹)' : 'Price (₹)'}
+                      {activeTab === 'BOND' ? 'Total Investment (₹)' : 'Price (₹)'}
                     </label>
                     <div className="relative group/price">
                       <BadgeIndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/price:text-[#171717] transition-colors" size={16} />
@@ -653,7 +652,7 @@ export const AssetManagement = () => {
                   ) : (
                     <div className="space-y-1.5 text-left">
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
-                        {activeTab === 'MF' ? 'Units' : 'Total Quantity'}
+                        Total Quantity
                       </label>
                       <div className="relative group/qty">
                         <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/qty:text-[#171717] transition-colors" size={16} />
@@ -671,7 +670,7 @@ export const AssetManagement = () => {
                     </button>
                     <button type="submit"
                       className="px-8 py-2.5 rounded-xl bg-[#171717] text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
-                      Add {activeTab === 'BOND' ? 'Bond' : activeTab === 'MF' ? 'Mutual Fund' : 'Stock'}
+                      Add {activeTab === 'BOND' ? 'Bond' : 'Stock'}
                     </button>
                   </div>
                 </form>
@@ -686,7 +685,7 @@ export const AssetManagement = () => {
             <thead>
               <tr className="border-b border-gray-100">
                 <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                  {activeTab === 'STOCK' ? 'Symbol' : activeTab === 'MF' ? 'Fund Name' : 'Bond Name'}
+                  {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
                 </th>
                 {activeTab === 'BOND' && (
                   <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Tenure</th>
@@ -713,7 +712,7 @@ export const AssetManagement = () => {
                 <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm italic">Loading your assets...</td></tr>
               ) : visibleStocks.length === 0 ? (
                 <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm italic">
-                  No {activeTab === 'STOCK' ? 'stocks' : activeTab === 'MF' ? 'mutual funds' : 'bonds'} found. Add one above.
+                  No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
                 </td></tr>
               ) : visibleStocks.map((stock) => {
                 const totalValue = stock.quantity * (stock.current_price || stock.purchase_price)
@@ -744,7 +743,7 @@ export const AssetManagement = () => {
                     <td className="py-5 px-4 font-bold text-[#171717] text-sm whitespace-nowrap">
                       {activeTab === 'BOND'
                         ? `₹${stock.purchase_price.toLocaleString('en-IN')}`
-                        : <>{stock.quantity} <span className="text-gray-400 font-medium text-xs ml-1">{activeTab === 'MF' ? 'Units' : 'Shares'}</span></>
+                        : <>{stock.quantity} <span className="text-gray-400 font-medium text-xs ml-1">Shares</span></>
                       }
                     </td>
                     {/* Avg Price / YTM */}
