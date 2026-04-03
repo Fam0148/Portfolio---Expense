@@ -331,14 +331,14 @@ export const PortfolioOverview = () => {
         <div className="flex items-center gap-3 sm:mb-1">
           <button
             onClick={() => { setTimeout(() => { window.print(); }, 500); }}
-            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-all font-bold text-sm active:scale-95 group shadow-md shadow-blue-100"
+            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg bg-[#111827] text-white hover:bg-black transition-all font-bold text-sm active:scale-95 group shadow-sm border border-[#111827]"
           >
-            <FileText size={16} className="text-blue-100 group-hover:text-white transition-colors" />
+            <FileText size={16} className="text-gray-300 group-hover:text-white transition-colors" />
             Export Statement
           </button>
           <button
             onClick={handleLogOut}
-            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-sm active:scale-95 group shadow-sm"
+            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg bg-gray-50 border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-sm active:scale-95 group shadow-sm"
           >
             <LogOut size={16} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
             Sign Out
