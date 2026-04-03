@@ -690,9 +690,9 @@ export const AssetManagement = () => {
                     </div>
                   )}
                   {/* Submit */}
-                  <div className="lg:col-span-4 mt-2 flex justify-end gap-3">
+                  <div className={`${activeTab === 'BOND' ? 'lg:col-span-1' : 'lg:col-span-4'} flex items-end justify-end`}>
                     <button type="submit"
-                      className="px-8 py-2.5 rounded-xl bg-[#171717] text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
+                      className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-[#171717] text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
                       Add {activeTab === 'BOND' ? 'Bond' : 'Stock'}
                     </button>
                   </div>
