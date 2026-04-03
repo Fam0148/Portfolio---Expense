@@ -55,7 +55,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 }
 
 const CustomDot = (props: any) => {
-  const { cx, cy, payload, index, data } = props;
+  const { cx, cy, index, data } = props;
   const isLast = index === data.length - 1;
 
   if (isLast) {
