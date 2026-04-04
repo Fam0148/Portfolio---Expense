@@ -4,6 +4,7 @@ import { OnboardingChoice } from './components/onboarding/OnboardingChoice'
 import { supabase } from './lib/supabase'
 import type { Session } from '@supabase/supabase-js'
 import { PortfolioOverview } from './components/portfolio/PortfolioOverview'
+import { ExpenseDashboard } from './components/expense/ExpenseDashboard'
 
 function App() {
   const [session, setSession] = useState<Session | null>(null)
@@ -64,7 +65,7 @@ function App() {
   if (session && isLogin) {
     if (!userChoice) {
       return (
-        <OnboardingChoice 
+        <OnboardingChoice
           onSelect={setUserChoice}
         />
       )
@@ -73,12 +74,20 @@ function App() {
     if (userChoice === 'portfolio') {
       return (
         <div className="min-h-screen bg-[#F8F8F8]">
-          <PortfolioOverview />
+          <PortfolioOverview onSwitch={setUserChoice} />
         </div>
       )
     }
 
-    // This is where the actual Portfolio or Expense dashboards will go
+    if (userChoice === 'expense') {
+      return (
+        <div className="min-h-screen bg-[#F8F8F8]">
+          <ExpenseDashboard onSwitch={setUserChoice} />
+        </div>
+      )
+    }
+
+    // Default Profile page
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center space-y-6">
         <h1 className="text-4xl font-bold text-[#171717]">
@@ -87,13 +96,13 @@ function App() {
         <p className="text-gray-500 max-w-md">
           Implementation of the full {userChoice} module is coming next. You are securely logged in as {session.user.email}
         </p>
-        <button 
+        <button
           onClick={() => setUserChoice(null)}
           className="text-sm font-bold text-gray-400 hover:text-[#171717] transition-colors underline"
         >
           Back to Selection
         </button>
-        <button 
+        <button
           onClick={handleLogout}
           className="px-6 py-2 bg-[#171717] text-white rounded-lg font-bold hover:bg-[#262626] transition-all"
         >
@@ -105,8 +114,8 @@ function App() {
 
   return (
     <div className="min-h-screen relative">
-      <AuthPage 
-        mode={isLogin ? 'login' : 'signup'} 
+      <AuthPage
+        mode={isLogin ? 'login' : 'signup'}
         onToggle={() => setIsLogin(!isLogin)}
         verificationSuccess={verificationSuccess}
       />

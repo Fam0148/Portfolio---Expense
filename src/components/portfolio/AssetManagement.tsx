@@ -311,9 +311,17 @@ export const AssetManagement = () => {
           { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } })
         if (!resp.ok) return
         const data = await resp.json()
-        if (data?.results?.length > 0) setSuggestions(data.results.slice(0, 8))
+        if (data?.results?.length > 0) {
+          // Filter for NSE only: check exchange field or .NS suffix in symbol
+          const nseOnly = data.results.filter((s: any) => 
+            s.exchange === 'NSE' || 
+            (s.symbol && s.symbol.endsWith('.NS')) || 
+            (s.fullExchangeName && s.fullExchangeName.includes('NSE'))
+          )
+          setSuggestions(nseOnly.slice(0, 8))
+        }
       } catch { /* keep local results */ }
-    }, 400)
+    }, 300)
     return () => clearTimeout(timer)
   }, [form.symbol, showSuggestions, activeTab])
 
