@@ -24,7 +24,14 @@ import {
   PencilLine,
   Check,
   Sparkle,
-  CalendarBlank
+  CalendarBlank,
+  House,
+  Lightning,
+  AirplaneTilt,
+  Heartbeat,
+  Briefcase,
+  Books,
+  Gift
 } from "@phosphor-icons/react"
 
 const NumberTicker = ({ value }: { value: number }) => {
@@ -132,8 +139,13 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
     return d.getMonth() === selectedMonth && d.getFullYear() === selectedYear
   })
 
+  const isIncomeCategory = (cat: string) => {
+    const c = cat.toLowerCase()
+    return c === 'income/return' || c.includes('hustle') || c.includes('salary')
+  }
+
   const totalVariable = monthTxs
-    .filter(tx => tx.category !== 'Income/Return' && tx.category !== 'Investment')
+    .filter(tx => !isIncomeCategory(tx.category) && tx.category !== 'Investment')
     .reduce((sum, tx) => sum + Number(tx.amount), 0)
 
   const totalInvestments = monthTxs
@@ -141,7 +153,7 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
     .reduce((sum, tx) => sum + Number(tx.amount), 0)
 
   const totalIncomeReturns = monthTxs
-    .filter(tx => tx.category === 'Income/Return')
+    .filter(tx => isIncomeCategory(tx.category))
     .reduce((sum, tx) => sum + Number(tx.amount), 0)
 
   const availableBudget = (totalIncome + totalIncomeReturns) - (totalFixed + totalVariable + totalInvestments)
@@ -730,8 +742,9 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
                   autoComplete="off"
                   placeholder="Category..."
                   value={txForm.category} 
+                  disabled={!txForm.name.trim()}
                   onChange={(e) => setTxForm({ ...txForm, category: e.target.value })}
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-gray-100 transition-all" 
+                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-gray-100 transition-all disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed" 
                 />
               </div>
               <button
@@ -751,27 +764,38 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
             <div className="mt-4">
               {monthTxs
                 .filter(tx => {
-                  if (activeTab === 'Expenses') return tx.category !== 'Income/Return'
-                  if (activeTab === 'Income') return tx.category === 'Income/Return'
+                  if (activeTab === 'Expenses') return !isIncomeCategory(tx.category)
+                  if (activeTab === 'Income') return isIncomeCategory(tx.category)
                   return true
                 })
                 .map((tx) => {
-                  const isIncome = tx.category === 'Income/Return'
+                  const isIncome = isIncomeCategory(tx.category)
                   const dateObj = new Date(tx.created_at)
 
-                  const iconMap: any = {
-                    "Food": <Hamburger size={20} weight="bold" className="text-[#171717]" />,
-                    "Commute": <Car size={20} weight="bold" className="text-[#171717]" />,
-                    "Entertainment": <FilmStrip size={20} weight="bold" className="text-[#171717]" />,
-                    "Clothing": <TShirt size={20} weight="bold" className="text-[#171717]" />,
-                    "Gadgets": <Laptop size={20} weight="bold" className="text-[#171717]" />,
-                    "Charges": <CreditCard size={20} weight="bold" className="text-[#171717]" />,
-                    "Cash Withdrawal": <Bank size={20} weight="bold" className="text-[#171717]" />,
-                    "Activity": <DeviceMobile size={20} weight="bold" className="text-[#171717]" />,
-                    "Unexpected": <Warning size={20} weight="bold" className="text-[#171717]" />,
-                    "Investment": <ChartLineUp size={20} weight="bold" className="text-[#171717]" />,
-                    "Income/Return": <Coins size={20} weight="bold" className="text-[#171717]" />,
-                    "Variable Expense": <Wallet size={20} weight="bold" className="text-[#171717]" />
+                  const getCategoryIcon = (cat: string) => {
+                    const c = cat.toLowerCase()
+                    const props = { size: 20, weight: "bold" as const, className: "text-[#171717]" }
+                    
+                    if (c.includes("food") || c.includes("eat") || c.includes("restaurant")) return <Hamburger {...props} />
+                    if (c.includes("commute") || c.includes("travel") || c.includes("car") || c.includes("uber") || c.includes("transport")) return <Car {...props} />
+                    if (c.includes("entertainment") || c.includes("movie") || c.includes("film") || c.includes("show")) return <FilmStrip {...props} />
+                    if (c.includes("clothing") || c.includes("shopping") || c.includes("dress") || c.includes("fashion")) return <TShirt {...props} />
+                    if (c.includes("gadget") || c.includes("tech") || c.includes("laptop") || c.includes("phone")) return <Laptop {...props} />
+                    if (c.includes("charge") || c.includes("fee") || c.includes("card") || c.includes("bank")) return <CreditCard {...props} />
+                    if (c.includes("cash") || c.includes("atm")) return <Bank {...props} />
+                    if (c.includes("activity") || c.includes("mobile") || c.includes("app")) return <DeviceMobile {...props} />
+                    if (c.includes("unexpected") || c.includes("emergency") || c.includes("warning")) return <Warning {...props} />
+                    if (c.includes("investment") || c.includes("stock") || c.includes("market") || c.includes("profit")) return <ChartLineUp {...props} />
+                    if (c.includes("income") || c.includes("salary") || c.includes("bonus") || c.includes("return")) return <Coins {...props} />
+                    if (c.includes("house") || c.includes("rent") || c.includes("home") || c.includes("flat")) return <House {...props} />
+                    if (c.includes("bill") || c.includes("utility") || c.includes("electric") || c.includes("water") || c.includes("lightning")) return <Lightning {...props} />
+                    if (c.includes("health") || c.includes("fitness") || c.includes("gym") || c.includes("hospital") || c.includes("heart")) return <Heartbeat {...props} />
+                    if (c.includes("work") || c.includes("job") || c.includes("briefcase")) return <Briefcase {...props} />
+                    if (c.includes("education") || c.includes("book") || c.includes("school") || c.includes("college")) return <Books {...props} />
+                    if (c.includes("gift") || c.includes("present") || c.includes("donation")) return <Gift {...props} />
+                    if (c.includes("airplane") || c.includes("flight") || c.includes("trip")) return <AirplaneTilt {...props} />
+                    
+                    return <Wallet {...props} />
                   }
 
                   return (
@@ -785,7 +809,7 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
                       <div className="flex items-center gap-4 w-full sm:w-1/3 min-w-0">
                         {/* Compact Icon Box */}
                         <div className="w-10 h-10 rounded-xl border border-gray-100 flex items-center justify-center text-lg shrink-0 bg-gray-50/30">
-                          {iconMap[tx.category] || <Wallet size={20} weight="bold" className="text-[#171717]" />}
+                          {getCategoryIcon(tx.category)}
                         </div>
                         
                         <div className="flex flex-col min-w-0">
@@ -800,16 +824,16 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
 
                       {/* Centered Status (As seen in 2nd image) */}
                       <div className="hidden sm:flex items-center justify-center flex-1">
-                        <div className="flex items-center gap-2 px-3 py-1 bg-gray-50/50 rounded-full border border-gray-100/50">
-                          <div className={`w-1.5 h-1.5 rounded-full ${isIncome ? 'bg-emerald-500' : 'bg-emerald-500'}`} />
+                        <div className="flex items-center gap-2 px-3 py-1 bg-gray-100/70 rounded-lg border border-gray-200/50 shadow-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                           <span className="text-[11px] font-bold text-gray-600 uppercase tracking-wider">
-                            {isIncome ? 'Completed' : 'Completed'}
+                            Completed
                           </span>
                         </div>
                       </div>
 
                       <div className="flex flex-col items-end w-full sm:w-1/3 mt-3 sm:mt-0">
-                        <span className="font-serif font-bold text-[18px] text-[#171717] tracking-tight">
+                        <span className="font-display font-bold text-[18px] text-[#171717] tracking-tight">
                           {isIncome ? '+' : '-'}₹{Number(tx.amount).toLocaleString('en-IN')}
                         </span>
                         <span className="text-[11px] font-bold text-gray-300 uppercase tracking-widest">
