@@ -14,7 +14,7 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={`bg-white p-5 sm:p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 group transition-all duration-300 ${className}`}
+      className={`bg-white p-5 sm:p-6 rounded-lg border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 group transition-all duration-300 ${className}`}
     >
       <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
         <h3 className="font-serif text-[16px] text-gray-500 leading-tight truncate">
@@ -295,14 +295,14 @@ export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 
         <div className="flex items-center gap-2 self-center sm:self-auto">
           <button
             onClick={() => { setTimeout(() => { window.print(); }, 500); }}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
           >
             <FileText size={14} className="text-gray-300 group-hover:text-white transition-colors" />
             Statement
           </button>
           <button
             onClick={handleLogOut}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
           >
             <LogOut size={14} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
             Sign Out

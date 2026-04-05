@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { AuthPage } from './components/auth/AuthPage'
-import { OnboardingChoice } from './components/onboarding/OnboardingChoice'
+import { OnboardingSlideshow } from './components/onboarding/OnboardingSlideshow'
 import { supabase } from './lib/supabase'
 import type { Session } from '@supabase/supabase-js'
 import { PortfolioOverview } from './components/portfolio/PortfolioOverview'
@@ -65,8 +65,8 @@ function App() {
   if (session && isLogin) {
     if (!userChoice) {
       return (
-        <OnboardingChoice
-          onSelect={setUserChoice}
+        <OnboardingSlideshow
+          onComplete={setUserChoice}
         />
       )
     }
@@ -104,7 +104,7 @@ function App() {
         </button>
         <button
           onClick={handleLogout}
-          className="px-6 py-2 bg-[#171717] text-white rounded-lg font-bold hover:bg-[#262626] transition-all"
+          className="px-6 py-2 bg-[#171717] text-white rounded-md font-bold hover:bg-[#262626] transition-all"
         >
           Sign Out
         </button>

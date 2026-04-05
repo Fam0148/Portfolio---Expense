@@ -36,19 +36,19 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: {
           onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
         <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="relative bg-white p-6 sm:p-8 rounded-2xl border border-gray-100 shadow-2xl max-w-sm w-full text-center z-10">
-          <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center mx-auto mb-5 text-red-500">
+          className="relative bg-white p-6 sm:p-8 rounded-xl border border-gray-100 shadow-2xl max-w-sm w-full text-center z-10">
+          <div className="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center mx-auto mb-5 text-red-500">
             <Trash2 size={28} />
           </div>
           <h3 className="text-xl font-serif font-bold text-[#171717] mb-2">{title}</h3>
           <p className="text-sm text-gray-500 mb-8 leading-relaxed">{message}</p>
           <div className="flex flex-col sm:flex-row gap-3">
             <button onClick={onClose}
-              className="flex-1 px-6 py-2.5 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+              className="flex-1 px-6 py-2.5 rounded-md border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
               Cancel
             </button>
             <button onClick={() => { onConfirm(); onClose() }}
-              className="flex-1 px-6 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-all shadow-md shadow-red-100 active:scale-95">
+              className="flex-1 px-6 py-2.5 rounded-md bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-all shadow-md shadow-red-100 active:scale-95">
               Delete Asset
             </button>
           </div>
@@ -96,10 +96,10 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
             onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
           <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative bg-white p-6 sm:p-8 rounded-2xl border border-gray-100 shadow-2xl max-w-sm w-full z-10">
+            className="relative bg-white p-6 sm:p-8 rounded-xl border border-gray-100 shadow-2xl max-w-sm w-full z-10">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-serif font-bold text-[#171717]">Asset History</h3>
-              <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-lg text-gray-400"><X size={20} /></button>
+              <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-md text-gray-400"><X size={20} /></button>
             </div>
             <div className="max-h-[40vh] overflow-y-auto mb-8 pr-2">
               <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-gray-100">
@@ -127,7 +127,7 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
                 ))}
               </div>
             </div>
-            <button onClick={onClose} className="w-full px-6 py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+            <button onClick={onClose} className="w-full px-6 py-2.5 rounded-md bg-gray-50 border border-gray-100 text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
               Close History
             </button>
           </motion.div>
@@ -441,7 +441,7 @@ export const AssetManagement = () => {
   })
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm text-left">
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm text-left">
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, id: "" })}
@@ -465,13 +465,13 @@ export const AssetManagement = () => {
         </div>
 
         {/* ── Tab Switcher ── */}
-        <div className="flex items-center gap-2 p-1.5 bg-gray-50/80 rounded-xl w-fit mb-8 border border-gray-100">
+        <div className="flex items-center gap-2 p-1.5 bg-gray-50/80 rounded-md w-fit mb-8 border border-gray-100">
           {([
             { id: 'STOCK', label: 'Stocks', icon: TrendingUp },
             { id: 'BOND', label: 'Bonds', icon: ShieldCheck }
           ] as const).map((tab) => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isAdding && !editingId) handleCancel() }}
-              className={`flex items-center gap-2.5 px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === tab.id
+              className={`flex items-center gap-2.5 px-4 py-2 rounded-md text-xs font-bold transition-all ${activeTab === tab.id
                 ? 'bg-white text-[#171717] shadow-sm text-[13px] border border-gray-100'
                 : 'text-gray-400 hover:text-gray-600'
                 }`}>
@@ -490,7 +490,7 @@ export const AssetManagement = () => {
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-blue-50/60 border border-blue-100 rounded-2xl p-5">
+              <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-5 bg-blue-500 rounded-full" />
@@ -499,7 +499,7 @@ export const AssetManagement = () => {
                     </span>
                   </div>
                   <button type="button" onClick={handleCancel}
-                    className="p-1.5 hover:bg-blue-100 rounded-lg text-gray-400 transition-colors">
+                    className="p-1.5 hover:bg-blue-100 rounded-md text-gray-400 transition-colors">
                     <X size={16} />
                   </button>
                 </div>
@@ -507,7 +507,7 @@ export const AssetManagement = () => {
                   {/* Symbol — read-only when editing */}
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Symbol</label>
-                    <div className="px-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-bold text-[#171717]">
+                    <div className="px-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm font-bold text-[#171717]">
                       {form.symbol}
                     </div>
                   </div>
@@ -517,7 +517,7 @@ export const AssetManagement = () => {
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                       <input type="date"
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-300 transition-all"
+                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
                         value={form.purchase_date} onChange={e => setForm({ ...form, purchase_date: e.target.value })} />
                     </div>
                   </div>
@@ -529,7 +529,7 @@ export const AssetManagement = () => {
                     <div className="relative">
                       <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                       <input type="number" step="0.01" placeholder="0.00"
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-300 transition-all"
+                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
                         value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
                     </div>
                   </div>
@@ -541,7 +541,7 @@ export const AssetManagement = () => {
                         <div className="relative">
                           <Timer className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                           <input type="text" placeholder="e.g. 12 Months"
-                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-300 transition-all"
+                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
                             value={form.tenure} onChange={e => setForm({ ...form, tenure: e.target.value })} />
                         </div>
                       </div>
@@ -550,7 +550,7 @@ export const AssetManagement = () => {
                         <div className="relative">
                           <Percent className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                           <input type="text" placeholder="e.g. 10.25"
-                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-300 transition-all"
+                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
                             value={form.ytm} onChange={e => setForm({ ...form, ytm: e.target.value })} />
                         </div>
                       </div>
@@ -563,7 +563,7 @@ export const AssetManagement = () => {
                       <div className="relative">
                         <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                         <input type="number" placeholder="0"
-                          className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-300 transition-all"
+                          className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
                           value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} />
                       </div>
                     </div>
@@ -571,11 +571,11 @@ export const AssetManagement = () => {
                   {/* Actions */}
                   <div className="col-span-2 md:col-span-4 flex justify-end gap-2 pt-1">
                     <button type="button" onClick={handleCancel}
-                      className="px-5 py-2 rounded-xl text-sm font-bold text-gray-400 hover:bg-white transition-all">
+                      className="px-5 py-2 rounded-md text-sm font-bold text-gray-400 hover:bg-white transition-all">
                       Cancel
                     </button>
                     <button type="submit"
-                      className="px-6 py-2 rounded-xl bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95">
+                      className="px-6 py-2 rounded-md bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95">
                       Save Changes
                     </button>
                   </div>
@@ -594,7 +594,7 @@ export const AssetManagement = () => {
               exit={{ opacity: 0, height: 0 }}
               className="mb-8 overflow-visible"
             >
-              <div className="bg-gray-50/50 p-6 sm:p-8 rounded-2xl border border-gray-100 w-full overflow-visible">
+              <div className="bg-gray-50/50 p-6 sm:p-8 rounded-lg border border-gray-100 w-full overflow-visible">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-serif font-bold text-[#171717]">
                     Add New {activeTab === 'STOCK' ? 'Stock' : 'Bond'}
@@ -609,8 +609,8 @@ export const AssetManagement = () => {
                     <div className="relative group/search">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/search:text-[#171717] transition-colors" size={16} />
                       <input type="text" placeholder={activeTab === 'STOCK' ? "e.g. RELIANCE" : "e.g. HDFC Bond"}
-                        autoComplete="off"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                      autoComplete="off"
+                      className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                         value={form.symbol}
                         onChange={e => {
                           setForm({ ...form, symbol: e.target.value.toUpperCase() })
@@ -620,7 +620,7 @@ export const AssetManagement = () => {
                       />
                       {showSuggestions && suggestions.length > 0 && activeTab === 'STOCK' && (
                         <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                          className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-gray-100 rounded-2xl shadow-xl z-[120] overflow-hidden py-2">
+                          className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-gray-100 rounded-lg shadow-xl z-[120] overflow-hidden py-2">
                           {suggestions.map((quote: any) => (
                             <div key={quote.symbol}
                               className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors group"
@@ -629,7 +629,7 @@ export const AssetManagement = () => {
                                 <span className="font-bold text-sm text-[#171717] group-hover:text-blue-600">{quote.symbol}</span>
                                 <span className="text-[10px] text-gray-400 truncate max-w-[150px]">{quote.shortname || quote.longname}</span>
                               </div>
-                              <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md uppercase">{quote.exchange}</span>
+                              <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm uppercase">{quote.exchange}</span>
                             </div>
                           ))}
                         </motion.div>
@@ -642,7 +642,7 @@ export const AssetManagement = () => {
                     <div className="relative group/date">
                       <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/date:text-[#171717] transition-colors" size={16} />
                       <input type="date"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all cursor-pointer text-[#171717]"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all cursor-pointer text-[#171717]"
                         value={form.purchase_date} onChange={e => setForm({ ...form, purchase_date: e.target.value })} />
                     </div>
                   </div>
@@ -654,7 +654,7 @@ export const AssetManagement = () => {
                     <div className="relative group/price">
                       <BadgeIndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/price:text-[#171717] transition-colors" size={16} />
                       <input type="number" placeholder="0.00" step="0.01"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                         value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
                     </div>
                   </div>
@@ -666,7 +666,7 @@ export const AssetManagement = () => {
                         <div className="relative group/tenure">
                           <Timer className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/tenure:text-[#171717] transition-colors" size={16} />
                           <input type="text" placeholder="e.g. 12 Months"
-                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                             value={form.tenure} onChange={e => setForm({ ...form, tenure: e.target.value })} />
                         </div>
                       </div>
@@ -675,13 +675,13 @@ export const AssetManagement = () => {
                         <div className="relative group/ytm">
                           <Percent className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/ytm:text-[#171717] transition-colors" size={16} />
                           <input type="text" placeholder="e.g. 10.25"
-                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                             value={form.ytm} onChange={e => setForm({ ...form, ytm: e.target.value })} />
                         </div>
                       </div>
                       <div className="space-y-1.5 text-left lg:col-span-2">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Est. Monthly Repayment</label>
-                        <div className="w-full px-4 py-[13px] bg-emerald-50/50 border border-emerald-100 rounded-xl text-sm font-bold text-emerald-700 flex items-center justify-between">
+                        <div className="w-full px-4 py-[13px] bg-emerald-50/50 border border-emerald-100 rounded-md text-sm font-bold text-emerald-700 flex items-center justify-between">
                           <span>Calculated Repayment</span>
                           <span>₹{form.price && form.ytm && !isNaN(parseFloat(form.price)) && !isNaN(parseFloat(form.ytm))
                             ? ((parseFloat(form.price) * (parseFloat(form.ytm) / 100)) / 12).toLocaleString('en-IN', { maximumFractionDigits: 0 })
@@ -697,7 +697,7 @@ export const AssetManagement = () => {
                       <div className="relative group/qty">
                         <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/qty:text-[#171717] transition-colors" size={16} />
                         <input type="number" placeholder="0"
-                          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-xl text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                           value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} />
                       </div>
                     </div>
@@ -705,7 +705,7 @@ export const AssetManagement = () => {
                   {/* Submit */}
                   <div className={`${activeTab === 'BOND' ? 'lg:col-span-1' : 'lg:col-span-4'} flex items-end justify-end`}>
                     <button type="submit"
-                      className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-[#171717] text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
+                      className="w-full sm:w-auto px-10 py-3.5 rounded-md bg-[#171717] text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
                       Add {activeTab === 'BOND' ? 'Bond' : 'Stock'}
                     </button>
                   </div>
@@ -813,7 +813,7 @@ export const AssetManagement = () => {
                             <span className={`text-[11px] font-bold ${absolutePnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
                               {absolutePnl >= 0 ? '+' : '-'}₹{Math.abs(absolutePnl).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                             </span>
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-[6px] flex items-center gap-0.5 ${absolutePnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 ${absolutePnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
                               <span className="text-[8px]">{pnl >= 0 ? '▲' : '▼'}</span>
                               {Math.abs(pnl).toFixed(1)}%
                             </span>
@@ -836,7 +836,7 @@ export const AssetManagement = () => {
                           })
                           setOpenMenuId(openMenuId === stock.id ? null : stock.id)
                         }}
-                        className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-lg transition-all"
+                        className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-md transition-all"
                       >
                         <MoreVertical size={18} />
                       </button>
@@ -858,7 +858,7 @@ export const AssetManagement = () => {
             <div
               ref={menuRef}
               style={{ top: menuPos.top, right: menuPos.right }}
-              className="fixed w-52 bg-white rounded-2xl border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[200] py-2 overflow-hidden"
+              className="fixed w-52 bg-white rounded-lg border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[200] py-2 overflow-hidden"
             >
               <button type="button"
                 onClick={() => { setHistoryModal({ isOpen: true, stock: activeStock }); setOpenMenuId(null) }}

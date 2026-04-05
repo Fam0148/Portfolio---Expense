@@ -182,10 +182,10 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
   return (
     <Background>
       <div className="w-full max-w-[440px] mx-auto px-4 text-[#171717]">
-        <Card className="border border-gray-100 rounded-2xl bg-white overflow-hidden p-8 md:p-9">
+        <Card className="border border-gray-100 rounded-xl bg-white overflow-hidden p-8 md:p-9 shadow-2xl shadow-black/5">
           {/* Header & Global Errors */}
           <div className="flex flex-col items-center text-center space-y-4 mb-8">
-            <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-[#171717] shadow-xl">
+            <div className="w-16 h-16 flex items-center justify-center rounded-lg bg-[#171717] shadow-xl">
               <Star 
                 className="w-8 h-8 text-white fill-white animate-logo-float" 
                 style={{ animationDuration: '6s' }}
@@ -204,7 +204,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
           </div>
 
           {(verificationSuccess || showSignupSuccess) && mode === "login" && !errorMsg && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-xl flex items-center gap-3">
+            <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-lg flex items-center gap-3">
               <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
               <p className="text-sm font-semibold text-green-800">
                 {showSignupSuccess ? "Account created! Start your journey" : "Email verified! Please sign in below."}
@@ -213,7 +213,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
           )}
 
           {errorMsg && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
               <p className="text-sm font-medium text-red-800 leading-tight">{errorMsg}</p>
             </div>
@@ -228,7 +228,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="border-gray-200 bg-white focus:ring-0 focus:border-[#171717] transition-all rounded-lg h-11 px-4 text-sm"
+              className="border-gray-200 bg-white focus:ring-0 focus:border-[#171717] transition-all rounded-md h-11 px-4 text-sm"
                   placeholder="Full name"
                   disabled={isLoading}
                 />
@@ -262,7 +262,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="Email address"
                   disabled={isLoading}
-                  className={`transition-all rounded-lg h-11 px-4 text-sm ${
+                  className={`transition-all rounded-md h-11 px-4 text-sm ${
                     emailError
                       ? "border-red-100 bg-red-50/10 focus:border-red-300"
                       : "border-gray-200 bg-white focus:ring-0 focus:border-[#171717]"
@@ -290,7 +290,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
                   placeholder="Password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="border-gray-200 bg-white focus:ring-0 focus:border-[#171717] transition-all rounded-lg h-11 px-4 pr-12 text-sm"
+                  className="border-gray-200 bg-white focus:ring-0 focus:border-[#171717] transition-all rounded-md h-11 px-4 pr-12 text-sm"
                   disabled={isLoading}
                 />
                 <button
@@ -330,7 +330,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
                     placeholder="Confirm password"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className={`transition-all rounded-lg h-11 px-4 pr-12 text-sm ${formData.confirmPassword && formData.password !== formData.confirmPassword
+                    className={`transition-all rounded-md h-11 px-4 pr-12 text-sm ${formData.confirmPassword && formData.password !== formData.confirmPassword
                       ? "border-red-100 bg-red-50/10 focus:border-red-300"
                       : "border-gray-200 bg-white focus:ring-0 focus:border-[#171717]"
                       }`}
@@ -351,7 +351,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
             <button
               type="submit"
               disabled={!isFormValid || isLoading}
-              className="w-full bg-[#171717] hover:bg-[#262626] text-white font-bold h-11 rounded-lg shadow-xl transition-all text-sm mt-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+              className="w-full bg-[#171717] hover:bg-[#262626] text-white font-bold h-11 rounded-md shadow-xl transition-all text-sm mt-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

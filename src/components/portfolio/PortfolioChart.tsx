@@ -43,7 +43,7 @@ const thirtyDayData = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-3 border border-gray-100 shadow-lg rounded-xl">
+      <div className="bg-white p-3 border border-gray-100 shadow-lg rounded-md">
         <p className="text-xs font-sans text-gray-500 mb-1">{label}</p>
         <p className="text-sm font-display font-bold text-[#171717]">
           ₹{payload[0].value.toLocaleString('en-IN')}
@@ -90,7 +90,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
   })()
 
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-2xl border border-gray-100/80 shadow-sm flex flex-col space-y-6">
+    <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-100/80 shadow-sm flex flex-col space-y-6">
       <style>{`
         @keyframes pulse-ring {
           0% { transform: scale(0.33); opacity: 1; }
@@ -116,7 +116,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
           <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value)}
-            className="bg-gray-50 border-none text-[10px] sm:text-[11px] font-sans font-semibold text-gray-500 rounded-lg px-2 py-1 outline-none cursor-pointer"
+            className="bg-gray-50 border-none text-[10px] sm:text-[11px] font-sans font-semibold text-gray-500 rounded-sm px-2 py-1 outline-none cursor-pointer"
           >
             <option value="1Y">Last 1 year</option>
             <option value="6M">Last 6 months</option>
