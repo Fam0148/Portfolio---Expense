@@ -428,35 +428,36 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
     <>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
         <div className="no-print">
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-0 pb-6 border-b border-gray-100">
-          <div className="text-center sm:text-left">
-            <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center sm:justify-start gap-2">
-              Hi, {userName}
-            </h1>
-            <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight">Monitor your daily spending and manage monthly cashflows.</p>
+          {/* Centered Greeting & Global Actions */}
+          <div className="flex flex-col items-center gap-6 pb-6 border-b border-gray-100 text-center">
+            <div className="flex flex-col space-y-1">
+              <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
+                Hi, {userName}
+              </h1>
+              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight">Monitor your daily spending and manage monthly cashflows.</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleExportStatement}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827] shadow-sm"
+              >
+                <FilePdf size={14} className="text-gray-300 group-hover:text-white transition-colors" />
+                Export Statement
+              </button>
+              <button
+                onClick={handleLogOut}
+                className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+              >
+                <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
+                Sign Out
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 self-center sm:self-auto">
-            <button
-              onClick={handleExportStatement}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827] shadow-sm"
-            >
-              <FilePdf size={14} className="text-gray-300 group-hover:text-white transition-colors" />
-              Export Statement
-            </button>
-            <button
-              onClick={handleLogOut}
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-200 text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
-            >
-              <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
-              Sign Out
-            </button>
-          </div>
-        </div>
-
-        {/* Secondary Navigation Row: Tabs and Date Selector aligned to Top */}
-        <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-0 mt-6 mb-10">
-          <div className="flex items-center gap-8 self-center sm:self-auto overflow-x-auto no-scrollbar scroll-smooth">
+          {/* Secondary Navigation Row: Centered Tabs and Date Selector aligned to Top */}
+          <div className="flex flex-col sm:flex-row items-start justify-center gap-8 mt-6 mb-10">
+            <div className="flex items-center gap-8 self-center sm:self-auto overflow-x-auto no-scrollbar scroll-smooth">
             <button
               onClick={() => onSwitch('portfolio')}
               className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"

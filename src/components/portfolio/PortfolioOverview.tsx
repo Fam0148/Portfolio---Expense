@@ -4,7 +4,7 @@ import { PortfolioChart } from "./PortfolioChart"
 import { NumberTicker } from "./NumberTicker"
 import { AssetManagement } from "./AssetManagement"
 import { supabase } from "../../lib/supabase"
-import { LogOut, FileText } from "lucide-react"
+import { FilePdf, SignOut } from "@phosphor-icons/react"
 import { StatementView } from "./StatementView"
 
 const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0, customDisplay = false, stats, className = "" }: any) => {
@@ -285,14 +285,14 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
               onClick={() => { setTimeout(() => { window.print(); }, 500); }}
               className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
             >
-              <FileText size={14} className="text-gray-300 group-hover:text-white transition-colors" />
-              Statement
+              <FilePdf size={14} weight="bold" className="text-gray-300 group-hover:text-white transition-colors" />
+              Export Statement
             </button>
             <button
               onClick={handleLogOut}
               className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
             >
-              <LogOut size={14} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
+              <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
               Sign Out
             </button>
           </div>
