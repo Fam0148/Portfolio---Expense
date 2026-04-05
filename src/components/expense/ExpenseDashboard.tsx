@@ -14,12 +14,7 @@ import {
   Sparkle,
   CalendarBlank
 } from "@phosphor-icons/react"
-
-const NumberTicker = ({ value }: { value: number }) => {
-  return (
-    <span>{value.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-  )
-}
+import { NumberTicker } from "../ui/NumberTicker"
 
 const StatCard = ({ title, numericValue, illustration, badgeText, badgeColor = "emerald", delay = 0 }: any) => {
   const isNegative = numericValue < 0
@@ -437,7 +432,31 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
               <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight">Monitor your daily spending and manage monthly cashflows.</p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
+              {/* Parallel Year Month Picker (Sharpened Corners) */}
+              <div className="flex items-center gap-1 p-0.5 bg-gray-50 rounded-sm border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all hover:border-gray-200">
+                <button
+                  onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+                  className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
+                >
+                  <CaretLeft size={14} weight="bold" />
+                </button>
+                
+                <div className="px-2 flex items-center gap-2 min-w-[90px] select-none justify-center">
+                  <span className="text-[11px] font-bold text-[#111827]">{viewDate.getFullYear()}</span>
+                  <span className="text-[10px] font-medium text-gray-500 tracking-tight">{viewDate.toLocaleString('default', { month: 'long' })}</span>
+                </div>
+
+                <button
+                  onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+                  className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
+                >
+                  <CaretRight size={14} weight="bold" />
+                </button>
+              </div>
+
+              <div className="h-6 w-[1px] bg-gray-100 mx-1" />
+
               <button
                 onClick={handleExportStatement}
                 className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827] shadow-sm"
@@ -445,6 +464,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                 <FilePdf size={14} className="text-gray-300 group-hover:text-white transition-colors" />
                 Export Statement
               </button>
+              
               <button
                 onClick={handleLogOut}
                 className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
@@ -455,50 +475,27 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
             </div>
           </div>
 
-          {/* Secondary Navigation Row: Centered Tabs and Date Selector aligned to Top */}
-          <div className="flex flex-col sm:flex-row items-start justify-center gap-8 mt-6 mb-10">
-            <div className="flex items-center gap-8 self-center sm:self-auto overflow-x-auto no-scrollbar scroll-smooth">
-            <button
-              onClick={() => onSwitch('portfolio')}
-              className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
-            >
-              Portfolio Overview
-            </button>
-            <button
-              className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
-            >
-              Expense Tracker
-              <motion.div
-                layoutId="active-nav-tab"
-                className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#171717]"
-                transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
-              />
-            </button>
-          </div>
-
-          {/* Parallel Year Month Picker (Sharpened Corners) */}
-          <div className="flex items-center gap-1 p-0.5 bg-gray-50 rounded-sm border border-gray-100 shadow-sm transition-all hover:border-gray-200 mb-0">
-            <button
-              onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-              className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
-            >
-              <CaretLeft size={14} weight="bold" />
-            </button>
-            
-            <div className="px-2 flex items-center gap-2 min-w-[100px] select-none justify-center">
-              <span className="text-[12px] font-bold text-[#111827]">{viewDate.getFullYear()}</span>
-              <span className="text-[11px] font-medium text-gray-500 tracking-tight">{viewDate.toLocaleString('default', { month: 'long' })}</span>
+          {/* Secondary Navigation Row: Centered Tabs */}
+          <div className="flex flex-row items-start justify-center gap-8 mt-4 mb-10">
+            <div className="flex items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+              <button
+                onClick={() => onSwitch('portfolio')}
+                className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
+              >
+                Portfolio Overview
+              </button>
+              <button
+                className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
+              >
+                Expense Tracker
+                <motion.div
+                  layoutId="active-nav-tab"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#171717]"
+                  transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+                />
+              </button>
             </div>
-
-            <button
-              onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-              className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
-            >
-              <CaretRight size={14} weight="bold" />
-            </button>
           </div>
-        </div>
-      </div>
 
         {/* Quick Stats Grid with Illustrations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
@@ -1111,6 +1108,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           </div>
         </div>
       </div>
+    </div>
 
       {/* PRINT-ONLY STATEMENT (PORTFOLIO-GRADE FINANCIAL REPORT) */}
       <div id="expense-statement-print" className="hidden print:block fixed inset-0 bg-white z-[9999] overflow-auto p-12 text-[#1F2937] font-sans">
@@ -1224,7 +1222,10 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
               {monthTxs.length > 0 ? monthTxs.map((tx, i) => (
                 <tr key={i} className="text-[13px] text-gray-600">
                   <td className="py-4 px-0">{new Date(tx.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                  <td className="py-4 px-0 font-bold text-[#111827]">{tx.name}</td>
+                  <td className="py-4 px-0">
+                    <div className="font-bold text-[#111827]">{tx.name}</div>
+                    {tx.note && <div className="text-[10px] text-gray-400 font-medium italic leading-relaxed">{tx.note}</div>}
+                  </td>
                   <td className="py-4 px-0 uppercase text-[10px] tracking-tight">{tx.category}</td>
                   <td className="py-4 px-0 text-center">1</td>
                   <td className="py-4 px-0 text-right font-bold text-[#111827]">Rs. {Number(tx.amount).toLocaleString('en-IN')}</td>

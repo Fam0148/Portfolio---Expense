@@ -58,8 +58,9 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
         <motion.div 
           initial={{ opacity: 0, scale: 0.98, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="w-full max-w-[380px] bg-white rounded-xl overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)] flex flex-col relative"
+          className="w-full max-w-[380px] bg-white rounded-lg overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)] flex flex-col relative"
         >
+
           {/* Minimal Dark Header */}
           <div className="h-[150px] w-full bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] relative flex items-center justify-center overflow-hidden">
             {/* Decorative Patterns */}
@@ -74,7 +75,7 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
-              className="relative z-10 w-16 h-16 bg-white rounded-lg shadow-2xl flex items-center justify-center"
+              className="relative z-10 w-16 h-16 bg-white rounded-md shadow-2xl flex items-center justify-center"
             >
               {slides[currentIndex].icon}
             </motion.div>
@@ -90,30 +91,36 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
                 transition={{ duration: 0.3 }}
                 className="flex flex-col items-center w-full"
               >
-                {/* Step Indicator Badge */}
                 <div className="px-2.5 py-1 bg-[#F5F5F5] border border-[#E5E5E5] rounded-md mb-5">
                   <span className="text-[#525252] text-[11px] font-bold tracking-wider">
                     STEP {currentIndex + 1} OF {slides.length}
                   </span>
                 </div>
 
-                {/* Minimal Title */}
                 <h2 className="text-[#171717] text-[24px] font-bold tracking-tight mb-3 leading-tight">
                   {slides[currentIndex].title}
                 </h2>
 
-                {/* Description */}
                 <p className="text-[#737373] text-[14px] leading-[1.6] max-w-[300px] mb-8 font-medium">
                   {slides[currentIndex].description}
                 </p>
 
-                {/* Black Action Button */}
-                <button 
-                  onClick={handleNext}
-                  className="w-full py-3.5 bg-[#171717] hover:bg-black rounded-lg text-white text-[15px] font-bold transition-all flex items-center justify-center active:scale-98 shadow-xl shadow-black/10"
-                >
-                  <span>{currentIndex === slides.length - 1 ? 'Get Started' : 'Next Step'}</span>
-                </button>
+                <div className="flex gap-3 w-full mt-2">
+                  {currentIndex < slides.length - 1 && (
+                    <button 
+                      onClick={() => onComplete('portfolio')}
+                      className="flex-1 py-3 border border-[#E5E5E5] hover:bg-[#F5F5F5] rounded-md text-[#737373] hover:text-[#171717] text-[13px] font-bold tracking-wider transition-all"
+                    >
+                      SKIP
+                    </button>
+                  )}
+                  <button 
+                    onClick={handleNext}
+                    className="flex-[2] py-3.5 bg-[#171717] hover:bg-black rounded-md text-white text-[15px] font-bold transition-all flex items-center justify-center active:scale-98 shadow-xl shadow-black/10"
+                  >
+                    <span>{currentIndex === slides.length - 1 ? 'Get Started' : 'Next Step'}</span>
+                  </button>
+                </div>
               </motion.div>
             </AnimatePresence>
 
