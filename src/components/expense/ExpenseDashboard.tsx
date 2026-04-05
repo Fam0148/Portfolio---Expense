@@ -429,12 +429,14 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
               <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
                 Hi, {userName}
               </h1>
-              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight">Monitor your daily spending and manage monthly cashflows.</p>
+              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight max-w-[280px] sm:max-w-none mx-auto">
+                Monitor your daily spending and manage monthly cashflows.
+              </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
               {/* Parallel Year Month Picker (Sharpened Corners) */}
-              <div className="flex items-center gap-1 p-0.5 bg-gray-50 rounded-sm border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all hover:border-gray-200">
+              <div className="w-full sm:w-auto flex items-center justify-between sm:justify-center gap-1 p-0.5 bg-gray-50 rounded-sm border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all hover:border-gray-200">
                 <button
                   onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
                   className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
@@ -455,11 +457,11 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                 </button>
               </div>
 
-              <div className="h-6 w-[1px] bg-gray-100 mx-1" />
+              <div className="hidden sm:block h-6 w-[1px] bg-gray-100 mx-1" />
 
               <button
                 onClick={handleExportStatement}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827] shadow-sm"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827] shadow-sm whitespace-nowrap"
               >
                 <FilePdf size={14} className="text-gray-300 group-hover:text-white transition-colors" />
                 Export Statement
@@ -467,7 +469,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
               
               <button
                 onClick={handleLogOut}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-all font-bold text-[12px] active:scale-95 group shadow-sm whitespace-nowrap"
               >
                 <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
                 Sign Out
@@ -498,7 +500,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           </div>
 
         {/* Quick Stats Grid with Illustrations */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
           {cards.map((card, idx) => (
             <StatCard key={idx} {...card} />
           ))}

@@ -277,20 +277,22 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
               <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
                 Hi, {userName}
               </h1>
-              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight">Analyze your wealth and track real-time asset performance.</p>
+              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight max-w-[280px] sm:max-w-none mx-auto">
+                Analyze your wealth and track real-time asset performance.
+              </p>
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
               <button
                 onClick={() => { setTimeout(() => { window.print(); }, 500); }}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
               >
                 <FilePdf size={14} weight="bold" className="text-gray-300 group-hover:text-white transition-colors" />
                 Export Statement
               </button>
               <button
                 onClick={handleLogOut}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
               >
                 <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
                 Sign Out
@@ -322,7 +324,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
           {cards.map((card, idx) => {
             const isLastCard = idx === cards.length - 1;
             return (
