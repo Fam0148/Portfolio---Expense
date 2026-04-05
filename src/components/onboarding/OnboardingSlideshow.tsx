@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Background } from "../auth/Background"
-import { Check, X, ChevronRight, LayoutDashboard, ReceiptText, ShieldCheck, Zap } from "lucide-react"
+import { X, ChevronRight, LayoutDashboard, ReceiptText, ShieldCheck, Zap } from "lucide-react"
 
 interface OnboardingSlideshowProps {
   onComplete: (choice: 'portfolio' | 'expense' | 'profile') => void

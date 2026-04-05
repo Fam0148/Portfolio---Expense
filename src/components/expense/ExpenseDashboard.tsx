@@ -12,8 +12,7 @@ import {
   PencilLine,
   Check,
   Sparkle,
-  CalendarBlank,
-  CurrencyInr
+  CalendarBlank
 } from "@phosphor-icons/react"
 
 const NumberTicker = ({ value }: { value: number }) => {
