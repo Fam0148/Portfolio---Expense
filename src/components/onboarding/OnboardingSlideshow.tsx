@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Background } from "../auth/Background"
-import { X, ChevronRight, LayoutDashboard, ReceiptText, ShieldCheck, Zap } from "lucide-react"
+import { PieChart, TrendingUp, Wallet, Lock } from "lucide-react"
 
 interface OnboardingSlideshowProps {
   onComplete: (choice: 'portfolio' | 'expense' | 'profile') => void
@@ -12,7 +12,6 @@ type Slide = {
   title: string
   description: string
   icon: React.ReactNode
-  imagePath?: string
 }
 
 export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) => {
@@ -21,137 +20,113 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
   const slides: Slide[] = [
     {
       id: 0,
-      title: "Master Your Wealth",
-      description: "Get a 360-degree view of your investments. Track assets, net worth, and analyze risk in real-time.",
-      icon: <LayoutDashboard className="w-8 h-8 text-white" />
+      title: "Unified Wealth View",
+      description: "One place for your Stocks, Bonds, and Daily Expenses. Get a 360-degree perspective of your financial health.",
+      icon: <PieChart className="w-8 h-8 text-[#171717]" />
     },
     {
       id: 1,
-      title: "Effortless Expense Tracking",
-      description: "Categorize every spend automatically. Identify leakages and save more for what matters.",
-      icon: <ReceiptText className="w-8 h-8 text-white" />
+      title: "Stock & Bond Tracker",
+      description: "Real-time NSE/BSE performance tracking. Automated asset averaging and historical gain/loss analysis.",
+      icon: <TrendingUp className="w-8 h-8 text-[#171717]" />
     },
     {
       id: 2,
-      title: "Secure and Private",
-      description: "Your data is yours alone. We use military-grade encryption to ensure your financial privacy.",
-      icon: <ShieldCheck className="w-8 h-8 text-white" />
+      title: "Smart Spending",
+      description: "Monitor every rupee effortlessly. Advanced categorization helps you identify where your money goes.",
+      icon: <Wallet className="w-8 h-8 text-[#171717]" />
     },
     {
       id: 3,
-      title: "Seamless Experience",
-      description: "A premium interface designed for focus. Simple, powerful, and built to improve your life.",
-      icon: <Zap className="w-8 h-8 text-white" />
+      title: "Secure & Private",
+      description: "Your data is encrypted and strictly confidential. Bank-grade security for your personal wealth info.",
+      icon: <Lock className="w-8 h-8 text-[#171717]" />
     }
   ]
 
   const handleNext = () => {
-    if (currentIndex < slides.length) {
+    if (currentIndex < slides.length - 1) {
       setCurrentIndex(currentIndex + 1)
+    } else {
+      onComplete('portfolio')
     }
   }
-
-  const handleBack = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex(currentIndex - 1)
-    }
-  }
-
-
 
   return (
     <Background>
-      <div className="w-full min-h-screen flex items-center justify-center p-4 font-sans relative">
+      <div className="w-full min-h-screen flex items-center justify-center p-6 font-sans relative">
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-[540px] bg-white rounded-xl overflow-hidden shadow-2xl relative"
+          initial={{ opacity: 0, scale: 0.98, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          className="w-full max-w-[380px] bg-white rounded-xl overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)] flex flex-col relative"
         >
-          {/* Header with Close Button */}
-          {currentIndex < slides.length && (
-            <button 
-              onClick={() => setCurrentIndex(slides.length)}
-              className="absolute top-6 right-6 w-10 h-10 rounded-full bg-black/5 hover:bg-black/10 flex items-center justify-center text-gray-400 hover:text-gray-800 transition-all z-20 tooltip"
-              title="Skip Tour"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          )}
+          {/* Minimal Dark Header */}
+          <div className="h-[150px] w-full bg-gradient-to-br from-[#1A1A1A] to-[#0A0A0A] relative flex items-center justify-center overflow-hidden">
+            {/* Decorative Patterns */}
+            <div className="absolute inset-0 opacity-5 pointer-events-none">
+              <div className="absolute top-1/2 left-3 -translate-y-1/2 w-20 h-40 border-y border-r border-white rounded-r-lg" />
+              <div className="absolute top-1/2 right-3 -translate-y-1/2 w-20 h-40 border-y border-l border-white rounded-l-lg" />
+            </div>
 
-          <AnimatePresence mode="wait">
-            {currentIndex < slides.length ? (
+            {/* Central Icon */}
+            <motion.div 
+              key={currentIndex}
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ type: "spring", stiffness: 200, damping: 15 }}
+              className="relative z-10 w-16 h-16 bg-white rounded-lg shadow-2xl flex items-center justify-center"
+            >
+              {slides[currentIndex].icon}
+            </motion.div>
+          </div>
+
+          <div className="p-8 pt-8 text-center flex flex-col items-center">
+            <AnimatePresence mode="wait">
               <motion.div 
                 key={currentIndex}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="flex flex-col"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+                className="flex flex-col items-center w-full"
               >
-                {/* Visual Section */}
-                <div className="h-[260px] bg-[#F9F9F9] border-b border-gray-100 relative flex items-center justify-center overflow-hidden">
-                   {/* Minimalist Grid Pattern */}
-                   <div 
-                    className="absolute inset-0 opacity-[0.05]" 
-                    style={{ backgroundImage: `repeating-linear-gradient(0deg, #000 0px, #000 1px, transparent 1px, transparent 40px), repeating-linear-gradient(90deg, #000 0px, #000 1px, transparent 1px, transparent 40px)` }}
-                   />
-                   
-                   {/* Floating Illustration Card - Monochromatic */}
-                   <motion.div 
-                    initial={{ y: 20, rotate: -1, opacity: 0 }}
-                    animate={{ y: 0, rotate: 0, opacity: 1 }}
-                    transition={{ duration: 0.8, ease: "easeOut" }}
-                    className="relative z-10 w-[240px] h-[160px] bg-white rounded-lg border border-gray-200 shadow-[0_15px_40px_rgba(0,0,0,0.06)] flex flex-col items-center justify-center p-8 active:scale-[0.99] transition-transform"
-                   >
-                      <div className="w-20 h-20 rounded-lg bg-[#000000] flex items-center justify-center mb-6 shadow-xl">
-                        {slides[currentIndex].icon}
-                      </div>
-                      <div className="w-24 h-1.5 bg-gray-200 rounded-full mb-3" />
-                      <div className="w-16 h-1.5 bg-gray-100 rounded-full" />
-                   </motion.div>
+                {/* Step Indicator Badge */}
+                <div className="px-2.5 py-1 bg-[#F5F5F5] border border-[#E5E5E5] rounded-md mb-5">
+                  <span className="text-[#525252] text-[11px] font-bold tracking-wider">
+                    STEP {currentIndex + 1} OF {slides.length}
+                  </span>
                 </div>
 
-                {/* Content Section */}
-                <div className="p-10 pt-10 text-center flex flex-col items-center bg-white">
-                  {/* Progress Dots - Monochromatic */}
-                  <div className="flex gap-2.5 mb-10">
-                    {slides.map((_, idx) => (
-                      <div 
-                        key={idx} 
-                        onClick={() => setCurrentIndex(idx)}
-                        className={`h-1 rounded-full cursor-pointer transition-all duration-500 ease-in-out ${idx === currentIndex ? 'w-8 bg-black' : 'w-2 bg-gray-200 hover:bg-gray-400'}`}
-                      />
-                    ))}
-                  </div>
+                {/* Minimal Title */}
+                <h2 className="text-[#171717] text-[24px] font-bold tracking-tight mb-3 leading-tight">
+                  {slides[currentIndex].title}
+                </h2>
 
-                  <h2 className="text-[30px] font-bold text-black font-serif leading-[1.2] mb-5 tracking-tight">
-                    {slides[currentIndex].title}
-                  </h2>
-                  <p className="text-gray-500 text-[15px] leading-[1.7] max-w-[360px] mb-12">
-                    {slides[currentIndex].description}
-                  </p>
+                {/* Description */}
+                <p className="text-[#737373] text-[14px] leading-[1.6] max-w-[300px] mb-8 font-medium">
+                  {slides[currentIndex].description}
+                </p>
 
-                  {/* Navigation Footer */}
-                  <div className="w-full flex items-center justify-between mt-auto">
-                    <button 
-                      onClick={handleBack}
-                      disabled={currentIndex === 0}
-                      className={`px-6 py-3 text-[14px] font-bold border border-gray-200 rounded-md transition-all ${currentIndex === 0 ? 'opacity-0 pointer-events-none' : 'text-gray-400 hover:text-black hover:border-black'}`}
-                    >
-                      Previous
-                    </button>
-
-                    <button 
-                      onClick={() => currentIndex === slides.length - 1 ? onComplete('portfolio') : handleNext()}
-                      className="px-8 py-3 bg-black text-white rounded-md font-bold text-[14px] flex items-center gap-2 hover:bg-gray-800 transition-all active:scale-[0.97]"
-                    >
-                      {currentIndex === slides.length - 1 ? 'Get Started' : 'Continue'}
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                {/* Black Action Button */}
+                <button 
+                  onClick={handleNext}
+                  className="w-full py-3.5 bg-[#171717] hover:bg-black rounded-lg text-white text-[15px] font-bold transition-all flex items-center justify-center active:scale-98 shadow-xl shadow-black/10"
+                >
+                  <span>{currentIndex === slides.length - 1 ? 'Get Started' : 'Next Step'}</span>
+                </button>
               </motion.div>
-            ) : null}
-          </AnimatePresence>
+            </AnimatePresence>
+
+            {/* Micro Pagination */}
+            <div className="flex gap-2 mt-6">
+              {slides.map((_, idx) => (
+                <div 
+                  key={idx}
+                  className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-5 bg-[#171717]' : 'w-1.5 bg-[#E5E5E5]'}`}
+                />
+              ))}
+            </div>
+          </div>
         </motion.div>
       </div>
     </Background>

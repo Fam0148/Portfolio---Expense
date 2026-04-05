@@ -71,10 +71,16 @@ function App() {
       )
     }
 
+    const nameMetadata = session.user.user_metadata?.full_name || session.user.email?.split('@')[0]
+    const userName = nameMetadata ? nameMetadata.charAt(0).toUpperCase() + nameMetadata.slice(1) : "there"
+
     if (userChoice === 'portfolio') {
       return (
         <div className="min-h-screen bg-[#F8F8F8]">
-          <PortfolioOverview onSwitch={setUserChoice} />
+          <PortfolioOverview 
+            onSwitch={setUserChoice} 
+            userName={userName}
+          />
         </div>
       )
     }
@@ -82,7 +88,10 @@ function App() {
     if (userChoice === 'expense') {
       return (
         <div className="min-h-screen bg-[#F8F8F8]">
-          <ExpenseDashboard onSwitch={setUserChoice} />
+          <ExpenseDashboard 
+            onSwitch={setUserChoice} 
+            userName={userName}
+          />
         </div>
       )
     }

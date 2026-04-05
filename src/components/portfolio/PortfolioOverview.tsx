@@ -22,17 +22,17 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
         </h3>
         {customDisplay ? (
           <div className="flex flex-col gap-3 mt-1">
-              <div className="flex flex-row items-center gap-6">
-                <div className="flex flex-row items-baseline gap-2">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stocks</span>
-                  <span className="text-2xl font-display font-bold text-blue-600">{stats?.stockWeight.toFixed(0)}%</span>
-                </div>
-                <div className="h-6 w-[1px] bg-gray-100" />
-                <div className="flex flex-row items-baseline gap-2">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Bonds</span>
-                  <span className="text-2xl font-display font-bold text-green-600">{stats?.bondWeight.toFixed(0)}%</span>
-                </div>
+            <div className="flex flex-row items-center gap-6">
+              <div className="flex flex-row items-baseline gap-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stocks</span>
+                <span className="text-2xl font-display font-bold text-blue-600">{stats?.stockWeight.toFixed(0)}%</span>
               </div>
+              <div className="h-6 w-[1px] bg-gray-100" />
+              <div className="flex flex-row items-baseline gap-2">
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Bonds</span>
+                <span className="text-2xl font-display font-bold text-green-600">{stats?.bondWeight.toFixed(0)}%</span>
+              </div>
+            </div>
             <div className="w-full h-2 bg-gray-50 rounded-full overflow-hidden flex">
               <div className="h-full bg-blue-600" style={{ width: `${stats?.stockWeight}%` }} />
               <div className="h-full bg-green-500" style={{ width: `${stats?.bondWeight}%` }} />
@@ -67,26 +67,13 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
   )
 }
 
-export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 'expense') => void }) => {
-  const [userName, setUserName] = useState<string>("there")
+export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'portfolio' | 'expense') => void, userName: string }) => {
 
   const handleLogOut = async () => {
     await supabase.auth.signOut()
     window.location.href = '/'
   }
 
-  useEffect(() => {
-    const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        const name = user.user_metadata?.full_name || user.email?.split('@')[0]
-        if (name) {
-          setUserName(name.charAt(0).toUpperCase() + name.slice(1))
-        }
-      }
-    }
-    getUser()
-  }, [])
 
   const [stats, setStats] = useState({
     totalValue: 0,
@@ -162,7 +149,7 @@ export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 
 
           const stockProfitValue = stockCurrent - stockInvested
           const finalTotalValue = totalCurrentMarket + bondProfitAccrued
-          
+
           // Historical Data for Chart
           const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
           const currYear = now.getFullYear();
@@ -174,8 +161,8 @@ export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 
                 if (s.asset_type_c === 'BOND' && s.ytm) {
                   const ytm = parseFloat(s.ytm);
                   const [bY, bM, bD] = s.purchase_date.split('-').map(Number);
-                  let tDate = new Date(bY, bM-1, 10); if (bD >= 10) tDate.setMonth(tDate.getMonth()+1);
-                  let mCount = 0; while (tDate <= mEnd && tDate <= now) { mCount++; tDate.setMonth(tDate.getMonth()+1); }
+                  let tDate = new Date(bY, bM - 1, 10); if (bD >= 10) tDate.setMonth(tDate.getMonth() + 1);
+                  let mCount = 0; while (tDate <= mEnd && tDate <= now) { mCount++; tDate.setMonth(tDate.getMonth() + 1); }
                   mVal += totalAtP * (ytm / 100) * (mCount / 12);
                 }
               }
@@ -200,8 +187,8 @@ export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 
             bondProfitDetails: withPrices.reduce((acc, s) => {
               if (s.asset_type_c === 'BOND') {
                 const ytm = parseFloat(s.ytm); const [pY, pM, pD] = s.purchase_date.split('-').map(Number);
-                let c = 0; let t = new Date(pY, pM-1, 10); if (pD >= 10) t.setMonth(t.getMonth()+1);
-                while (t <= now) { c++; t.setMonth(t.getMonth()+1); }
+                let c = 0; let t = new Date(pY, pM - 1, 10); if (pD >= 10) t.setMonth(t.getMonth() + 1);
+                while (t <= now) { c++; t.setMonth(t.getMonth() + 1); }
                 acc[s.id] = (s.purchase_price * s.quantity * (ytm / 100)) * (c / 12);
               }
               return acc;
@@ -212,8 +199,8 @@ export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 
 
         // 1. Initial Render with DB values (Instant < 1s)
         const initialData = data.map(s => ({
-          ...s, 
-          current_p: s.purchase_price, 
+          ...s,
+          current_p: s.purchase_price,
           asset_type_c: s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
         }))
         setStats(prev => ({ ...prev, ...calculateAll(initialData) }))
@@ -234,7 +221,7 @@ export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 
           }
           return { ...s, current_p: current, asset_type_c: type }
         }))
-        
+
         setStats(prev => ({ ...prev, ...calculateAll(liveData) }))
         setStocksData(liveData)
       } catch (err) { console.error('Error:', err) }
@@ -282,93 +269,98 @@ export const PortfolioOverview = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 
   ]
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
-      <div className="no-print">
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-8 pt-2">
-        <div className="flex flex-col space-y-1 text-center sm:text-left">
-          <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center sm:justify-start gap-2">
-            Hi, {userName}
-          </h1>
-          <p className="text-gray-500 text-xs sm:text-sm font-sans">Manage your personal finance system in one place.</p>
+    <>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
+        <div className="no-print">
+          <div className="flex flex-col items-center gap-6 pb-6 border-b border-gray-100 text-center">
+            <div className="flex flex-col space-y-1">
+              <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
+                Hi, {userName}
+              </h1>
+              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight">Analyze your wealth and track real-time asset performance.</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+            <button
+              onClick={() => { setTimeout(() => { window.print(); }, 500); }}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
+            >
+              <FileText size={14} className="text-gray-300 group-hover:text-white transition-colors" />
+              Statement
+            </button>
+            <button
+              onClick={handleLogOut}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+            >
+              <LogOut size={14} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
+              Sign Out
+            </button>
+          </div>
+          </div>
+
+          {/* Secondary Navigation Row: Centered Tabs aligned to Top */}
+        <div className="flex flex-row items-start justify-center gap-8 mt-6 mb-10">
+            <div className="flex items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+              <button
+                onClick={() => onSwitch('portfolio')}
+                className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
+              >
+                Portfolio Overview
+                <motion.div
+                  layoutId="active-nav-tab"
+                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.2)]"
+                  transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+                />
+              </button>
+              <button
+                onClick={() => onSwitch('expense')}
+                className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
+              >
+                Expense Tracker
+              </button>
+            </div>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2 self-center sm:self-auto">
-          <button
-            onClick={() => { setTimeout(() => { window.print(); }, 500); }}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
-          >
-            <FileText size={14} className="text-gray-300 group-hover:text-white transition-colors" />
-            Statement
-          </button>
-          <button
-            onClick={handleLogOut}
-            className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
-          >
-            <LogOut size={14} className="text-gray-400 group-hover:text-rose-500 transition-colors" />
-            Sign Out
-          </button>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
+          {cards.map((card, idx) => {
+            const isLastCard = idx === cards.length - 1;
+            return (
+              <PortfolioCard
+                key={idx}
+                {...card}
+                stats={stats}
+                className={isLastCard ? "lg:col-span-2" : ""}
+              />
+            );
+          })}
         </div>
-      </div>
 
-      <div className="flex items-center gap-8 border-b border-gray-100 mb-10 overflow-x-auto no-scrollbar scroll-smooth">
-        <button
-          onClick={() => onSwitch('portfolio')}
-          className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
+        <motion.div
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="mb-8"
         >
-          Portfolio Overview
-          <motion.div
-            layoutId="active-nav-tab"
-            className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.2)]"
-            transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+          <PortfolioChart
+            currentValue={stats.totalValue}
+            profitPercent={stats.profitPercent}
+            data={stats.historicalData}
           />
-        </button>
-        <button
-          onClick={() => onSwitch('expense')}
-          className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.7 }}
+          className="pb-12"
         >
-          Expense Tracker
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
-        {cards.map((card, idx) => {
-          const isLastCard = idx === cards.length - 1;
-          return (
-            <PortfolioCard
-              key={idx}
-              {...card}
-              stats={stats}
-              className={isLastCard ? "lg:col-span-2" : ""}
-            />
-          );
-        })}
-      </div>
-
-      <motion.div
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 0.5 }}
-        className="mb-8"
-      >
-        <PortfolioChart 
-          currentValue={stats.totalValue} 
-          profitPercent={stats.profitPercent} 
-          data={stats.historicalData}
-        />
-      </motion.div>
-
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.7 }}
-        className="pb-12"
-      >
-        <AssetManagement />
-      </motion.div>
+          <AssetManagement />
+        </motion.div>
       </div>
 
       <div className="print-only-container">
         <StatementView userName={userName} stocks={stocksData} stats={stats} />
       </div>
-    </div>
+    </>
   )
 }

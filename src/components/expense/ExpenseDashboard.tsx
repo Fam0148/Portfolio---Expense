@@ -68,8 +68,7 @@ const StatCard = ({ title, numericValue, illustration, badgeText, badgeColor = "
   )
 }
 
-export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | 'expense') => void }) => {
-  const [userName, setUserName] = useState<string>("there")
+export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'portfolio' | 'expense') => void, userName: string }) => {
   const [income, setIncome] = useState({ salary: "", sideHustle: "" })
   const [fixedExpenses, setFixedExpenses] = useState({
     rent: "", cook: "", travel: "", insurance: "", communication: ""
@@ -343,9 +342,6 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
     const getData = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const name = user.user_metadata?.full_name || user.email?.split('@')[0]
-        if (name) setUserName(name.charAt(0).toUpperCase() + name.slice(1))
-
         // 1. Fetch Budget for current month
         const { data: budgetData } = await supabase
           .from('budgets')
@@ -429,74 +425,79 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
   ]
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
-      <div className="no-print">
-        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-8 pt-2">
-          <div className="flex flex-col space-y-1 text-center sm:text-left">
+    <>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
+        <div className="no-print">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-0 pb-6 border-b border-gray-100">
+          <div className="text-center sm:text-left">
             <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center sm:justify-start gap-2">
               Hi, {userName}
             </h1>
-            <p className="text-gray-500 text-xs sm:text-sm font-sans">Manage your personal finance system in one place.</p>
+            <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight">Monitor your daily spending and manage monthly cashflows.</p>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-4 self-center sm:self-auto">
-            <div className="flex items-center gap-4 p-1 bg-gray-50 rounded-md border border-gray-100 shadow-sm">
-              <button
-                onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-                className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg text-gray-400 hover:text-gray-600 transition-all font-bold group"
-              >
-                <CaretLeft size={16} weight="bold" />
-              </button>
-              <div className="px-2 flex flex-col items-center min-w-[100px]">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{viewDate.getFullYear()}</span>
-                <span className="text-[13px] font-bold text-[#171717]">{viewDate.toLocaleString('default', { month: 'long' })}</span>
-              </div>
-              <button
-                onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-                className="p-1.5 hover:bg-white hover:shadow-sm rounded-lg text-gray-400 hover:text-gray-600 transition-all font-bold"
-              >
-                <CaretRight size={16} weight="bold" />
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleExportStatement}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827]"
-              >
-                <FilePdf size={14} className="text-gray-300 group-hover:text-white transition-colors" />
-                Export Statement
-              </button>
-              <button
-                onClick={handleLogOut}
-                className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-white border border-gray-200 text-gray-500 hover:text-gray-500 hover:bg-gray-50 hover:border-gray-200 transition-all font-bold text-[12px] active:scale-95 group"
-              >
-                <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
-                Sign Out
-              </button>
-            </div>
+          <div className="flex items-center gap-2 self-center sm:self-auto">
+            <button
+              onClick={handleExportStatement}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827] shadow-sm"
+            >
+              <FilePdf size={14} className="text-gray-300 group-hover:text-white transition-colors" />
+              Export Statement
+            </button>
+            <button
+              onClick={handleLogOut}
+              className="flex items-center justify-center gap-2 px-4 py-2 rounded-sm bg-white border border-gray-200 text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+            >
+              <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
+              Sign Out
+            </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-8 border-b border-gray-200 mb-10 overflow-x-auto no-scrollbar scroll-smooth">
-          <button
-            onClick={() => onSwitch('portfolio')}
-            className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
-          >
-            Portfolio Overview
-          </button>
-          <button
-            onClick={() => onSwitch('expense')}
-            className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
-          >
-            Expense Tracker
-            <motion.div
-              layoutId="active-nav-tab"
-              className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#171717]"
-              transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
-            />
-          </button>
+        {/* Secondary Navigation Row: Tabs and Date Selector aligned to Top */}
+        <div className="flex flex-col sm:flex-row items-start justify-between gap-4 sm:gap-0 mt-6 mb-10">
+          <div className="flex items-center gap-8 self-center sm:self-auto overflow-x-auto no-scrollbar scroll-smooth">
+            <button
+              onClick={() => onSwitch('portfolio')}
+              className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
+            >
+              Portfolio Overview
+            </button>
+            <button
+              className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
+            >
+              Expense Tracker
+              <motion.div
+                layoutId="active-nav-tab"
+                className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#171717]"
+                transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+              />
+            </button>
+          </div>
+
+          {/* Parallel Year Month Picker (Sharpened Corners) */}
+          <div className="flex items-center gap-1 p-0.5 bg-gray-50 rounded-sm border border-gray-100 shadow-sm transition-all hover:border-gray-200 mb-0">
+            <button
+              onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+              className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
+            >
+              <CaretLeft size={14} weight="bold" />
+            </button>
+            
+            <div className="px-2 flex items-center gap-2 min-w-[100px] select-none justify-center">
+              <span className="text-[12px] font-bold text-[#111827]">{viewDate.getFullYear()}</span>
+              <span className="text-[11px] font-medium text-gray-500 tracking-tight">{viewDate.toLocaleString('default', { month: 'long' })}</span>
+            </div>
+
+            <button
+              onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+              className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
+            >
+              <CaretRight size={14} weight="bold" />
+            </button>
+          </div>
         </div>
+      </div>
 
         {/* Quick Stats Grid with Illustrations */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-10">
@@ -1112,7 +1113,8 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
 
       {/* PRINT-ONLY STATEMENT (PORTFOLIO-GRADE FINANCIAL REPORT) */}
       <div id="expense-statement-print" className="hidden print:block fixed inset-0 bg-white z-[9999] overflow-auto p-12 text-[#1F2937] font-sans">
-        <style dangerouslySetInnerHTML={{ __html: `
+        <style dangerouslySetInnerHTML={{
+          __html: `
           @media print {
             body * { visibility: hidden; }
             #expense-statement-print, #expense-statement-print * { visibility: visible; }
@@ -1129,7 +1131,7 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
             @page { margin: 0; size: A4; }
           }
         `}} />
-        
+
         {/* Header Section */}
         <div className="flex justify-between items-start mb-2 border-b border-gray-100 pb-10">
           <div>
@@ -1264,6 +1266,6 @@ export const ExpenseDashboard = ({ onSwitch }: { onSwitch: (val: 'portfolio' | '
           <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.4em]">PROPRIETARY REPORT — CONFIDENTIAL MANAGEMENT DASHBOARD — © 2026</p>
         </div>
       </div>
-    </div>
+    </>
   )
 }
