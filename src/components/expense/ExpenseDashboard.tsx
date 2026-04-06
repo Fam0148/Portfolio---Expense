@@ -54,7 +54,7 @@ const StatCard = ({ title, numericValue, illustration, badgeText, badgeColor = "
         <img
           src={illustration}
           alt={title}
-          className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
           decoding="async"
           onError={(e: any) => {
