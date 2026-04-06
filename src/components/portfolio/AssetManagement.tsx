@@ -104,7 +104,7 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
             <div className="max-h-[40vh] overflow-y-auto mb-8 pr-2">
               <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-gray-100">
                 {loading ? (
-                  <div className="pl-10 py-4 text-xs text-gray-400 italic">Fetching transaction history...</div>
+                  <div className="pl-10 py-4 text-xs text-gray-400">Fetching transaction history...</div>
                 ) : logs.length === 0 ? (
                   <div className="relative pl-10">
                     <div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-gray-400 ring-4 ring-white" />
@@ -122,7 +122,7 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
                       {new Date(log.transaction_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                     </p>
                     <p className="text-sm font-bold text-[#171717]">{log.quantity} units @ ₹{Number(log.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5 italic">Transaction logged</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">Transaction logged</p>
                   </div>
                 ))}
               </div>
@@ -745,9 +745,9 @@ export const AssetManagement = () => {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm italic">Loading your assets...</td></tr>
+                <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm">Loading your assets...</td></tr>
               ) : visibleStocks.length === 0 ? (
-                <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm italic">
+                <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm">
                   No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
                 </td></tr>
               ) : visibleStocks.map((stock) => {

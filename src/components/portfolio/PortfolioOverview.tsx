@@ -287,57 +287,55 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
 
   return (
     <>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
-        <div className="no-print">
-          <div className="flex flex-col items-center justify-center gap-6 pb-6 border-b border-gray-100">
-            <div className="flex flex-col space-y-1 text-center">
-              <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
-                Hi, {userName}
-              </h1>
-              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight max-w-[280px] sm:max-w-none mx-auto">
-                Analyze your wealth and track real-time asset performance.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-center gap-3 w-full sm:w-auto">
-              <button
-                onClick={() => { setTimeout(() => { window.print(); }, 500); }}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
-              >
-                <FilePdf size={14} weight="bold" className="text-gray-300 group-hover:text-white transition-colors" />
-                Export
-              </button>
-              <button
-                onClick={handleLogOut}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
-              >
-                <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
-                Sign Out
-              </button>
-            </div>
+      <div className="no-print max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
+        <div className="flex flex-col items-center justify-center gap-6 pb-6 border-b border-gray-100">
+          <div className="flex flex-col space-y-1 text-center">
+            <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
+              Hi, {userName}
+            </h1>
+            <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight max-w-[280px] sm:max-w-none mx-auto">
+              Analyze your wealth and track real-time asset performance.
+            </p>
           </div>
 
-          {/* Secondary Navigation Row: Centered Tabs aligned to Top */}
-          <div className="flex flex-row items-center justify-center gap-8 mt-4 mb-10 overflow-x-auto">
-            <div className="flex items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
-              <button
-                onClick={() => onSwitch('portfolio')}
-                className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
-              >
-                Portfolio Overview
-                <motion.div
-                  layoutId="active-nav-tab"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.2)]"
-                  transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
-                />
-              </button>
-              <button
-                onClick={() => onSwitch('expense')}
-                className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
-              >
-                Expense Tracker
-              </button>
-            </div>
+          <div className="flex items-center justify-center gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => { setTimeout(() => { window.print(); }, 500); }}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
+            >
+              <FilePdf size={14} weight="bold" className="text-gray-300 group-hover:text-white transition-colors" />
+              Export
+            </button>
+            <button
+              onClick={handleLogOut}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+            >
+              <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
+              Sign Out
+            </button>
+          </div>
+        </div>
+
+        {/* Secondary Navigation Row: Centered Tabs aligned to Top */}
+        <div className="flex flex-row items-center justify-center gap-8 mt-4 mb-10 overflow-x-auto">
+          <div className="flex items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+            <button
+              onClick={() => onSwitch('portfolio')}
+              className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
+            >
+              Portfolio Overview
+              <motion.div
+                layoutId="active-nav-tab"
+                className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.2)]"
+                transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+              />
+            </button>
+            <button
+              onClick={() => onSwitch('expense')}
+              className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
+            >
+              Expense Tracker
+            </button>
           </div>
         </div>
 

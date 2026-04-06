@@ -444,8 +444,8 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
 
   return (
     <>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
-        <div className="no-print">
+      <div className="no-print max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
+        <div>
           {/* Centered Greeting & Global Actions */}
           <div className="flex flex-col items-center justify-center gap-6 pb-6 border-b border-gray-100">
             <div className="flex flex-col space-y-1 text-center">
@@ -788,7 +788,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                                       </button>
                                     ))
                                   ) : (
-                                    <div className="px-4 py-2 text-xs text-gray-400 italic">No matches...</div>
+                                    <div className="px-4 py-2 text-xs text-gray-400">No matches...</div>
                                   )}
                                 </div>
                                 {mappingCatSearch && !existingCategories.some(c => c.toLowerCase() === mappingCatSearch.toLowerCase()) && (
@@ -851,7 +851,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                               </tr>
                             )) : (
                               <tr>
-                                <td colSpan={3} className="py-12 text-center text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em] italic">
+                                <td colSpan={3} className="py-12 text-center text-[10px] font-bold text-gray-300 uppercase tracking-[0.2em]">
                                   No active categorization rules
                                 </td>
                               </tr>
@@ -954,7 +954,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                                 </button>
                               ))
                             ) : (
-                              <div className="px-4 py-2 text-xs text-gray-400 italic">No exact matches...</div>
+                              <div className="px-4 py-2 text-xs text-gray-400">No exact matches...</div>
                             )}
                           </div>
 
@@ -1106,7 +1106,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                                 {dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })} • {tx.category}
                               </span>
                               {tx.note && (
-                                <span className="text-[11px] text-gray-500 italic mt-0.5">
+                                <span className="text-[11px] text-gray-500 mt-0.5">
                                   {tx.note}
                                 </span>
                               )}
@@ -1160,15 +1160,14 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
         <style dangerouslySetInnerHTML={{
           __html: `
           @media print {
-            body * { visibility: hidden; }
-            #expense-statement-print, #expense-statement-print * { visibility: visible; }
+            .no-print { display: none !important; }
             #expense-statement-print { 
               position: absolute !important; 
               left: 0 !important; 
               top: 0 !important; 
               width: 100% !important; 
               height: auto !important;
-              padding: 15mm !important;
+              padding: 10mm !important;
               background: white !important;
               display: block !important;
             }
@@ -1176,141 +1175,146 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           }
         `}} />
 
-        {/* Header Section */}
-        <div className="flex justify-between items-start mb-2 border-b border-gray-100 pb-10">
-          <div>
-            <h1 className="text-[38px] font-bold text-[#111827] tracking-tight mb-2 uppercase leading-none">Expenditure Statement</h1>
-            <h2 className="text-xl font-bold text-[#374151]">Account: <span className="text-[#111827]">{userName}</span></h2>
-          </div>
-          <div className="text-right text-[12px] font-bold text-gray-400 uppercase tracking-[0.1em] space-y-1 pt-2">
-            <p>DATE ISSUED: <span className="text-[#111827]">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase()}</span></p>
-            <p>STATEMENT ID: <span className="text-[#111827]">#EXP-{viewDate.getMonth() + 1}{viewDate.getFullYear().toString().slice(-2)}B</span></p>
-          </div>
-        </div>
+        {/* Top Header Section */}
+        <div className="flex justify-between items-start mb-12">
+          <div className="text-left">
+            <div className="w-32 h-[6px] bg-blue-300 mb-2" />
+            <h1 className="text-[54px] font-extrabold text-[#111827] tracking-tighter leading-none mb-8 uppercase">Expenditure</h1>
 
-        {/* Section 1: Income Flows (Like Asset Holdings) */}
-        <div className="mb-10">
-          <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-50 pb-2">MONTHLY REVENUE / INCOME FLOWS</h3>
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                <th className="py-2 px-0">SOURCE DESCRIPTION</th>
-                <th className="py-2 px-0 text-center">CATEGORY</th>
-                <th className="py-2 px-0 text-center">STATUS</th>
-                <th className="py-2 px-0 text-right">CREDIT AMOUNT</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              <tr className="text-[14px] font-medium text-[#374151]">
-                <td className="py-4 px-0 font-bold text-[#111827]">Monthly Salary (Primary)</td>
-                <td className="py-4 px-0 text-center text-gray-400">Regular</td>
-                <td className="py-4 px-0 text-center text-emerald-600 font-bold">Received</td>
-                <td className="py-4 px-0 text-right font-bold text-[#111827]">Rs. {Number(income.salary || 0).toLocaleString('en-IN')}</td>
-              </tr>
-              {Number(income.sideHustle) > 0 && (
-                <tr className="text-[14px] font-medium text-[#374151]">
-                  <td className="py-4 px-0 font-bold text-[#111827]">Side Hustle (Secondary)</td>
-                  <td className="py-4 px-0 text-center text-gray-400">Variable</td>
-                  <td className="py-4 px-0 text-center text-emerald-600 font-bold">Received</td>
-                  <td className="py-4 px-0 text-right font-bold text-[#111827]">Rs. {Number(income.sideHustle || 0).toLocaleString('en-IN')}</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Section 2: Fixed Obligations (Like Bonds/Fixed Income) */}
-        <div className="mb-10">
-          <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-50 pb-2">MANDATORY FIXED OBLIGATIONS</h3>
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                <th className="py-2 px-0">OBLIGATION</th>
-                <th className="py-2 px-0 text-center">TYPE</th>
-                <th className="py-2 px-0 text-center">CYCLE</th>
-                <th className="py-2 px-0 text-right">DEBIT AMOUNT</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {[
-                { name: 'House Rent', amount: fixedExpenses.rent },
-                { name: 'Cook Cost', amount: fixedExpenses.cook },
-                { name: 'Travel Allowance', amount: fixedExpenses.travel },
-                { name: 'Insurance Premium', amount: fixedExpenses.insurance },
-                { name: 'Communication/Utility Bill', amount: fixedExpenses.communication }
-              ].filter(e => Number(e.amount) > 0).map((e, i) => (
-                <tr key={i} className="text-[14px] font-medium text-[#374151]">
-                  <td className="py-4 px-0 font-bold text-[#111827]">{e.name}</td>
-                  <td className="py-4 px-0 text-center text-gray-400">Fixed</td>
-                  <td className="py-4 px-0 text-center">Monthly</td>
-                  <td className="py-4 px-0 text-right font-bold text-[#111827]">Rs. {Number(e.amount).toLocaleString('en-IN')}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Section 3: Variable Log (Full Activity Log Style) */}
-        <div className="mb-10">
-          <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-6 border-b border-gray-50 pb-2">DETAILED ACTIVITY & EXPENDITURE LOG</h3>
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                <th className="py-2 px-0 font-bold">DATE</th>
-                <th className="py-2 px-0 font-bold">IDENTIFIER</th>
-                <th className="py-2 px-0 font-bold">CATEGORY</th>
-                <th className="py-2 px-0 font-bold text-center">QTY</th>
-                <th className="py-2 px-0 text-right font-bold">AMOUNT</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {monthTxs.length > 0 ? monthTxs.map((tx, i) => (
-                <tr key={i} className="text-[13px] text-gray-600">
-                  <td className="py-4 px-0">{new Date(tx.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                  <td className="py-4 px-0">
-                    <div className="font-bold text-[#111827]">{tx.name}</div>
-                    {tx.note && <div className="text-[10px] text-gray-400 font-medium italic leading-relaxed">{tx.note}</div>}
-                  </td>
-                  <td className="py-4 px-0 uppercase text-[10px] tracking-tight">{tx.category}</td>
-                  <td className="py-4 px-0 text-center">1</td>
-                  <td className="py-4 px-0 text-right font-bold text-[#111827]">Rs. {Number(tx.amount).toLocaleString('en-IN')}</td>
-                </tr>
-              )) : (
-                <tr>
-                  <td colSpan={5} className="py-12 text-center text-gray-300 italic text-xs tracking-widest">NO VARIABLE TRANSACTIONS RECORDED FOR THIS PERIOD</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Summary Footer Row (Portfolio Summary Style) */}
-        <div className="flex justify-between items-center pt-8 border-t border-gray-100 mb-8 break-inside-avoid">
-          <div className="space-y-1 text-left">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">TOTAL MONTHLY EXPENDITURE</p>
-            <p className="text-[24px] font-bold text-[#111827]">Rs. {(totalFixed + monthTxs.reduce((sum, tx) => sum + Number(tx.amount), 0)).toLocaleString('en-IN')}</p>
-            <div className="text-[9px] text-gray-400">
-              Transactions: {monthTxs.length} | Fixed Obligations: 5 Active
+            <div className="space-y-1">
+              <p className="text-[12px] font-bold text-[#111827]">Issued to:</p>
+              <p className="text-[13px] text-gray-500 font-medium">{userName}</p>
+              <p className="text-[13px] text-gray-400">Digital Cashflow Report</p>
+              <p className="text-[13px] text-gray-400">iFairValueGod Hub</p>
+              <p className="text-[13px] text-gray-400">{viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })}</p>
             </div>
           </div>
-          <div className="space-y-1 text-center">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">MONTHLY SAVINGS REVENUE</p>
-            <p className={`text-[24px] font-bold ${availableBudget >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
-              {availableBudget >= 0 ? '+' : '-'}Rs. {Math.abs(availableBudget).toLocaleString('en-IN')}
-            </p>
-            <div className="text-[9px] text-gray-400">
-              {((availableBudget / totalIncome) * 100).toFixed(1)}% Yield status
+
+          <div className="text-right flex flex-col items-end pt-4">
+            <div className="space-y-4">
+              <div className="text-right">
+                <p className="text-[11px] font-bold text-[#111827]">Statement Date:</p>
+                <p className="text-[11px] text-gray-400">{new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</p>
+              </div>
             </div>
-          </div>
-          <div className="space-y-1 text-right">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">NET CLOSING BALANCE</p>
-            <p className="text-[32px] font-extrabold text-[#F43F5E] leading-none mb-1">Rs. {availableBudget.toLocaleString('en-IN')}</p>
-            <div className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Verified Digital Audit</div>
           </div>
         </div>
 
-        <div className="mt-12 pt-6 border-t border-gray-50 text-center opacity-30">
-          <p className="text-[8px] font-black text-gray-400 uppercase tracking-[0.4em]">PROPRIETARY REPORT — CONFIDENTIAL MANAGEMENT DASHBOARD — © 2026</p>
+        {/* Info Bar Detail Grid */}
+        <div className="grid grid-cols-4 border-y border-gray-200 mb-8 py-3">
+          <div className="px-4 border-r border-gray-100">
+            <p className="text-[11px] font-bold text-[#111827] mb-0.5">Income Weight</p>
+            <p className="text-[11px] text-gray-400">₹{totalIncome.toLocaleString()}</p>
+          </div>
+          <div className="px-4 border-r border-gray-100">
+            <p className="text-[11px] font-bold text-[#111827] mb-0.5">Fixed Ratio</p>
+            <p className="text-[11px] text-gray-400">{(totalFixed / (totalIncome || 1) * 100).toFixed(1)}%</p>
+          </div>
+          <div className="px-4 border-r border-gray-100">
+            <p className="text-[11px] font-bold text-[#111827] mb-0.5">Savings Yield</p>
+            <p className="text-[11px] text-gray-400">{((availableBudget / (totalIncome || 1)) * 100).toFixed(1)}%</p>
+          </div>
+          <div className="px-4">
+            <p className="text-[11px] font-bold text-[#111827] mb-0.5">Status</p>
+            <p className="text-[11px] text-gray-400">Analyzed Account</p>
+          </div>
+        </div>
+
+        {/* Main Content Block (Blue Background) */}
+        <div className="bg-blue-50/70 rounded-xs relative overflow-hidden pb-10 mb-8">
+          {/* Project Bar */}
+          <div className="bg-blue-300 px-5 py-2.5 mb-8">
+            <h2 className="text-[13px] font-extrabold text-[#111827] tracking-tight uppercase">
+              Consolidated Expenditure Performance — {viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })} Report
+            </h2>
+          </div>
+
+          <div className="px-5">
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <p className="text-[12px] font-bold text-[#111827] mb-1">{userName}</p>
+                <p className="text-[11px] text-gray-500 leading-relaxed uppercase tracking-tighter">Budget Allocation Statement<br />Fixed & Variable Cashflows</p>
+              </div>
+              <div className="text-right">
+                <div className="flex gap-10">
+                  <div>
+                    <p className="text-[11px] font-bold text-[#111827] mb-1">Audit Status</p>
+                    <p className="text-[11px] text-gray-500">Live Transaction Tracking*</p>
+                  </div>
+                  <div>
+                    <p className="text-[11px] font-bold text-[#111827] mb-1">Fiscal Month</p>
+                    <p className="text-[11px] text-gray-500">{viewDate.toLocaleString('default', { month: 'short', year: 'numeric' })}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Transactions Table */}
+            <table className="w-full text-left mb-10">
+              <thead>
+                <tr className="text-[11px] font-bold text-[#111827] border-b border-blue-200">
+                  <th className="py-3 px-0">Service / Line Item</th>
+                  <th className="py-3 px-0 text-center">Category</th>
+                  <th className="py-3 px-0 text-center">Count</th>
+                  <th className="py-3 px-0 text-right">Debit Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-blue-100/50">
+                {/* Fixed Line Items (Consolidated if multiple) */}
+                {totalFixed > 0 && (
+                  <tr className="text-[12px] text-[#334155]">
+                    <td className="py-4 px-0">• Consolidated Fixed Obligations</td>
+                    <td className="py-4 px-0 text-center uppercase text-[10px]">FIXED EXPENSE</td>
+                    <td className="py-4 px-0 text-center">Multiple</td>
+                    <td className="py-4 px-0 text-right font-bold text-[#0f172a]">₹{totalFixed.toLocaleString()}</td>
+                  </tr>
+                )}
+
+                {/* Variable Line Items */}
+                {monthTxs.map((tx, i) => (
+                  <tr key={i} className="text-[12px] text-[#334155]">
+                    <td className="py-4 px-0 pb-1">
+                      <div className="font-bold text-[#0f172a] tracking-tight">• {tx.name}</div>
+                      {tx.note && <div className="text-[10px] text-gray-400 mt-0.5">{tx.note}</div>}
+                    </td>
+                    <td className="py-4 px-0 text-center uppercase text-[10px] tracking-tight">{tx.category}</td>
+                    <td className="py-4 px-0 text-center">1 Item</td>
+                    <td className="py-4 px-0 text-right font-bold text-[#0f172a]">₹{Number(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  </tr>
+                ))}
+                {monthTxs.length === 0 && totalFixed === 0 && (
+                  <tr><td colSpan={4} className="py-12 text-center text-gray-400 text-[11px] font-bold uppercase tracking-widest">No variable transactions recorded</td></tr>
+                )}
+              </tbody>
+            </table>
+
+            {/* Subtotals within the blue block */}
+            <div className="flex justify-end pt-4 border-t border-blue-200">
+              <div className="w-[300px] space-y-4">
+                <div className="flex justify-between items-center text-[11px] font-bold text-gray-500">
+                  <span>Subtotal Expenditure</span>
+                  <span className="text-[#111827]">₹{(totalFixed + monthTxs.reduce((sum, tx) => sum + Number(tx.amount), 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between items-center text-[11px] font-bold text-gray-500">
+                  <span>Savings Retention</span>
+                  <span className="text-[#111827]">₹{availableBudget.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Final Total at the bottom right */}
+        <div className="flex justify-end pr-5">
+          <div className="flex items-center gap-10">
+            <span className="text-[13px] font-black text-[#111827] uppercase tracking-tighter">Total Monthly Outflow</span>
+            <span className="text-[15px] font-black text-[#111827]">₹{(totalFixed + monthTxs.reduce((sum, tx) => sum + Number(tx.amount), 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+          </div>
+        </div>
+
+        <div className="mt-20 pt-10 border-t border-gray-100 text-center flex flex-col items-center">
+          <p className="text-[8px] font-bold text-gray-300 uppercase tracking-[0.5em] mb-2">This is a system generated fiscal report — confidentiality guaranteed — maestro intelligence © 2026</p>
+          <div className="w-16 h-[2px] bg-blue-100" />
         </div>
       </div>
     </>
