@@ -129,7 +129,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
-            margin={{ top: 20, right: 10, left: -10, bottom: 0 }}
+            margin={{ top: 20, right: 10, left: 10, bottom: 30 }}
             key={timeframe} // Force re-render for animation
           >
             <defs>

@@ -314,7 +314,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
         </div>
 
         {/* Secondary Navigation Row: Centered Tabs aligned to Top */}
-        <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20 shadow-sm sm:shadow-none">
+        <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20">
           <div className="flex items-center justify-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
             <button
               onClick={() => onSwitch('portfolio')}

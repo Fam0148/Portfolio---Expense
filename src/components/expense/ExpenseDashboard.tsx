@@ -11,7 +11,7 @@ import {
   X,
   PencilLine,
   Check,
-  Sparkle,
+  Robot,
   CalendarBlank
 } from "@phosphor-icons/react"
 import { NumberTicker } from "../ui/NumberTicker"
@@ -458,29 +458,6 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
             </div>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
-              <div className="w-full sm:w-auto flex items-center justify-between sm:justify-center gap-1 p-0.5 bg-gray-50 rounded-sm border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all hover:border-gray-200">
-                <button
-                  onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
-                  className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
-                >
-                  <CaretLeft size={14} weight="bold" />
-                </button>
-
-                <div className="px-2 flex items-center gap-2 min-w-[90px] select-none justify-center">
-                  <span className="text-[11px] font-bold text-[#111827]">{viewDate.getFullYear()}</span>
-                  <span className="text-[10px] font-medium text-gray-500 tracking-tight">{viewDate.toLocaleString('default', { month: 'short' })}</span>
-                </div>
-
-                <button
-                  onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
-                  className="p-1 hover:bg-white hover:shadow-xs rounded-sm text-gray-400 hover:text-gray-600 transition-all font-bold"
-                >
-                  <CaretRight size={14} weight="bold" />
-                </button>
-              </div>
-
-              <div className="hidden sm:block h-6 w-[1px] bg-gray-100 mx-1" />
-
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <button
                   onClick={handleExportStatement}
@@ -502,7 +479,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           </div>
 
           {/* Secondary Navigation Row: Centered Tabs (Sticky) */}
-          <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20 shadow-sm sm:shadow-none">
+          <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20">
             <div className="flex items-center justify-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
               <button
                 onClick={() => onSwitch('portfolio')}
@@ -668,7 +645,33 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
               <div className="flex items-start justify-between group/header">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-2xl font-serif font-bold text-[#171717]">Daily Spending Logs</h2>
-                  <p className="text-sm text-gray-500">Log every minor and major expense to track exactly where your money goes.</p>
+                  <p className="text-sm text-gray-500 mb-2">Log every minor and major expense to track exactly where your money goes.</p>
+                  
+                  {/* Contextual Month Picker: Larger & Clearer */}
+                  <div className="w-fit flex items-center gap-2 p-1 bg-white rounded-md border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-all hover:border-gray-200">
+                    <button
+                      onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
+                      className="p-2 hover:bg-gray-50 rounded-sm text-gray-400 hover:text-[#111827] transition-all"
+                    >
+                      <CaretLeft size={16} weight="bold" />
+                    </button>
+
+                    <div className="px-5 flex items-center gap-3 select-none justify-center">
+                      <span className="text-[15px] font-bold text-[#111827]">
+                        {viewDate.toLocaleString('default', { month: 'long' })}
+                      </span>
+                      <span className="text-[15px] font-bold text-gray-300">
+                        {viewDate.getFullYear()}
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}
+                      className="p-2 hover:bg-gray-50 rounded-sm text-gray-400 hover:text-[#111827] transition-all"
+                    >
+                      <CaretRight size={16} weight="bold" />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="hidden sm:flex items-center gap-2 bg-gray-50 p-1 rounded-md" onClick={(e) => e.stopPropagation()}>
@@ -702,13 +705,13 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                 {/* Smart Categorization (Internal Collapsible) */}
                 <div className="mb-8 border border-gray-100 rounded-lg overflow-hidden bg-gray-50/20">
                   <div className="flex items-center justify-between p-4 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-md bg-white border border-gray-100 flex items-center justify-center text-[#171717]">
-                        <Sparkle size={16} weight="bold" />
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#171717] shadow-sm">
+                        <Robot size={24} weight="bold" />
                       </div>
                       <div className="flex flex-col">
-                        <h3 className="text-sm font-serif font-bold text-[#171717]">Smart Categorization</h3>
-                        <p className="text-[10px] text-gray-400">Automate your transaction tagging.</p>
+                        <h3 className="text-lg font-serif font-bold text-[#171717]">Smart Categorization</h3>
+                        <p className="text-xs text-gray-400">Automate your transaction tagging with AI-powered matching.</p>
                       </div>
                     </div>
                     <motion.button
@@ -914,7 +917,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                           className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-sm font-bold outline-none focus:ring-2 focus:ring-gray-100 transition-all disabled:opacity-50 disabled:bg-gray-50 disabled:cursor-not-allowed pr-10 cursor-pointer"
                         />
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-300">
-                          {isAlreadyMapped ? <Sparkle size={14} weight="fill" className="text-amber-400 animate-pulse" /> : <Plus size={14} weight="bold" />}
+                          {isAlreadyMapped ? <Robot size={14} weight="fill" className="text-amber-400 animate-pulse" /> : <Plus size={14} weight="bold" />}
                         </div>
                       </div>
 
@@ -981,7 +984,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                                 }}
                                 className="w-full flex items-center gap-2 px-3 py-2 bg-[#171717] rounded-md shadow-sm text-xs font-bold text-white hover:bg-black transition-colors"
                               >
-                                <Sparkle size={12} weight="fill" className="text-amber-400" />
+                                <Robot size={12} weight="fill" className="text-amber-400" />
                                 <span>Set Auto-Select for "{txForm.name}"</span>
                               </button>
                             )}
