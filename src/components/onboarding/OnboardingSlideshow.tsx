@@ -68,7 +68,7 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
         <motion.div 
           initial={{ opacity: 0, scale: 0.98, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="w-full max-w-[440px] bg-white rounded-lg overflow-hidden shadow-[0_40px_80px_-20px_rgba(0,0,0,0.12)] flex flex-col relative"
+          className="w-full max-w-[440px] bg-white rounded-lg overflow-hidden border border-gray-100 flex flex-col relative"
         >
 
           {/* Minimal Pure White Header */}
@@ -147,7 +147,7 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
                   )}
                   <button 
                     onClick={handleNext}
-                    className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white text-[14px] font-bold transition-all flex items-center justify-center active:scale-98 shadow-sm"
+                    className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white text-[14px] font-bold transition-all flex items-center justify-center active:scale-98"
                   >
                     <span>{currentIndex === slides.length - 1 ? 'Get Started' : 'Next Step'}</span>
                   </button>

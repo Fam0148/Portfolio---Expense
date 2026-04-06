@@ -182,10 +182,10 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
   return (
     <Background>
       <div className="w-full max-w-[440px] mx-auto px-4 text-[#171717]">
-        <Card className="border border-gray-100 rounded-xl bg-white overflow-hidden p-8 md:p-9 shadow-2xl shadow-black/5">
+        <Card className="border border-gray-100 rounded-2xl bg-white overflow-hidden p-8 md:p-9">
           {/* Header & Global Errors */}
           <div className="flex flex-col items-center text-center space-y-4 mb-8">
-            <div className="w-16 h-16 flex items-center justify-center rounded-lg bg-[#171717] shadow-xl">
+            <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-[#171717] border border-gray-800">
               <Star 
                 className="w-8 h-8 text-white fill-white animate-logo-float" 
                 style={{ animationDuration: '6s' }}
@@ -351,7 +351,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
             <button
               type="submit"
               disabled={!isFormValid || isLoading}
-              className="w-full bg-[#171717] hover:bg-[#262626] text-white font-bold h-11 rounded-md shadow-xl transition-all text-sm mt-2 disabled:opacity-30 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2"
+              className="w-full bg-[#171717] hover:bg-[#262626] text-white font-bold h-11 rounded-md transition-all text-sm mt-2 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
