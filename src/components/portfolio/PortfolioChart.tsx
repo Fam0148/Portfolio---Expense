@@ -90,7 +90,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
   })()
 
   return (
-    <div className="bg-white p-4 sm:p-6 rounded-lg border border-gray-100/80 shadow-sm flex flex-col space-y-6">
+    <div className="bg-white p-5 sm:p-8 rounded-lg border border-gray-100/80 shadow-sm flex flex-col space-y-8">
       <style>{`
         @keyframes pulse-ring {
           0% { transform: scale(0.33); opacity: 1; }
@@ -102,21 +102,21 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
         }
       `}</style>
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-        <div className="flex items-center gap-3">
-          <div className="relative flex h-2 w-2">
+        <div className="flex items-center gap-4">
+          <div className="relative flex h-2.5 w-2.5">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
           </div>
-          <h2 className="text-lg font-serif font-bold text-[#171717] tracking-tight">Portfolio Value History</h2>
+          <h2 className="text-xl font-serif font-bold text-[#171717] tracking-tight">Portfolio Value History</h2>
         </div>
         <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
-          <span className={`text-[10px] sm:text-[11px] font-sans font-bold px-2 py-0.5 rounded-full whitespace-nowrap ${profitPercent >= 0 ? 'text-green-600 bg-green-50' : 'text-rose-600 bg-rose-50'}`}>
+          <span className={`text-[11px] sm:text-[12px] font-sans font-bold px-3 py-1 rounded-full whitespace-nowrap ${profitPercent >= 0 ? 'text-green-600 bg-green-50' : 'text-rose-600 bg-rose-50'}`}>
             {profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(1)}% Overall
           </span>
           <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value)}
-            className="bg-gray-50 border-none text-[10px] sm:text-[11px] font-sans font-semibold text-gray-500 rounded-sm px-2 py-1 outline-none cursor-pointer"
+            className="bg-gray-50 border border-gray-100 text-[11px] sm:text-[12px] font-sans font-semibold text-gray-500 rounded-sm px-3 py-1.5 outline-none cursor-pointer hover:bg-gray-100 transition-colors"
           >
             <option value="1Y">Last 1 year</option>
             <option value="6M">Last 6 months</option>
@@ -125,16 +125,16 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
         </div>
       </div>
 
-      <div className="h-[280px] w-full">
+      <div className="h-[420px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
-            margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+            margin={{ top: 20, right: 10, left: -10, bottom: 0 }}
             key={timeframe} // Force re-render for animation
           >
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
                 <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
               </linearGradient>
             </defs>
@@ -150,14 +150,16 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
               dataKey="label"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'Inter' }}
-              dy={10}
+              tick={{ fontSize: 12, fill: '#9ca3af', fontFamily: 'Inter', fontWeight: 500 }}
+              dy={15}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 11, fill: '#9ca3af', fontFamily: 'Inter' }}
+              tick={{ fontSize: 12, fill: '#9ca3af', fontFamily: 'Inter', fontWeight: 500 }}
               tickFormatter={(value) => `₹${value / 1000}k`}
+              dx={-5}
+              domain={['auto', 'auto']}
             />
             <Tooltip
               content={<CustomTooltip />}
@@ -167,12 +169,12 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
               type="monotone"
               dataKey="value"
               stroke="#10b981"
-              strokeWidth={3}
+              strokeWidth={4}
               fillOpacity={1}
               fill="url(#colorValue)"
               animationDuration={1500}
               dot={<CustomDot data={chartData} />}
-              activeDot={{ r: 5, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
+              activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>

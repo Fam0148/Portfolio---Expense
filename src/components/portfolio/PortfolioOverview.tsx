@@ -8,7 +8,7 @@ import { FilePdf, SignOut } from "@phosphor-icons/react"
 import { StatementView } from "./StatementView"
 
 const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0, customDisplay = false, stats, className = "" }: any) => {
-  const isNegative = !customDisplay && numericValue < 0
+  const isNegative = !customDisplay && Number(numericValue) < 0
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -33,14 +33,18 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
                 <span className="text-2xl font-display font-bold text-green-600">{stats?.bondWeight.toFixed(0)}%</span>
               </div>
             </div>
-            <div className="w-full h-2 bg-gray-50 rounded-full overflow-hidden flex">
-              <div className="h-full bg-blue-600" style={{ width: `${stats?.stockWeight}%` }} />
-              <div className="h-full bg-green-500" style={{ width: `${stats?.bondWeight}%` }} />
+            <div className="w-full h-8 bg-gray-50 rounded-md overflow-hidden flex border border-gray-100/50 mt-1">
+              <div className="h-full bg-blue-600 transition-all duration-1000 ease-out flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${stats?.stockWeight}%` }}>
+                {stats?.stockWeight > 15 && `${stats?.stockWeight.toFixed(0)}%`}
+              </div>
+              <div className="h-full bg-green-500 transition-all duration-1000 ease-out flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${stats?.bondWeight}%` }}>
+                {stats?.bondWeight > 15 && `${stats?.bondWeight.toFixed(0)}%`}
+              </div>
             </div>
           </div>
         ) : (
           <div className="flex flex-row items-baseline gap-2 mt-1">
-            <div className="flex items-baseline font-display font-bold text-[26px] sm:text-[30px] tracking-tight text-[#171717]">
+            <div className={`flex items-baseline font-display font-bold text-[26px] sm:text-[30px] tracking-tight ${isNegative ? 'text-rose-600' : 'text-[#171717]'}`}>
               <span className="text-[18px] sm:text-[22px] mr-1 font-bold">{isNegative ? '-₹' : '₹'}</span>
               <NumberTicker value={Math.abs(numericValue)} />
             </div>
@@ -57,7 +61,7 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
         <img
           src={illustration}
           alt={title}
-          className="w-full h-full object-contain transition-all duration-500 hover:scale-105 rotate-[5deg]"
+          className="w-full h-full object-contain transition-all duration-500 hover:scale-105 rotate-[5deg] group-hover:rotate-0"
           onError={() => {
             console.error(`Failed to load asset: ${illustration}`);
           }}
@@ -249,7 +253,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
     {
       title: "Monthly Passive Income",
       numericValue: stats.monthlyIncome,
-      illustration: "/assets/Passive inccome.png",
+      illustration: "/assets/Passive income.png",
       delay: 0.3
     },
     {
@@ -272,8 +276,8 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
     <>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
         <div className="no-print">
-          <div className="flex flex-col items-center gap-6 pb-6 border-b border-gray-100 text-center">
-            <div className="flex flex-col space-y-1">
+          <div className="flex flex-col items-center justify-center gap-6 pb-6 border-b border-gray-100">
+            <div className="flex flex-col space-y-1 text-center">
               <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
                 Hi, {userName}
               </h1>
@@ -282,17 +286,17 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
               </p>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
+            <div className="flex items-center justify-center gap-3 w-full sm:w-auto">
               <button
                 onClick={() => { setTimeout(() => { window.print(); }, 500); }}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
               >
                 <FilePdf size={14} weight="bold" className="text-gray-300 group-hover:text-white transition-colors" />
-                Export Statement
+                Export
               </button>
               <button
                 onClick={handleLogOut}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
               >
                 <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
                 Sign Out
@@ -301,7 +305,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           </div>
 
           {/* Secondary Navigation Row: Centered Tabs aligned to Top */}
-        <div className="flex flex-row items-start justify-center gap-8 mt-4 mb-10">
+          <div className="flex flex-row items-center justify-center gap-8 mt-4 mb-10 overflow-x-auto">
             <div className="flex items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
               <button
                 onClick={() => onSwitch('portfolio')}
@@ -332,7 +336,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
                 key={idx}
                 {...card}
                 stats={stats}
-                className={isLastCard ? "lg:col-span-2" : ""}
+                className={isLastCard ? "md:col-span-2" : ""}
               />
             );
           })}
