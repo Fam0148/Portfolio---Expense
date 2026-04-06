@@ -15,6 +15,7 @@ import {
   CalendarBlank
 } from "@phosphor-icons/react"
 import { NumberTicker } from "../ui/NumberTicker"
+import { FinancialInsight } from "../ui/FinancialInsight"
 
 const StatCard = ({ title, numericValue, illustration, badgeText, badgeColor = "emerald", delay = 0 }: any) => {
   const isNegative = numericValue < 0
@@ -423,6 +424,17 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
     }
   ]
 
+  const getExpenseInsight = () => {
+    const savingsRate = totalIncome > 0 ? (availableBudget / totalIncome) * 100 : 0;
+    if (totalIncome === 0) return { text: "START BY ADDING YOUR INCOME FOR THIS MONTH.", type: "info" as const };
+    if (availableBudget < 0) return { text: "YOU HAVE EXCEEDED YOUR TOTAL INCOME. REDUCE SPENDING NOW ⚠️", type: "error" as const };
+    if (savingsRate > 40) return { text: `YOU SAVED ${savingsRate.toFixed(0)}% THIS MONTH (ABOVE AVERAGE PERFORMANCE 👍)`, type: "success" as const };
+    if (savingsRate < 10) return { text: `SAVINGS RATE IS AT ${savingsRate.toFixed(0)}%. AIM FOR 20% TO STAY SECURE.`, type: "warning" as const };
+    return { text: `CURRENT SAVINGS RATE: ${savingsRate.toFixed(0)}%. YOUR CASHFLOW IS HEALTHY.`, type: "success" as const };
+  }
+
+  const expInsight = getExpenseInsight();
+
   return (
     <>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
@@ -505,10 +517,15 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           </div>
 
           {/* Quick Stats Grid with Illustrations */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             {cards.map((card, idx) => (
               <StatCard key={idx} {...card} />
             ))}
+          </div>
+
+          {/* Strategic Insight below Quick Stats */}
+          <div className="mb-10">
+            <FinancialInsight message={expInsight.text} type={expInsight.type} delay={0.6} />
           </div>
 
           {/* Income & Mandatory Expenses Setup Section */}

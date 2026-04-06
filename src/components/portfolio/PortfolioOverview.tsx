@@ -6,6 +6,7 @@ import { AssetManagement } from "./AssetManagement"
 import { supabase } from "../../lib/supabase"
 import { FilePdf, SignOut } from "@phosphor-icons/react"
 import { StatementView } from "./StatementView"
+import { FinancialInsight } from "../ui/FinancialInsight"
 
 const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0, customDisplay = false, stats, className = "" }: any) => {
   const isNegative = !customDisplay && Number(numericValue) < 0
@@ -272,6 +273,16 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
     }
   ]
 
+  const getInsightMessage = () => {
+    if (stats.totalValue === 0) return { text: "START BY ADDING YOUR FIRST ASSET TO TRACK YOUR WEALTH.", type: "info" as const };
+    if (stats.bondWeight > 70) return { text: "HEAVILY INVESTED IN BONDS (LOW RISK, STABLE RETURNS 👍)", type: "success" as const };
+    if (stats.profitPercent > 5) return { text: `PORTFOLIO IS UP ${stats.profitPercent.toFixed(1)}% (OUTPERFORMING BENCHMARKS 📈)`, type: "success" as const };
+    if (stats.profitPercent < -2) return { text: `PORTFOLIO DROPPED ${Math.abs(stats.profitPercent).toFixed(1)}% THIS WEEK (STAY THE COURSE 📉)`, type: "error" as const };
+    return { text: "PORTFOLIO IS BALANCED AND HEALTHY. KEEP TRACKING REAL-TIME.", type: "info" as const };
+  }
+
+  const insight = getInsightMessage();
+
   return (
     <>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
@@ -328,7 +339,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           {cards.map((card, idx) => {
             const isLastCard = idx === cards.length - 1;
             return (
@@ -340,6 +351,11 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
               />
             );
           })}
+        </div>
+
+        {/* Strategic Insight below Asset Allocation */}
+        <div className="mb-10">
+          <FinancialInsight message={insight.text} type={insight.type} delay={0.6} />
         </div>
 
         <motion.div

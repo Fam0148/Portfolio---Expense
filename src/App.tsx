@@ -77,8 +77,8 @@ function App() {
     if (userChoice === 'portfolio') {
       return (
         <div className="min-h-screen bg-[#F8F8F8]">
-          <PortfolioOverview 
-            onSwitch={setUserChoice} 
+          <PortfolioOverview
+            onSwitch={setUserChoice}
             userName={userName}
           />
         </div>
@@ -88,8 +88,8 @@ function App() {
     if (userChoice === 'expense') {
       return (
         <div className="min-h-screen bg-[#F8F8F8]">
-          <ExpenseDashboard 
-            onSwitch={setUserChoice} 
+          <ExpenseDashboard
+            onSwitch={setUserChoice}
             userName={userName}
           />
         </div>
