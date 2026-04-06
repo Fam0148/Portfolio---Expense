@@ -54,7 +54,9 @@ const StatCard = ({ title, numericValue, illustration, badgeText, badgeColor = "
         <img
           src={illustration}
           alt={title}
-          className="w-full h-full object-contain transition-all duration-500 hover:scale-105 rotate-[5deg]"
+          className="w-full h-full object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-500"
+          loading="lazy"
+          decoding="async"
           onError={(e: any) => {
             e.target.style.display = 'none'
           }}
@@ -266,7 +268,11 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        await supabase.from('transactions').delete().eq('id', id)
+        // Defense-in-depth: Always filter by user_id even with RLS enabled
+        await supabase.from('transactions')
+          .delete()
+          .eq('id', id)
+          .eq('user_id', user.id)
       }
       const filtered = transactions.filter(t => t.id !== id)
       setTransactions(filtered)
@@ -287,6 +293,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
             .from('category_mappings')
             .update({ item_name: mappingForm.itemName, category: mappingForm.category })
             .eq('id', editingMappingId)
+            .eq('user_id', user.id)
           if (error) throw error
           setCategoryMappings(categoryMappings.map(m => m.id === editingMappingId ? { ...m, item_name: mappingForm.itemName, category: mappingForm.category } : m))
         } else {
@@ -323,7 +330,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
   const deleteMapping = async (id: any) => {
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (user) await supabase.from('category_mappings').delete().eq('id', id)
+      if (user) await supabase.from('category_mappings').delete().eq('id', id).eq('user_id', user.id)
       const filtered = categoryMappings.filter(m => m.id !== id)
       setCategoryMappings(filtered)
       localStorage.setItem('user_category_mappings', JSON.stringify(filtered))

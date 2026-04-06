@@ -63,6 +63,8 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
           src={illustration}
           alt={title}
           className="w-full h-full object-contain transition-all duration-500 hover:scale-105 rotate-[5deg] group-hover:rotate-0"
+          loading="lazy"
+          decoding="async"
           onError={() => {
             console.error(`Failed to load asset: ${illustration}`);
           }}

@@ -25,7 +25,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
   const [isLoading, setIsLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showSignupSuccess, setShowSignupSuccess] = useState(false)
-  const [isEmailInDB, setIsEmailInDB] = useState(false)
 
   // Reset form when switching modes
   useEffect(() => {
@@ -38,7 +37,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
     setErrorMsg(null)
     setShowPassword(false)
     setShowConfirmPassword(false)
-    setIsEmailInDB(false)
   }, [mode])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,44 +102,8 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
     }
   }
 
-  // Real-time Email existence check
-  useEffect(() => {
-    // Reset immediately on every change
-    setIsEmailInDB(false)
-
-    const email = formData.email.trim()
-
-    // Basic validation
-    if (!email || !email.includes("@") || !email.endsWith("@gmail.com")) {
-      return
-    }
-
-    const timer = setTimeout(async () => {
-      try {
-        console.log("Checking email:", email)
-        const { data, error, status } = await supabase
-          .from('profiles')
-          .select('email')
-          .ilike('email', email)
-          .maybeSingle()
-
-        console.log("DB Response →", { data, error, status })
-
-        if (!error && data) {
-          setIsEmailInDB(true)
-          console.log("✅ Email found in DB")
-        } else {
-          setIsEmailInDB(false)
-          if (error) console.warn("DB error:", error.code, error.message)
-          else console.log("❌ Email not found, status:", status)
-        }
-      } catch (err) {
-        console.error("Unexpected check error:", err)
-      }
-    }, 600)
-
-    return () => clearTimeout(timer)
-  }, [formData.email])
+  // Security: Removed real-time email existence check to prevent User Enumeration.
+  // Instead, rely on Supabase Auth errors during login for better privacy.
 
   // Gmail Validation Logic
   const emailError = useMemo(() => {
@@ -239,14 +201,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
               <div className="flex items-center justify-between px-0.5">
                 <Label htmlFor="email" className="text-sm font-semibold text-[#171717]">Email address</Label>
                 <div className="flex items-center gap-2">
-                  {isEmailInDB && mode === "login" && (
-                    <div
-                      key={formData.email}
-                      className="animate-stamp flex items-center justify-center pointer-events-none"
-                    >
-                      <CheckCircle2 className="w-5 h-5 text-green-600" strokeWidth={2.5} />
-                    </div>
-                  )}
                   {emailError && (
                     <span className="text-[12px] font-medium text-red-500/80 flex items-center gap-1 transition-all">
                       <AlertCircle className="w-3 h-3" /> {emailError}

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Background } from "../auth/Background"
 
@@ -15,36 +15,45 @@ type Slide = {
   image?: string
 }
 
+const slides: Slide[] = [
+  {
+    id: 0,
+    title: "Unified Wealth View",
+    description: "One place for your stocks, bonds, and daily expenses. Get a 360-degree perspective of your financial health.",
+    image: "/assets/unified health.png"
+  },
+  {
+    id: 1,
+    title: "Stock & Bond Tracker",
+    description: "Real-time NSE/BSE performance tracking. Automated asset averaging and historical gain/loss analysis.",
+    image: "/assets/stock and bond tracker.png"
+  },
+  {
+    id: 2,
+    title: "Smart Spending",
+    description: "Monitor every rupee effortlessly. Advanced categorization helps you identify where your money goes.",
+    image: "/assets/smart spending.png"
+  },
+  {
+    id: 3,
+    title: "Secure & Private",
+    description: "Your data is encrypted and strictly confidential. Bank-grade security for your personal wealth info.",
+    image: "/assets/security.png"
+  }
+]
+
 export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [direction, setDirection] = useState(0) // 1 for next, -1 for previous
+  const [direction, setDirection] = useState(0) 
 
-  const slides: Slide[] = [
-    {
-      id: 0,
-      title: "Unified Wealth View",
-      description: "One place for your stocks, bonds, and daily expenses. Get a 360-degree perspective of your financial health.",
-      image: "/assets/unified health.png"
-    },
-    {
-      id: 1,
-      title: "Stock & Bond Tracker",
-      description: "Real-time NSE/BSE performance tracking. Automated asset averaging and historical gain/loss analysis.",
-      image: "/assets/stock and bond tracker.png"
-    },
-    {
-      id: 2,
-      title: "Smart Spending",
-      description: "Monitor every rupee effortlessly. Advanced categorization helps you identify where your money goes.",
-      image: "/assets/smart spending.png"
-    },
-    {
-      id: 3,
-      title: "Secure & Private",
-      description: "Your data is encrypted and strictly confidential. Bank-grade security for your personal wealth info.",
-      image: "/assets/security.png"
-    }
-  ]
+  // Image Preloading Logic
+  useEffect(() => {
+    slides.forEach(slide => {
+      const img = new Image();
+      img.src = slide.image || "";
+    });
+  }, [slides])
+
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
@@ -106,6 +115,9 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
                   src={slides[currentIndex].image}
                   alt={slides[currentIndex].title}
                   className="w-full h-full object-contain"
+                  loading="eager"
+                  decoding="async"
+                  fetchPriority="high"
                 />
               </motion.div>
             </AnimatePresence>
