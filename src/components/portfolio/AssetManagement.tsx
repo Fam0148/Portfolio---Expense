@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef } from "react"
-import { createPortal } from "react-dom"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "../../lib/supabase"
 import {
   Pencil, Trash2, History, X, Search, Calendar,
-  BadgeIndianRupee, Hash, MoreVertical, ShieldCheck,
+  BadgeIndianRupee, Hash, ShieldCheck,
   TrendingUp, Timer, Percent
 } from "lucide-react"
 
@@ -150,24 +149,11 @@ export const AssetManagement = () => {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, id: "" })
   const [historyModal, setHistoryModal] = useState<{ isOpen: boolean; stock: Stock | null }>({ isOpen: false, stock: null })
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
-  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 })
-  const menuRef = useRef<HTMLDivElement | null>(null)
   const [activeTab, setActiveTab] = useState<'STOCK' | 'BOND'>('STOCK')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
 
-  // ── Close menu on outside click (reliable ref-based approach) ──────────────
-  useEffect(() => {
-    if (!openMenuId) return
-    const handler = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setOpenMenuId(null)
-      }
-    }
-    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 0)
-    return () => { clearTimeout(timer); document.removeEventListener('mousedown', handler) }
-  }, [openMenuId])
+
 
   // ── Close suggestions on outside click ────────────────────────────────────
   useEffect(() => {
@@ -226,12 +212,7 @@ export const AssetManagement = () => {
 
 
 
-  const calculateMonthlyRepayment = (stock: Stock) => {
-    if (!stock.ytm) return 0;
-    const ytm = parseFloat(stock.ytm);
-    if (isNaN(ytm)) return 0;
-    return (stock.purchase_price * stock.quantity * (ytm / 100)) / 12;
-  };
+
 
   const calculateTotalRepayment = (stock: Stock) => {
     const type = stock.asset_type || (stock.ytm || stock.tenure ? 'BOND' : 'STOCK');
@@ -911,38 +892,7 @@ export const AssetManagement = () => {
             })}
           </div>
 
-          {/* ── Desktop Action Menu Portal ── */}
-          {openMenuId && createPortal(
-            (() => {
-              const activeStock = stocks.find(s => s.id === openMenuId)
-              if (!activeStock) return null
-              return (
-                <div
-                  ref={menuRef}
-                  style={{ top: menuPos.top, right: menuPos.right }}
-                  className="fixed w-52 bg-white rounded-lg border border-gray-100 shadow-xl z-[200] py-2 overflow-hidden"
-                >
-                  <button type="button"
-                    onClick={() => { setHistoryModal({ isOpen: true, stock: activeStock }); setOpenMenuId(null) }}
-                    className="w-full px-4 py-2 flex items-center gap-3 text-sm font-medium text-gray-600 hover:bg-gray-50">
-                    <History size={16} className="text-gray-400" /> Log History
-                  </button>
-                  <button type="button"
-                    onClick={() => { handleEdit(activeStock); setOpenMenuId(null) }}
-                    className="w-full px-4 py-2 flex items-center gap-3 text-sm font-medium text-gray-600 hover:bg-gray-50">
-                    <Pencil size={16} className="text-gray-400" /> Edit Asset
-                  </button>
-                  <div className="h-px bg-gray-100 my-1 mx-2" />
-                  <button type="button"
-                    onClick={() => { setDeleteModal({ isOpen: true, id: activeStock.id }); setOpenMenuId(null) }}
-                    className="w-full px-4 py-2 flex items-center gap-3 text-sm font-medium text-rose-600 hover:bg-rose-50">
-                    <Trash2 size={16} className="text-rose-400" /> Delete Asset
-                  </button>
-                </div>
-              )
-            })(),
-            document.body
-          )}
+
         </div>
       </div>
     </div>
