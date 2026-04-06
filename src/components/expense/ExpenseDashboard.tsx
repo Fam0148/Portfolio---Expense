@@ -501,9 +501,9 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
             </div>
           </div>
 
-          {/* Secondary Navigation Row: Centered Tabs */}
-          <div className="flex flex-row items-start justify-center gap-8 mt-4 mb-10">
-            <div className="flex items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+          {/* Secondary Navigation Row: Centered Tabs (Sticky) */}
+          <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20 shadow-sm sm:shadow-none">
+            <div className="flex items-center justify-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
               <button
                 onClick={() => onSwitch('portfolio')}
                 className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"

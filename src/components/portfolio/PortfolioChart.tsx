@@ -125,7 +125,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
         </div>
       </div>
 
-      <div className="h-[420px] w-full">
+      <div className="h-[300px] sm:h-[420px] w-full">
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}

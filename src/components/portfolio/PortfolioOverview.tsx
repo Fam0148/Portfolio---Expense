@@ -18,7 +18,7 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
       className={`bg-white p-5 sm:p-6 rounded-lg border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 group transition-all duration-300 ${className}`}
     >
       <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
-        <h3 className="font-serif text-[16px] text-gray-500 leading-tight truncate">
+        <h3 className="font-serif text-[14px] sm:text-[16px] text-gray-500 leading-tight truncate">
           {title}
         </h3>
         {customDisplay ? (
@@ -58,16 +58,13 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
         )}
       </div>
 
-      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0 flex items-center justify-center relative">
+      <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0 flex items-center justify-center relative">
         <img
           src={illustration}
           alt={title}
           className="w-full h-full object-contain transition-all duration-500 hover:scale-105 rotate-[5deg] group-hover:rotate-0"
           loading="lazy"
           decoding="async"
-          onError={() => {
-            console.error(`Failed to load asset: ${illustration}`);
-          }}
         />
       </div>
     </motion.div>
@@ -317,8 +314,8 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
         </div>
 
         {/* Secondary Navigation Row: Centered Tabs aligned to Top */}
-        <div className="flex flex-row items-center justify-center gap-8 mt-4 mb-10 overflow-x-auto">
-          <div className="flex items-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+        <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20 shadow-sm sm:shadow-none">
+          <div className="flex items-center justify-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
             <button
               onClick={() => onSwitch('portfolio')}
               className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"

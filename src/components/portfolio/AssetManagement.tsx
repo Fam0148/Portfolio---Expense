@@ -715,189 +715,237 @@ export const AssetManagement = () => {
           )}
         </AnimatePresence>
 
-        {/* ── Table ── */}
-        <div className="overflow-x-auto">
-          <table className="w-full font-sans">
-            <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
-                  {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
-                </th>
-                {activeTab === 'BOND' && (
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Tenure</th>
-                )}
-                <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Purchase Date</th>
-                <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
-                  {activeTab === 'BOND' ? 'Investment' : 'Holdings'}
-                </th>
-                <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
-                  {activeTab === 'BOND' ? 'YTM' : 'Avg. Price'}
-                </th>
-                {activeTab !== 'BOND' && (
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Current Price</th>
-                )}
-                {activeTab === 'BOND' && (
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Repayment</th>
-                )}
-                <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Total Value</th>
-                <th className="text-right py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {loading ? (
-                <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm">Loading your assets...</td></tr>
-              ) : visibleStocks.length === 0 ? (
-                <tr><td colSpan={8} className="py-12 text-center text-gray-400 text-sm">
-                  No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
-                </td></tr>
-              ) : visibleStocks.map((stock) => {
-                const repayment = calculateTotalRepayment(stock)
-                const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + repayment
-                const invested = stock.quantity * stock.purchase_price
-                const absolutePnl = totalValue - invested
-                const pnl = (absolutePnl / invested) * 100
+        {/* ── Table (Desktop) / Cards (Mobile) ── */}
+        <div className="mt-4">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full font-sans">
+              <thead>
+                <tr className="border-b border-gray-100">
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                    {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
+                  </th>
+                  {activeTab === 'BOND' && (
+                    <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Tenure</th>
+                  )}
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Purchase Date</th>
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                    {activeTab === 'BOND' ? 'Investment' : 'Holdings'}
+                  </th>
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                    {activeTab === 'BOND' ? 'YTM' : 'Avg. Price'}
+                  </th>
+                  {activeTab !== 'BOND' && (
+                    <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Current Price</th>
+                  )}
+                  {activeTab === 'BOND' && (
+                    <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Repayment</th>
+                  )}
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Total Value</th>
+                  <th className="text-right py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {loading ? (
+                  <tr><td colSpan={10} className="py-12 text-center text-gray-400 text-sm">Loading your assets...</td></tr>
+                ) : visibleStocks.length === 0 ? (
+                  <tr><td colSpan={10} className="py-12 text-center text-gray-400 text-sm">
+                    No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
+                  </td></tr>
+                ) : visibleStocks.map((stock) => {
+                  const repayment = calculateTotalRepayment(stock)
+                  const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + repayment
+                  const invested = stock.quantity * stock.purchase_price
+                  const absolutePnl = totalValue - invested
+                  const pnl = invested > 0 ? (absolutePnl / invested) * 100 : 0
 
-                return (
-                  <tr key={stock.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
-                    {/* Symbol / Name */}
-                    <td className="py-5 px-4">
-                      <div className="flex flex-col">
-                        <span className="font-bold text-blue-600 text-xs uppercase tracking-wider block">{stock.symbol}</span>
-                        <span className="text-[11px] text-gray-400 font-medium">{stock.name || stock.symbol}</span>
-                      </div>
-                    </td>
-                    {/* Tenure (Bonds only) */}
-                    {activeTab === 'BOND' && (
+                  return (
+                    <tr key={stock.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
+                      <td className="py-5 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-bold text-blue-600 text-xs uppercase tracking-wider block">{stock.symbol}</span>
+                          <span className="text-[11px] text-gray-400 font-medium">{stock.name || stock.symbol}</span>
+                        </div>
+                      </td>
+                      {activeTab === 'BOND' && (
+                        <td className="py-5 px-4 text-sm text-gray-600 font-medium whitespace-nowrap">
+                          {stock.tenure ? `${stock.tenure} Mon` : '—'}
+                        </td>
+                      )}
                       <td className="py-5 px-4 text-sm text-gray-600 font-medium whitespace-nowrap">
-                        {stock.tenure ? `${stock.tenure} Months` : '—'}
+                        {new Date(stock.purchase_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                       </td>
-                    )}
-                    {/* Purchase Date */}
-                    <td className="py-5 px-4 text-sm text-gray-600 font-medium whitespace-nowrap">
-                      {new Date(stock.purchase_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
-                    </td>
-                    {/* Holdings / Investment */}
-                    <td className="py-5 px-4 font-bold text-[#171717] text-sm whitespace-nowrap">
-                      {activeTab === 'BOND'
-                        ? `₹${stock.purchase_price.toLocaleString('en-IN')}`
-                        : <>{stock.quantity} <span className="text-gray-400 font-medium text-xs ml-1">Shares</span></>
-                      }
-                    </td>
-                    {/* Avg Price / YTM */}
-                    <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                      {activeTab === 'BOND'
-                        ? `${stock.ytm || '—'}%`
-                        : `₹${stock.purchase_price.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
-                      }
-                    </td>
-                    {/* Current Price (Non-Bonds only) */}
-                    {activeTab !== 'BOND' && (
-                      <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                        ₹{(stock.current_price || stock.purchase_price).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                      </td>
-                    )}
-                    {/* Monthly Repayment (Bonds only) */}
-                    {activeTab === 'BOND' && (
                       <td className="py-5 px-4 font-bold text-[#171717] text-sm whitespace-nowrap">
-                        ₹{calculateMonthlyRepayment(stock).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        {activeTab === 'BOND'
+                          ? `₹${stock.purchase_price.toLocaleString('en-IN')}`
+                          : <>{stock.quantity} <span className="text-gray-400 font-medium text-xs ml-1">Qty</span></>
+                        }
                       </td>
+                      <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
+                        {activeTab === 'BOND'
+                          ? `${stock.ytm || '—'}%`
+                          : `₹${stock.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                        }
+                      </td>
+                      {activeTab !== 'BOND' && (
+                        <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
+                          ₹{(stock.current_price || stock.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                      )}
+                      {activeTab === 'BOND' && (
+                        <td className="py-5 px-4 font-bold text-emerald-600 text-sm whitespace-nowrap">
+                          +₹{repayment.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                      )}
+                      <td className="py-5 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-display font-bold text-[#171717] text-[15px]">₹{totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                          <span className={`text-[10px] font-bold uppercase tracking-widest ${pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                            {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}% {pnl >= 0 ? 'Profit' : 'Loss'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <button onClick={() => setHistoryModal({ isOpen: true, stock })}
+                            className="p-2 text-gray-300 hover:text-blue-500 hover:bg-white rounded-md transition-all shadow-sm border border-transparent hover:border-gray-100">
+                            <History size={16} />
+                          </button>
+                          <button onClick={() => handleEdit(stock)}
+                            className="p-2 text-gray-300 hover:text-[#171717] hover:bg-white rounded-md transition-all shadow-sm border border-transparent hover:border-gray-100">
+                            <Pencil size={16} />
+                          </button>
+                          <button onClick={() => setDeleteModal({ isOpen: true, id: stock.id })}
+                            className="p-2 text-gray-300 hover:text-rose-500 hover:bg-white rounded-md transition-all shadow-sm border border-transparent hover:border-gray-100">
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {loading ? (
+              <div className="py-12 text-center text-gray-400 text-sm">Loading your assets...</div>
+            ) : visibleStocks.length === 0 ? (
+              <div className="py-12 text-center text-gray-400 text-sm">
+                No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
+              </div>
+            ) : visibleStocks.map((stock) => {
+              const repayment = calculateTotalRepayment(stock)
+              const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + repayment
+              const invested = stock.quantity * stock.purchase_price
+              const absolutePnl = totalValue - invested
+              const pnl = invested > 0 ? (absolutePnl / invested) * 100 : 0
+
+              return (
+                <div key={stock.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-blue-600 text-[10px] uppercase tracking-[0.2em]">{stock.symbol}</span>
+                      <h4 className="font-serif font-bold text-[17px] text-[#171717] mt-0.5">{stock.name || stock.symbol}</h4>
+                    </div>
+                    <div className="flex flex-col items-end">
+                      <span className="font-display font-bold text-[18px] text-[#171717]">₹{totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${pnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                        {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-3 border-t border-gray-50 pt-3 mb-4 text-[13px]">
+                    {activeTab === 'STOCK' ? (
+                      <>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Holdings</span>
+                          <span className="font-bold text-gray-700">{stock.quantity} Qty</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Avg Price</span>
+                          <span className="font-bold text-gray-700">₹{stock.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Tenure</span>
+                          <span className="font-bold text-gray-700">{stock.tenure} Mon</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">YTM</span>
+                          <span className="font-bold text-gray-700">{stock.ytm}%</span>
+                        </div>
+                      </>
                     )}
-                    {/* Total Value + P&L */}
-                    <td className="py-5 px-4 whitespace-nowrap">
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-[#171717] text-sm tracking-tight">
-                          ₹{totalValue.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                        </span>
-                        {activeTab !== 'BOND' && (
-                          <div className="flex items-center gap-1.5 leading-none">
-                            <span className={`text-[11px] font-bold ${absolutePnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                              {absolutePnl >= 0 ? '+' : '-'}₹{Math.abs(absolutePnl).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
-                            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-sm flex items-center gap-0.5 ${absolutePnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
-                              <span className="text-[8px]">{pnl >= 0 ? '▲' : '▼'}</span>
-                              {Math.abs(pnl).toFixed(1)}%
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    {/* Actions */}
-                    <td className="py-5 px-4 text-right">
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-                          const MENU_HEIGHT = 160
-                          const spaceBelow = window.innerHeight - rect.bottom
-                          const openAbove = spaceBelow < MENU_HEIGHT
-                          setMenuPos({
-                            top: openAbove ? rect.top - MENU_HEIGHT - 8 : rect.bottom + 8,
-                            right: window.innerWidth - rect.right
-                          })
-                          setOpenMenuId(openMenuId === stock.id ? null : stock.id)
-                        }}
-                        className="p-2 text-gray-400 hover:text-black hover:bg-gray-100 rounded-md transition-all"
-                      >
-                        <MoreVertical size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Purchase Date</span>
+                      <span className="font-bold text-gray-700">{new Date(stock.purchase_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Invested</span>
+                      <span className="font-bold text-gray-700">₹{invested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-50">
+                    <button onClick={() => setHistoryModal({ isOpen: true, stock })}
+                      className="p-2.5 bg-gray-50 text-blue-500 rounded-lg border border-gray-100/50">
+                      <History size={16} />
+                    </button>
+                    <button onClick={() => handleEdit(stock)}
+                      className="p-2.5 bg-gray-50 text-gray-600 rounded-lg border border-gray-100/50">
+                      <Pencil size={16} />
+                    </button>
+                    <button onClick={() => setDeleteModal({ isOpen: true, id: stock.id })}
+                      className="p-2.5 bg-rose-50 text-rose-500 rounded-lg border border-rose-100/50">
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* ── Desktop Action Menu Portal ── */}
+          {openMenuId && createPortal(
+            (() => {
+              const activeStock = stocks.find(s => s.id === openMenuId)
+              if (!activeStock) return null
+              return (
+                <div
+                  ref={menuRef}
+                  style={{ top: menuPos.top, right: menuPos.right }}
+                  className="fixed w-52 bg-white rounded-lg border border-gray-100 shadow-xl z-[200] py-2 overflow-hidden"
+                >
+                  <button type="button"
+                    onClick={() => { setHistoryModal({ isOpen: true, stock: activeStock }); setOpenMenuId(null) }}
+                    className="w-full px-4 py-2 flex items-center gap-3 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                    <History size={16} className="text-gray-400" /> Log History
+                  </button>
+                  <button type="button"
+                    onClick={() => { handleEdit(activeStock); setOpenMenuId(null) }}
+                    className="w-full px-4 py-2 flex items-center gap-3 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                    <Pencil size={16} className="text-gray-400" /> Edit Asset
+                  </button>
+                  <div className="h-px bg-gray-100 my-1 mx-2" />
+                  <button type="button"
+                    onClick={() => { setDeleteModal({ isOpen: true, id: activeStock.id }); setOpenMenuId(null) }}
+                    className="w-full px-4 py-2 flex items-center gap-3 text-sm font-medium text-rose-600 hover:bg-rose-50">
+                    <Trash2 size={16} className="text-rose-400" /> Delete Asset
+                  </button>
+                </div>
+              )
+            })(),
+            document.body
+          )}
         </div>
       </div>
-
-      {/* ── Portal Action Menu ── renders to body to escape overflow clipping ── */}
-      {openMenuId && createPortal(
-        (() => {
-          const activeStock = stocks.find(s => s.id === openMenuId)
-          if (!activeStock) return null
-          return (
-            <div
-              ref={menuRef}
-              style={{ top: menuPos.top, right: menuPos.right }}
-              className="fixed w-52 bg-white rounded-lg border border-gray-100 shadow-[0_8px_30px_rgba(0,0,0,0.12)] z-[200] py-2 overflow-hidden"
-            >
-              <button type="button"
-                onClick={() => { setHistoryModal({ isOpen: true, stock: activeStock }); setOpenMenuId(null) }}
-                className="w-full px-4 py-2.5 flex items-center gap-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left">
-                <History size={16} className="text-gray-400 shrink-0" />
-                <span>Log History</span>
-              </button>
-              <button type="button"
-                onClick={() => { handleEdit(activeStock); setOpenMenuId(null) }}
-                className="w-full px-4 py-2.5 flex items-center gap-3 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors text-left">
-                <Pencil size={16} className="text-gray-400 shrink-0" />
-                <span>Edit Asset</span>
-              </button>
-              {activeStock.asset_type === 'BOND' && (
-                <button type="button"
-                  onClick={async () => {
-                    if (confirm("Reset payout tracking? This will treat today as the new interest start date for historical profit calculation.")) {
-                      const today = new Date().toISOString().split('T')[0];
-                      await supabase.from('stocks').update({ purchase_date: today }).eq('id', activeStock.id);
-                      fetchStocks();
-                      setOpenMenuId(null);
-                    }
-                  }}
-                  className="w-full px-4 py-2.5 flex items-center gap-3 text-sm font-medium text-emerald-600 hover:bg-emerald-50 transition-colors text-left">
-                  <Timer size={16} className="text-emerald-400 shrink-0" />
-                  <span>Reset Payouts</span>
-                </button>
-              )}
-              <div className="h-px bg-gray-100 mx-3 my-1" />
-              <button type="button"
-                onClick={() => { setDeleteModal({ isOpen: true, id: activeStock.id }); setOpenMenuId(null) }}
-                className="w-full px-4 py-2.5 flex items-center gap-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors text-left">
-                <Trash2 size={16} className="text-red-400 shrink-0" />
-                <span>Delete Asset</span>
-              </button>
-            </div>
-          )
-        })()
-        , document.body)}
     </div>
   )
 }
+
