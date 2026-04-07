@@ -9,9 +9,9 @@ interface NumberTickerProps {
 export const NumberTicker = ({ value, className }: NumberTickerProps) => {
   const ref = useRef<HTMLSpanElement>(null)
   const springValue = useSpring(0, {
-    mass: 1,
-    stiffness: 100,
-    damping: 30,
+    mass: 0.5,
+    stiffness: 180,
+    damping: 35,
   })
   const isInView = useInView(ref, { once: true, margin: '-10px' })
 
@@ -37,6 +37,8 @@ export const NumberTicker = ({ value, className }: NumberTickerProps) => {
     <span
       ref={ref}
       className={className}
-    />
+    >
+      0
+    </span>
   )
 }

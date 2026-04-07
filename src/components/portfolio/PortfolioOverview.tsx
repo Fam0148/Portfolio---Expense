@@ -99,68 +99,67 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
 
   const [stocksData, setStocksData] = useState<any[]>([])
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-        const { data } = await supabase.from('stocks').select('*').eq('user_id', user.id)
-        if (!data) return
+  const fetchStats = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data } = await supabase.from('stocks').select('*').eq('user_id', user.id)
+      if (!data) return
 
-        const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-        const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-        const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/stock-search`
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
+      const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+      const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/stock-search`
 
-        const calculateAll = (withPrices: any[]) => {
-          let totalInvested = 0
-          let totalCurrentMarket = 0
-          let stockInvested = 0
-          let stockCurrent = 0
-          let interestIncome = 0
-          let bondProfitAccrued = 0
-          let totalBondInvested = 0
-          let totalBondValue = 0
-          const now = new Date()
+      const calculateAll = (withPrices: any[]) => {
+        let totalInvested = 0
+        let totalCurrentMarket = 0
+        let stockInvested = 0
+        let stockCurrent = 0
+        let interestIncome = 0
+        let bondProfitAccrued = 0
+        let totalBondInvested = 0
+        let totalBondValue = 0
+        const now = new Date()
 
+        withPrices.forEach(s => {
+          const type = s.asset_type_c
+          const current = s.current_p
+          const totalAtPurchase = s.purchase_price * s.quantity
+          const totalAtCurrent = current * s.quantity
+
+          totalInvested += totalAtPurchase
+          totalCurrentMarket += totalAtCurrent
+
+          if (type === 'STOCK') {
+            stockInvested += totalAtPurchase
+            stockCurrent += totalAtCurrent
+          }
+          if (type === 'BOND' && s.ytm) {
+            const ytm = parseFloat(s.ytm)
+            if (!isNaN(ytm)) {
+              totalBondInvested += totalAtPurchase
+              interestIncome += (totalAtCurrent * (ytm / 100)) / 12
+              const [pYear, pMonth, pDay] = s.purchase_date.split('-').map(Number);
+              let months = 0; let temp = new Date(pYear, pMonth - 1, 10);
+              if (pDay >= 10) temp.setMonth(temp.getMonth() + 1);
+              while (temp <= now) { months++; temp.setMonth(temp.getMonth() + 1); }
+              const accrued = totalAtPurchase * (ytm / 100) * (months / 12)
+              bondProfitAccrued += accrued
+              totalBondValue += totalAtPurchase + accrued
+            }
+          }
+        })
+
+        const stockProfitValue = stockCurrent - stockInvested
+        const finalTotalValue = totalCurrentMarket + bondProfitAccrued
+
+        // Historical Data for Chart
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const currYear = now.getFullYear();
+        const historicalData = months.map((label, mIdx) => {
+          let mVal = 0; const mEnd = new Date(currYear, mIdx + 1, 0);
           withPrices.forEach(s => {
-            const type = s.asset_type_c
-            const current = s.current_p
-            const totalAtPurchase = s.purchase_price * s.quantity
-            const totalAtCurrent = current * s.quantity
-
-            totalInvested += totalAtPurchase
-            totalCurrentMarket += totalAtCurrent
-
-            if (type === 'STOCK') {
-              stockInvested += totalAtPurchase
-              stockCurrent += totalAtCurrent
-            }
-            if (type === 'BOND' && s.ytm) {
-              const ytm = parseFloat(s.ytm)
-              if (!isNaN(ytm)) {
-                totalBondInvested += totalAtPurchase
-                interestIncome += (totalAtCurrent * (ytm / 100)) / 12
-                const [pYear, pMonth, pDay] = s.purchase_date.split('-').map(Number);
-                let months = 0; let temp = new Date(pYear, pMonth - 1, 10);
-                if (pDay >= 10) temp.setMonth(temp.getMonth() + 1);
-                while (temp <= now) { months++; temp.setMonth(temp.getMonth() + 1); }
-                const accrued = totalAtPurchase * (ytm / 100) * (months / 12)
-                bondProfitAccrued += accrued
-                totalBondValue += totalAtPurchase + accrued
-              }
-            }
-          })
-
-          const stockProfitValue = stockCurrent - stockInvested
-          const finalTotalValue = totalCurrentMarket + bondProfitAccrued
-
-          // Historical Data for Chart
-          const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-          const currYear = now.getFullYear();
-          const historicalData = months.map((label, mIdx) => {
-            let mVal = 0; const mEnd = new Date(currYear, mIdx + 1, 0);
-            withPrices.forEach(s => {
-              if (new Date(s.purchase_date) <= mEnd) {
+            if (new Date(s.purchase_date) <= mEnd) {
                 const totalAtP = s.purchase_price * s.quantity; mVal += totalAtP;
                 if (s.asset_type_c === 'BOND' && s.ytm) {
                   const ytm = parseFloat(s.ytm);
@@ -169,67 +168,69 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
                   let mCount = 0; while (tDate <= mEnd && tDate <= now) { mCount++; tDate.setMonth(tDate.getMonth() + 1); }
                   mVal += totalAtP * (ytm / 100) * (mCount / 12);
                 }
-              }
-            });
-            return { label, value: Math.round(mVal), isFuture: mIdx > now.getMonth() };
-          }).filter(d => !d.isFuture);
+            }
+          });
+          return { label, value: Math.round(mVal), isFuture: mIdx > now.getMonth() };
+        }).filter(d => !d.isFuture);
 
-          return {
-            totalValue: finalTotalValue,
-            totalProfit: stockProfitValue,
-            monthlyIncome: interestIncome,
-            profitPercent: totalInvested > 0 ? ((finalTotalValue - totalInvested) / totalInvested) * 100 : 0,
-            stockYield: stockInvested > 0 ? (stockProfitValue / stockInvested) * 100 : 0,
-            bondProfit: bondProfitAccrued,
-            bondYield: totalBondInvested > 0 ? (bondProfitAccrued / totalBondInvested) * 100 : 0,
-            stockWeight: finalTotalValue > 0 ? (stockCurrent / finalTotalValue) * 100 : 0,
-            bondWeight: finalTotalValue > 0 ? (totalBondValue / finalTotalValue) * 100 : 0,
-            historicalData,
-            totalInvested,
-            stockInvested,
-            bondInvested: totalBondInvested,
-            bondProfitDetails: withPrices.reduce((acc, s) => {
-              if (s.asset_type_c === 'BOND') {
+        return {
+          totalValue: finalTotalValue,
+          totalProfit: stockProfitValue,
+          monthlyIncome: interestIncome,
+          profitPercent: totalInvested > 0 ? ((finalTotalValue - totalInvested) / totalInvested) * 100 : 0,
+          stockYield: stockInvested > 0 ? (stockProfitValue / stockInvested) * 100 : 0,
+          bondProfit: bondProfitAccrued,
+          bondYield: totalBondInvested > 0 ? (bondProfitAccrued / totalBondInvested) * 100 : 0,
+          stockWeight: finalTotalValue > 0 ? (stockCurrent / finalTotalValue) * 100 : 0,
+          bondWeight: finalTotalValue > 0 ? (totalBondValue / finalTotalValue) * 100 : 0,
+          historicalData,
+          totalInvested,
+          stockInvested,
+          bondInvested: totalBondInvested,
+          bondProfitDetails: withPrices.reduce((acc, s) => {
+            if (s.asset_type_c === 'BOND') {
                 const ytm = parseFloat(s.ytm); const [pY, pM, pD] = s.purchase_date.split('-').map(Number);
                 let c = 0; let t = new Date(pY, pM - 1, 10); if (pD >= 10) t.setMonth(t.getMonth() + 1);
                 while (t <= now) { c++; t.setMonth(t.getMonth() + 1); }
                 acc[s.id] = (s.purchase_price * s.quantity * (ytm / 100)) * (c / 12);
-              }
-              return acc;
-            }, {} as any),
-            userId: user.id
-          }
+            }
+            return acc;
+          }, {} as any),
+          userId: user.id
         }
+      }
 
-        // 1. Initial Render with DB values (Instant < 1s)
-        const initialData = data.map(s => ({
-          ...s,
-          current_p: s.purchase_price,
-          asset_type_c: s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
-        }))
-        setStats(prev => ({ ...prev, ...calculateAll(initialData) }))
-        setStocksData(initialData)
+      // 1. Initial Render with DB values (Instant < 1s)
+      const initialData = data.map(s => ({
+        ...s,
+        current_p: s.purchase_price,
+        asset_type_c: s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
+      }))
+      setStats(prev => ({ ...prev, ...calculateAll(initialData) }))
+      setStocksData(initialData)
 
-        // 2. Background Live Price Fetch
-        const liveData = await Promise.all(data.map(async (s) => {
-          const type = s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
-          let current = s.purchase_price
-          if (type === 'STOCK') {
-            try {
-              const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
-              const r = await fetch(`${FUNCTION_URL}?action=price&q=${encodeURIComponent(sym)}`, {
+      // 2. Background Live Price Fetch
+      const liveData = await Promise.all(data.map(async (s) => {
+        const type = s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
+        let current = s.purchase_price
+        if (type === 'STOCK') {
+          try {
+            const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
+            const r = await fetch(`${FUNCTION_URL}?action=price&q=${encodeURIComponent(sym)}`, {
                 headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
-              })
-              if (r.ok) { const d = await r.json(); if (d?.price) current = d.price; }
-            } catch { /* Silent fail */ }
-          }
-          return { ...s, current_p: current, asset_type_c: type }
-        }))
+            })
+            if (r.ok) { const d = await r.json(); if (d?.price) current = d.price; }
+          } catch { /* Silent fail */ }
+        }
+        return { ...s, current_p: current, asset_type_c: type }
+      }))
 
-        setStats(prev => ({ ...prev, ...calculateAll(liveData) }))
-        setStocksData(liveData)
-      } catch (err) { console.error('Error:', err) }
-    }
+      setStats(prev => ({ ...prev, ...calculateAll(liveData) }))
+      setStocksData(liveData)
+    } catch (err) { console.error('Error:', err) }
+  }
+
+  useEffect(() => {
     fetchStats()
     const interval = setInterval(fetchStats, 60000)
     return () => clearInterval(interval)
@@ -373,7 +374,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           transition={{ duration: 0.6, delay: 0.7 }}
           className="pb-12"
         >
-          <AssetManagement />
+          <AssetManagement onUpdate={fetchStats} />
         </motion.div>
       </div>
 

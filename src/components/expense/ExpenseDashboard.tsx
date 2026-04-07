@@ -401,7 +401,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       title: "Monthly Total Income",
       numericValue: totalIncome,
       illustration: "/assets/income.png",
-      badgeText: "100%",
+      badgeText: totalIncome > 0 ? "100%" : null,
       badgeColor: "emerald",
       delay: 0.1
     },
@@ -409,7 +409,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       title: "Fixed Monthly Deductions",
       numericValue: totalFixed,
       illustration: "/assets/expense.png",
-      badgeText: totalIncome > 0 ? `${Math.round((totalFixed / totalIncome) * 100)}%` : "0%",
+      badgeText: totalIncome > 0 ? `${Math.round((totalFixed / totalIncome) * 100)}%` : null,
       badgeColor: "rose",
       delay: 0.2
     },
@@ -417,7 +417,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       title: "Monthly Investment Log",
       numericValue: totalInvestments,
       illustration: "/assets/investment.png",
-      badgeText: totalIncome > 0 ? `${Math.round((totalInvestments / totalIncome) * 100)}%` : "0%",
+      badgeText: totalIncome > 0 ? `${Math.round((totalInvestments / totalIncome) * 100)}%` : null,
       badgeColor: "indigo",
       delay: 0.3
     },
@@ -425,7 +425,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       title: "Current Available Savings",
       numericValue: availableBudget,
       illustration: "/assets/savings.png",
-      badgeText: totalIncome > 0 ? `Saved: ${Math.round((availableBudget / totalIncome) * 100)}%` : "0%",
+      badgeText: totalIncome > 0 ? `Saved: ${Math.round((availableBudget / totalIncome) * 100)}%` : null,
       badgeColor: "amber",
       delay: 0.4
     }

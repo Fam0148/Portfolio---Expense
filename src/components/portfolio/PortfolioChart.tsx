@@ -82,7 +82,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
     let baseData = timeframe === '6M' ? sixMonthData : timeframe === '30D' ? thirtyDayData : yearData
     const lastBaseValue = baseData[baseData.length - 1].value
     const scale = currentValue / lastBaseValue
-    
+
     return baseData.map((d, idx) => ({
       ...d,
       value: idx === baseData.length - 1 ? currentValue : Math.round(d.value * scale)
@@ -134,8 +134,8 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
           >
             <defs>
               <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#10b981" stopOpacity={0.15}/>
-                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                <stop offset="5%" stopColor="#10b981" stopOpacity={0.15} />
+                <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid
@@ -172,7 +172,7 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
               strokeWidth={4}
               fillOpacity={1}
               fill="url(#colorValue)"
-              animationDuration={1500}
+              animationDuration={600}
               dot={<CustomDot data={chartData} />}
               activeDot={{ r: 6, fill: '#10b981', stroke: '#fff', strokeWidth: 2 }}
             />

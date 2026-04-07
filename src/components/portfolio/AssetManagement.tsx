@@ -4,7 +4,7 @@ import { supabase } from "../../lib/supabase"
 import {
   Pencil, Trash2, History, X, Search, Calendar,
   BadgeIndianRupee, Hash, ShieldCheck,
-  TrendingUp, Timer, Percent
+  TrendingUp, Timer, Percent, Plus
 } from "lucide-react"
 
 interface Stock {
@@ -137,7 +137,7 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export const AssetManagement = () => {
+export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
   const [stocks, setStocks] = useState<Stock[]>([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({
@@ -238,7 +238,7 @@ export const AssetManagement = () => {
     while (tempDate <= now) {
       count++;
       tempDate.setMonth(tempDate.getMonth() + 1);
-      
+
       // Stop counting if tenure is reached
       if (count >= tenureMonths) break;
     }
@@ -294,9 +294,9 @@ export const AssetManagement = () => {
         const data = await resp.json()
         if (data?.results?.length > 0) {
           // Filter for NSE only: check exchange field or .NS suffix in symbol
-          const nseOnly = data.results.filter((s: any) => 
-            s.exchange === 'NSE' || 
-            (s.symbol && s.symbol.endsWith('.NS')) || 
+          const nseOnly = data.results.filter((s: any) =>
+            s.exchange === 'NSE' ||
+            (s.symbol && s.symbol.endsWith('.NS')) ||
             (s.fullExchangeName && s.fullExchangeName.includes('NSE'))
           )
           setSuggestions(nseOnly.slice(0, 8))
@@ -393,6 +393,7 @@ export const AssetManagement = () => {
       try { await supabase.from('stock_logs').insert([logEntry]) } catch { /* skip if table missing */ }
       handleCancel()
       fetchStocks()
+      onUpdate?.()
     } catch (err) { console.error('Error handling asset:', err) }
   }
 
@@ -412,6 +413,7 @@ export const AssetManagement = () => {
         } catch { /* skip */ }
       }
       fetchStocks()
+      onUpdate?.()
     } catch (err) { console.error('Error deleting stock:', err) }
   }
 
@@ -556,7 +558,7 @@ export const AssetManagement = () => {
                       Cancel
                     </button>
                     <button type="submit"
-                      className="px-6 py-2 rounded-md bg-blue-600 text-white text-sm font-bold hover:bg-blue-700 transition-all shadow-sm active:scale-95">
+                      className="px-6 py-2 rounded-md bg-[#171717] hover:bg-black text-white text-sm font-bold transition-all shadow-sm active:scale-95">
                       Save Changes
                     </button>
                   </div>
@@ -590,8 +592,8 @@ export const AssetManagement = () => {
                     <div className="relative group/search">
                       <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/search:text-[#171717] transition-colors" size={16} />
                       <input type="text" placeholder={activeTab === 'STOCK' ? "e.g. RELIANCE" : "e.g. HDFC Bond"}
-                      autoComplete="off"
-                      className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                        autoComplete="off"
+                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
                         value={form.symbol}
                         onChange={e => {
                           setForm({ ...form, symbol: e.target.value.toUpperCase() })
@@ -684,10 +686,11 @@ export const AssetManagement = () => {
                     </div>
                   )}
                   {/* Submit */}
-                  <div className={`${activeTab === 'BOND' ? 'lg:col-span-1' : 'lg:col-span-4'} flex items-end justify-end`}>
+                  <div className="col-span-full flex items-center justify-start pt-4 border-t border-gray-100/50 mt-2">
                     <button type="submit"
-                      className="w-full sm:w-auto px-10 py-3.5 rounded-md bg-[#171717] text-white text-sm font-bold hover:bg-gray-800 transition-all shadow-lg active:scale-95">
-                      Add {activeTab === 'BOND' ? 'Bond' : 'Stock'}
+                      className="w-full sm:w-auto min-w-[220px] flex items-center justify-center gap-3 px-8 py-3.5 rounded-md bg-[#171717] hover:bg-black text-white text-sm font-bold transition-all shadow-sm active:scale-95 group">
+                      <Plus size={18} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
+                      <span>Add {activeTab === 'STOCK' ? 'Stock' : 'Bond'}</span>
                     </button>
                   </div>
                 </form>
