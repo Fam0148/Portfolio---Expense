@@ -706,14 +706,14 @@ export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
             <table className="w-full font-sans">
               <thead>
                 <tr className="border-b border-gray-100">
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed">
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed whitespace-nowrap">
                     {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
                   </th>
                   {activeTab === 'BOND' && (
                     <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Tenure</th>
                   )}
                   <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Purchase Date</th>
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
                     {activeTab === 'BOND' ? 'Investment' : 'Holdings'}
                   </th>
                   <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
@@ -745,9 +745,9 @@ export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
 
                   return (
                     <tr key={stock.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
-                      <td className="py-5 px-4">
+                      <td className="py-5 px-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-bold text-blue-600 text-xs uppercase tracking-wider block">{stock.symbol}</span>
+                          <span className="font-bold text-blue-600 text-xs uppercase tracking-wider">{stock.symbol}</span>
                           <span className="text-[11px] text-gray-400 font-medium">{stock.name || stock.symbol}</span>
                         </div>
                       </td>
