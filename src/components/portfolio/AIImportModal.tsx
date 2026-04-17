@@ -28,9 +28,9 @@ export const AIImportModal = ({ isOpen, onClose, onSuccess }: AIImportModalProps
     try {
       let content = ""
       if (file.name.endsWith('.csv')) {
-        content = await new Promise((resolve) => {
+        content = await new Promise<string>((resolve) => {
           Papa.parse(file, {
-            complete: (results) => resolve(JSON.stringify(results.data)),
+            complete: (results: Papa.ParseResult<any>) => resolve(JSON.stringify(results.data)),
             header: true
           })
         })
