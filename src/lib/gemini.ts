@@ -1,12 +1,23 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(API_KEY || "");
+
+// Create instance lazily to avoid top-level crash if key is missing
+let genAIInstance: GoogleGenerativeAI | null = null;
+const getGenAI = () => {
+  if (!genAIInstance && API_KEY) {
+    genAIInstance = new GoogleGenerativeAI(API_KEY);
+  }
+  return genAIInstance;
+};
 
 export const analyzeAssetStatement = async (content: string) => {
   if (!API_KEY) {
     throw new Error("VITE_GEMINI_API_KEY is not set in environment variables.");
   }
+
+  const genAI = getGenAI();
+  if (!genAI) throw new Error("Failed to initialize Gemini AI.");
 
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
