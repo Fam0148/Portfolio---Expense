@@ -40,13 +40,13 @@ const thirtyDayData = [
   { label: 'W4', value: 142500 }
 ]
 
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload, label, showValues = true }: any) => {
   if (active && payload && payload.length) {
     return (
       <div className="bg-white p-3 border border-gray-100 shadow-lg rounded-md">
         <p className="text-xs font-sans text-gray-500 mb-1">{label}</p>
-        <p className="text-sm font-display font-bold text-[#171717]">
-          ₹{payload[0].value.toLocaleString('en-IN')}
+        <p className={`text-sm font-display font-bold text-[#171717] transition-all`}>
+          {showValues ? `₹${payload[0].value.toLocaleString('en-IN')}` : '₹******' }
         </p>
       </div>
     )
@@ -70,7 +70,7 @@ const CustomDot = (props: any) => {
   return null;
 };
 
-export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, data }: { currentValue?: number; profitPercent?: number; data?: any[] }) => {
+export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, data, showValues = true }: { currentValue?: number; profitPercent?: number; data?: any[]; showValues?: boolean }) => {
   const [timeframe, setTimeframe] = useState('1Y')
 
   const chartData = (() => {
@@ -110,8 +110,8 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
           <h2 className="text-xl font-serif font-bold text-[#171717] tracking-tight">Portfolio Value History</h2>
         </div>
         <div className="flex items-center justify-center sm:justify-end gap-3 sm:gap-4 w-full sm:w-auto">
-          <span className={`text-[11px] sm:text-[12px] font-sans font-bold px-3 py-1 rounded-full whitespace-nowrap ${profitPercent >= 0 ? 'text-green-600 bg-green-50' : 'text-rose-600 bg-rose-50'}`}>
-            {profitPercent >= 0 ? '+' : ''}{profitPercent.toFixed(1)}% Overall
+          <span className={`text-[11px] sm:text-[12px] font-sans font-bold px-3 py-1 rounded-full whitespace-nowrap transition-all duration-300 ${profitPercent >= 0 ? 'text-green-600 bg-green-50' : 'text-rose-600 bg-rose-50'}`}>
+            {showValues ? `${profitPercent >= 0 ? '+' : ''}${profitPercent.toFixed(1)}% Overall` : '***% Overall'}
           </span>
           <select
             value={timeframe}
@@ -157,12 +157,13 @@ export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, da
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 12, fill: '#9ca3af', fontFamily: 'Inter', fontWeight: 500 }}
-              tickFormatter={(value) => `₹${value / 1000}k`}
+              tickFormatter={(value) => showValues ? `₹${value / 1000}k` : '₹**k'}
               dx={-5}
               domain={['auto', 'auto']}
+              hide={!showValues}
             />
             <Tooltip
-              content={<CustomTooltip />}
+              content={<CustomTooltip showValues={showValues} />}
               cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '4 4' }}
             />
             <Area

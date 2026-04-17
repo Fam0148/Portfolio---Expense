@@ -4,11 +4,11 @@ import { PortfolioChart } from "./PortfolioChart"
 import { NumberTicker } from "../ui/NumberTicker"
 import { AssetManagement } from "./AssetManagement"
 import { supabase } from "../../lib/supabase"
-import { FilePdf, SignOut } from "@phosphor-icons/react"
+import { FilePdf, SignOut, Eye, EyeSlash } from "@phosphor-icons/react"
 import { StatementView } from "./StatementView"
 import { FinancialInsight } from "../ui/FinancialInsight"
 
-const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0, customDisplay = false, stats, className = "" }: any) => {
+const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0, customDisplay = false, stats, className = "", showValues = true }: any) => {
   const isNegative = !customDisplay && Number(numericValue) < 0
   return (
     <motion.div
@@ -45,12 +45,16 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
           </div>
         ) : (
           <div className="flex flex-row items-baseline gap-2 mt-1">
-            <div className={`flex items-baseline font-display font-bold text-[26px] sm:text-[30px] tracking-tight ${isNegative ? 'text-rose-600' : 'text-[#171717]'}`}>
+            <div className={`flex items-baseline font-display font-bold text-[26px] sm:text-[30px] tracking-tight ${isNegative ? 'text-rose-600' : 'text-[#171717]'} transition-all duration-300`}>
               <span className="text-[18px] sm:text-[22px] mr-1 font-bold">{isNegative ? '-₹' : '₹'}</span>
-              <NumberTicker value={Math.abs(numericValue)} />
+              {showValues ? (
+                <NumberTicker value={Math.abs(numericValue)} />
+              ) : (
+                <span className="tracking-widest">******</span>
+              )}
             </div>
-            {profitPercent && (
-              <span className={`text-[11px] font-display font-normal px-2 py-0.5 rounded-full ${isNegative ? 'text-rose-600 bg-rose-50' : 'text-green-600 bg-green-50'}`}>
+            {profitPercent && showValues && (
+              <span className={`text-[11px] font-display font-normal px-2 py-0.5 rounded-full ${isNegative ? 'text-rose-600 bg-rose-50' : 'text-green-600 bg-green-50'} transition-all duration-300`}>
                 {profitPercent}
               </span>
             )}
@@ -72,6 +76,14 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
 }
 
 export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'portfolio' | 'expense') => void, userName: string }) => {
+  const [showValues, setShowValues] = useState(() => {
+    const saved = localStorage.getItem('show_portfolio_values')
+    return saved === null ? true : saved === 'true'
+  })
+
+  useEffect(() => {
+    localStorage.setItem('show_portfolio_values', String(showValues))
+  }, [showValues])
 
   const handleLogOut = async () => {
     await supabase.auth.signOut()
@@ -298,6 +310,17 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
 
           <div className="flex items-center justify-center gap-3 w-full sm:w-auto">
             <button
+              onClick={() => setShowValues(!showValues)}
+              className={`flex-shrink-0 flex items-center justify-center p-2.5 rounded-sm border transition-all active:scale-95 shadow-sm ${
+                showValues 
+                ? "bg-white border-gray-100 text-gray-500 hover:text-blue-600 hover:bg-blue-50" 
+                : "bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
+              }`}
+              title={showValues ? "Hide Values" : "Show Values"}
+            >
+              {showValues ? <Eye size={18} weight="bold" /> : <EyeSlash size={18} weight="bold" />}
+            </button>
+            <button
               onClick={() => { setTimeout(() => { window.print(); }, 500); }}
               className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
             >
@@ -345,6 +368,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
                 key={idx}
                 {...card}
                 stats={stats}
+                showValues={showValues}
                 className={isLastCard ? "md:col-span-2" : ""}
               />
             );
@@ -365,6 +389,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
             currentValue={stats.totalValue}
             profitPercent={stats.profitPercent}
             data={stats.historicalData}
+            showValues={showValues}
           />
         </motion.div>
 
@@ -374,7 +399,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           transition={{ duration: 0.6, delay: 0.7 }}
           className="pb-12"
         >
-          <AssetManagement onUpdate={fetchStats} />
+          <AssetManagement onUpdate={fetchStats} showValues={showValues} />
         </motion.div>
       </div>
 

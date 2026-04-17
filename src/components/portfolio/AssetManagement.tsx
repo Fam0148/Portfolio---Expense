@@ -4,8 +4,9 @@ import { supabase } from "../../lib/supabase"
 import {
   Pencil, Trash2, History, X, Search, Calendar,
   BadgeIndianRupee, Hash, ShieldCheck,
-  TrendingUp, Timer, Percent, Plus
+  TrendingUp, Timer, Percent, Plus, Sparkles
 } from "lucide-react"
+import { AIImportModal } from "./AIImportModal"
 
 interface Stock {
   id: string
@@ -63,7 +64,7 @@ interface StockLog {
   transaction_date: string; type: 'BUY' | 'SELL' | 'UPDATE' | 'DELETE' | 'AVERAGE'; created_at: string
 }
 
-const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: () => void; stock: Stock | null }) => {
+const HistoryModal = ({ isOpen, onClose, stock, showValues = true }: { isOpen: boolean; onClose: () => void; stock: Stock | null; showValues?: boolean }) => {
   const [logs, setLogs] = useState<StockLog[]>([])
   const [loading, setLoading] = useState(false)
 
@@ -108,8 +109,8 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
                   <div className="relative pl-10">
                     <div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-gray-400 ring-4 ring-white" />
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Initial Position</p>
-                    <p className="text-sm font-bold text-[#171717]">{stock?.quantity} units of {stock?.symbol}</p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">At ₹{stock?.purchase_price.toLocaleString()} per unit</p>
+                    <p className={`text-sm font-bold text-[#171717] transition-all`}>{showValues ? `${stock?.quantity} units of ${stock?.symbol}` : '**** units'}</p>
+                    <p className={`text-[11px] text-gray-500 mt-0.5 transition-all`}>{showValues ? `At ₹${stock?.purchase_price.toLocaleString()} per unit` : 'At ₹**** per unit'}</p>
                   </div>
                 ) : logs.map((log) => (
                   <div key={log.id} className="relative pl-10">
@@ -120,7 +121,9 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
                         log.type === 'UPDATE' ? 'Position Updated' : 'Asset Removed'} —{' '}
                       {new Date(log.transaction_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                     </p>
-                    <p className="text-sm font-bold text-[#171717]">{log.quantity} units @ ₹{Number(log.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                    <p className={`text-sm font-bold text-[#171717] transition-all`}>
+                      {showValues ? `${log.quantity} units @ ₹${Number(log.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '**** units @ ₹****'}
+                    </p>
                     <p className="text-[10px] text-gray-500 mt-0.5">Transaction logged</p>
                   </div>
                 ))}
@@ -137,7 +140,7 @@ const HistoryModal = ({ isOpen, onClose, stock }: { isOpen: boolean; onClose: ()
 }
 
 // ── Main Component ─────────────────────────────────────────────────────────────
-export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
+export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: () => void; showValues?: boolean }) => {
   const [stocks, setStocks] = useState<Stock[]>([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({
@@ -152,6 +155,7 @@ export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
   const [activeTab, setActiveTab] = useState<'STOCK' | 'BOND'>('STOCK')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
+  const [isAIModalOpen, setIsAIModalOpen] = useState(false)
 
 
 
@@ -432,10 +436,16 @@ export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
         title="Remove Asset?"
         message="Are you sure you want to remove this asset from your portfolio? This action cannot be undone."
       />
+      <AIImportModal
+        isOpen={isAIModalOpen}
+        onClose={() => setIsAIModalOpen(false)}
+        onSuccess={() => { fetchStocks(); onUpdate?.(); }}
+      />
       <HistoryModal
         isOpen={historyModal.isOpen}
         onClose={() => setHistoryModal({ isOpen: false, stock: null })}
         stock={historyModal.stock}
+        showValues={showValues}
       />
 
       <div className="p-6 sm:p-8">
@@ -445,6 +455,13 @@ export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
             <h2 className="text-2xl font-serif font-bold text-[#171717]">Asset Management</h2>
             <p className="text-sm text-gray-500 font-sans mt-1">Manage your holdings and track performance across your portfolio.</p>
           </div>
+          <button
+            onClick={() => setIsAIModalOpen(true)}
+            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all font-bold text-xs ring-1 ring-blue-100/50 hover:ring-blue-600 active:scale-95 group shadow-sm shadow-blue-50/50"
+          >
+            <Sparkles size={16} className="group-hover:animate-pulse" />
+            AI Import
+          </button>
         </div>
 
         {/* ── Tab Switcher ── */}
@@ -664,11 +681,11 @@ export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
                       </div>
                       <div className="space-y-1.5 text-left lg:col-span-2">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Est. Monthly Repayment</label>
-                        <div className="w-full px-4 py-[13px] bg-emerald-50/50 border border-emerald-100 rounded-md text-sm font-bold text-emerald-700 flex items-center justify-between">
+                        <div className={`w-full px-4 py-[13px] bg-emerald-50/50 border border-emerald-100 rounded-md text-sm font-bold text-emerald-700 flex items-center justify-between transition-all`}>
                           <span>Calculated Repayment</span>
-                          <span>₹{form.price && form.ytm && !isNaN(parseFloat(form.price)) && !isNaN(parseFloat(form.ytm))
+                          <span>{showValues ? `₹${(form.price && form.ytm && !isNaN(parseFloat(form.price)) && !isNaN(parseFloat(form.ytm))
                             ? ((parseFloat(form.price) * (parseFloat(form.ytm) / 100)) / 12).toLocaleString('en-IN', { maximumFractionDigits: 0 })
-                            : '0'}</span>
+                            : '0')}` : '₹****'}</span>
                         </div>
                       </div>
                     </>
@@ -760,32 +777,46 @@ export const AssetManagement = ({ onUpdate }: { onUpdate?: () => void }) => {
                         {new Date(stock.purchase_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                       </td>
                       <td className="py-5 px-4 font-bold text-[#171717] text-sm whitespace-nowrap">
-                        {activeTab === 'BOND'
-                          ? `₹${stock.purchase_price.toLocaleString('en-IN')}`
-                          : <>{stock.quantity} <span className="text-gray-400 font-medium text-xs ml-1">Qty</span></>
-                        }
+                        <div className={`transition-all duration-300`}>
+                          {showValues ? (
+                            activeTab === 'BOND'
+                              ? `₹${stock.purchase_price.toLocaleString('en-IN')}`
+                              : <>{stock.quantity} <span className="text-gray-400 font-medium text-xs ml-1">Qty</span></>
+                          ) : '****'}
+                        </div>
                       </td>
                       <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                        {activeTab === 'BOND'
-                          ? `${stock.ytm || '—'}%`
-                          : `₹${stock.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
-                        }
+                        <div className={`transition-all duration-300`}>
+                          {showValues ? (
+                            activeTab === 'BOND'
+                              ? `${stock.ytm || '—'}%`
+                              : `₹${stock.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                          ) : '****'}
+                        </div>
                       </td>
                       {activeTab !== 'BOND' && (
                         <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                          ₹{(stock.current_price || stock.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                          <div className={`transition-all duration-300`}>
+                            {showValues ? `₹${(stock.current_price || stock.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '₹****'}
+                          </div>
                         </td>
                       )}
                       {activeTab === 'BOND' && (
                         <td className="py-5 px-4 font-bold text-emerald-600 text-sm whitespace-nowrap">
-                          +₹{repayment.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                          <div className={`transition-all duration-300`}>
+                            {showValues ? `+₹${repayment.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '+₹****'}
+                          </div>
                         </td>
                       )}
                       <td className="py-5 px-4">
-                        <div className="flex flex-col">
-                          <span className="font-display font-bold text-[#171717] text-[15px]">₹{totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                        <div className={`flex flex-col transition-all duration-300`}>
+                          <span className="font-display font-bold text-[#171717] text-[15px]">
+                            {showValues ? `₹${totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '₹****'}
+                          </span>
                           <span className={`text-[10px] font-bold uppercase tracking-widest ${pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
-                            {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}% {pnl >= 0 ? 'Profit' : 'Loss'}
+                            {showValues ? (
+                              <>{pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}% {pnl >= 0 ? 'Profit' : 'Loss'}</>
+                            ) : '***%'}
                           </span>
                         </div>
                       </td>
