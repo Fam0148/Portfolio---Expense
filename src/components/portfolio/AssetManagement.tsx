@@ -436,11 +436,13 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
         title="Remove Asset?"
         message="Are you sure you want to remove this asset from your portfolio? This action cannot be undone."
       />
+      {/* AI Import Modal — coming soon
       <AIImportModal
         isOpen={isAIModalOpen}
         onClose={() => setIsAIModalOpen(false)}
         onSuccess={() => { fetchStocks(); onUpdate?.(); }}
       />
+      */}
       <HistoryModal
         isOpen={historyModal.isOpen}
         onClose={() => setHistoryModal({ isOpen: false, stock: null })}
@@ -455,6 +457,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
             <h2 className="text-2xl font-serif font-bold text-[#171717]">Asset Management</h2>
             <p className="text-sm text-gray-500 font-sans mt-1">Manage your holdings and track performance across your portfolio.</p>
           </div>
+          {/* AI Import button — coming soon
           <button
             onClick={() => setIsAIModalOpen(true)}
             className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all font-bold text-xs ring-1 ring-blue-100/50 hover:ring-blue-600 active:scale-95 group shadow-sm shadow-blue-50/50"
@@ -462,6 +465,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
             <Sparkles size={16} className="group-hover:animate-pulse" />
             AI Import
           </button>
+          */}
         </div>
 
         {/* ── Tab Switcher ── */}

@@ -2,7 +2,7 @@ import { useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, FileUp, Sparkles, Loader2, Check, AlertCircle } from "lucide-react"
 import Papa from "papaparse"
-import { analyzeAssetStatement } from "../../lib/gemini"
+import { analyzeAssetStatement, processCsvWithAI } from "../../lib/gemini"
 import { supabase } from "../../lib/supabase"
 
 interface AIImportModalProps {
@@ -26,19 +26,31 @@ export const AIImportModal = ({ isOpen, onClose, onSuccess }: AIImportModalProps
     setStatus('analyzing')
 
     try {
-      let content = ""
+      let assets: any[]
+
       if (file.name.endsWith('.csv')) {
-        content = await new Promise<string>((resolve) => {
+        // 3-stage pipeline: column mapping → normalization → validation
+        const rows = await new Promise<Record<string, string>[]>((resolve) => {
           Papa.parse(file, {
-            complete: (results: Papa.ParseResult<any>) => resolve(JSON.stringify(results.data)),
-            header: true
+            complete: (results: Papa.ParseResult<any>) => resolve(results.data),
+            header: true,
+            skipEmptyLines: true,
           })
         })
+        const normalized = await processCsvWithAI(rows)
+        assets = normalized.map(r => ({
+          symbol: r.symbol,
+          name: r.symbol,
+          purchase_date: r.purchase_date,
+          purchase_price: r.avg_price,
+          quantity: r.quantity,
+          asset_type: 'STOCK',
+        }))
       } else {
-        content = await file.text()
+        const content = await file.text()
+        assets = await analyzeAssetStatement(content)
       }
 
-      const assets = await analyzeAssetStatement(content)
       setExtractedAssets(assets)
       setStatus('preview')
     } catch (err: any) {
