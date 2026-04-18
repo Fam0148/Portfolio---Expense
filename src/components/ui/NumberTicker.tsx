@@ -10,8 +10,8 @@ export const NumberTicker = ({ value, className }: NumberTickerProps) => {
   const ref = useRef<HTMLSpanElement>(null)
   const springValue = useSpring(0, {
     mass: 0.5,
-    stiffness: 180,
-    damping: 35,
+    stiffness: 280,
+    damping: 28,
   })
   const isInView = useInView(ref, { once: true, margin: '-10px' })
 

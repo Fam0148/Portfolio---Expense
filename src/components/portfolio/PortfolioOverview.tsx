@@ -50,10 +50,10 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
               {showValues ? (
                 <NumberTicker value={Math.abs(numericValue)} />
               ) : (
-                <span className="tracking-widest">******</span>
+                <span className="text-[22px] sm:text-[26px]" style={{ letterSpacing: '-0.06em' }}>******</span>
               )}
             </div>
-            {profitPercent && showValues && (
+            {profitPercent && (
               <span className={`text-[11px] font-display font-normal px-2 py-0.5 rounded-full ${isNegative ? 'text-rose-600 bg-rose-50' : 'text-green-600 bg-green-50'} transition-all duration-300`}>
                 {profitPercent}
               </span>
@@ -172,14 +172,14 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           let mVal = 0; const mEnd = new Date(currYear, mIdx + 1, 0);
           withPrices.forEach(s => {
             if (new Date(s.purchase_date) <= mEnd) {
-                const totalAtP = s.purchase_price * s.quantity; mVal += totalAtP;
-                if (s.asset_type_c === 'BOND' && s.ytm) {
-                  const ytm = parseFloat(s.ytm);
-                  const [bY, bM, bD] = s.purchase_date.split('-').map(Number);
-                  let tDate = new Date(bY, bM - 1, 10); if (bD >= 10) tDate.setMonth(tDate.getMonth() + 1);
-                  let mCount = 0; while (tDate <= mEnd && tDate <= now) { mCount++; tDate.setMonth(tDate.getMonth() + 1); }
-                  mVal += totalAtP * (ytm / 100) * (mCount / 12);
-                }
+              const totalAtP = s.purchase_price * s.quantity; mVal += totalAtP;
+              if (s.asset_type_c === 'BOND' && s.ytm) {
+                const ytm = parseFloat(s.ytm);
+                const [bY, bM, bD] = s.purchase_date.split('-').map(Number);
+                let tDate = new Date(bY, bM - 1, 10); if (bD >= 10) tDate.setMonth(tDate.getMonth() + 1);
+                let mCount = 0; while (tDate <= mEnd && tDate <= now) { mCount++; tDate.setMonth(tDate.getMonth() + 1); }
+                mVal += totalAtP * (ytm / 100) * (mCount / 12);
+              }
             }
           });
           return { label, value: Math.round(mVal), isFuture: mIdx > now.getMonth() };
@@ -201,10 +201,10 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           bondInvested: totalBondInvested,
           bondProfitDetails: withPrices.reduce((acc, s) => {
             if (s.asset_type_c === 'BOND') {
-                const ytm = parseFloat(s.ytm); const [pY, pM, pD] = s.purchase_date.split('-').map(Number);
-                let c = 0; let t = new Date(pY, pM - 1, 10); if (pD >= 10) t.setMonth(t.getMonth() + 1);
-                while (t <= now) { c++; t.setMonth(t.getMonth() + 1); }
-                acc[s.id] = (s.purchase_price * s.quantity * (ytm / 100)) * (c / 12);
+              const ytm = parseFloat(s.ytm); const [pY, pM, pD] = s.purchase_date.split('-').map(Number);
+              let c = 0; let t = new Date(pY, pM - 1, 10); if (pD >= 10) t.setMonth(t.getMonth() + 1);
+              while (t <= now) { c++; t.setMonth(t.getMonth() + 1); }
+              acc[s.id] = (s.purchase_price * s.quantity * (ytm / 100)) * (c / 12);
             }
             return acc;
           }, {} as any),
@@ -229,7 +229,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           try {
             const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
             const r = await fetch(`${FUNCTION_URL}?action=price&q=${encodeURIComponent(sym)}`, {
-                headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
+              headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
             })
             if (r.ok) { const d = await r.json(); if (d?.price) current = d.price; }
           } catch { /* Silent fail */ }
@@ -311,14 +311,10 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           <div className="flex items-center justify-center gap-3 w-full sm:w-auto">
             <button
               onClick={() => setShowValues(!showValues)}
-              className={`flex-shrink-0 flex items-center justify-center p-2.5 rounded-sm border transition-all active:scale-95 shadow-sm ${
-                showValues 
-                ? "bg-white border-gray-100 text-gray-500 hover:text-blue-600 hover:bg-blue-50" 
-                : "bg-blue-600 border-blue-600 text-white hover:bg-blue-700"
-              }`}
+              className="flex-shrink-0 flex items-center justify-center p-2.5 rounded-sm border border-gray-200 bg-white text-[#171717] hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
               title={showValues ? "Hide Values" : "Show Values"}
             >
-              {showValues ? <Eye size={18} weight="bold" /> : <EyeSlash size={18} weight="bold" />}
+              {showValues ? <Eye size={16} weight="regular" /> : <EyeSlash size={16} weight="regular" />}
             </button>
             <button
               onClick={() => { setTimeout(() => { window.print(); }, 500); }}
