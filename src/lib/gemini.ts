@@ -1,5 +1,3 @@
-import { supabase } from "./supabase";
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const PROXY_URL = `${SUPABASE_URL}/functions/v1/gemini-proxy`;

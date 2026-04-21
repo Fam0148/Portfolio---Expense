@@ -4,9 +4,8 @@ import { supabase } from "../../lib/supabase"
 import {
   Pencil, Trash2, History, X, Search, Calendar,
   BadgeIndianRupee, Hash, ShieldCheck,
-  TrendingUp, Timer, Percent, Plus, Sparkles
+  TrendingUp, Timer, Percent, Plus
 } from "lucide-react"
-import { AIImportModal } from "./AIImportModal"
 
 interface Stock {
   id: string
@@ -155,7 +154,6 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
   const [activeTab, setActiveTab] = useState<'STOCK' | 'BOND'>('STOCK')
   const [suggestions, setSuggestions] = useState<any[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
-  const [isAIModalOpen, setIsAIModalOpen] = useState(false)
 
 
 
