@@ -121,16 +121,16 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
                 <tr key={i} className="text-[12px] text-[#334155]">
                   <td className="py-4 px-0">• {s.symbol} Equity</td>
                   <td className="py-4 px-0 text-center">{s.quantity} Units</td>
-                  <td className="py-4 px-0 text-center">₹{s.purchase_price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                  <td className="py-4 px-0 text-right font-bold text-[#0f172a]">₹{(s.quantity * s.current_p).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <td className="py-4 px-0 text-center">₹{s.purchase_price.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
+                  <td className="py-4 px-0 text-right font-bold text-[#0f172a]">₹{(s.quantity * s.current_p).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 </tr>
               ))}
               {bondHoldings.map((s, i) => (
                 <tr key={i} className="text-[12px] text-[#334155]">
                   <td className="py-4 px-0">• {s.symbol} Fixed Income</td>
                   <td className="py-4 px-0 text-center">1 Portfolio</td>
-                  <td className="py-4 px-0 text-center">₹{(s.purchase_price * s.quantity).toLocaleString()}</td>
-                  <td className="py-4 px-0 text-right font-bold text-[#0f172a]">₹{(s.purchase_price * s.quantity + (stats.bondProfitDetails?.[s.id] || 0)).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                  <td className="py-4 px-0 text-center">₹{(s.purchase_price * s.quantity).toLocaleString('en-IN')}</td>
+                  <td className="py-4 px-0 text-right font-bold text-[#0f172a]">₹{(s.purchase_price * s.quantity + (stats.bondProfitDetails?.[s.id] || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</td>
                 </tr>
               ))}
             </tbody>
@@ -141,11 +141,11 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
             <div className="w-[300px] space-y-4">
               <div className="flex justify-between items-center text-[11px] font-bold text-gray-500">
                 <span>Invested Principal</span>
-                <span className="text-[#111827]">₹{stats.totalInvested?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="text-[#111827]">₹{stats.totalInvested?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between items-center text-[11px] font-bold text-gray-500">
                 <span>Unrealized Gain (Tax)</span>
-                <span className="text-[#111827]">₹{(stats.totalValue - stats.totalInvested).toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="text-[#111827]">₹{(stats.totalValue - stats.totalInvested).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
               </div>
             </div>
           </div>
@@ -156,7 +156,7 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
       <div className="flex justify-end mt-6 pr-5">
         <div className="flex items-center gap-10">
           <span className="text-[13px] font-extrabold text-[#111827] uppercase tracking-tight">Total Portfolio Value</span>
-          <span className="text-[15px] font-black text-[#111827]">₹{stats.totalValue?.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+          <span className="text-[15px] font-black text-[#111827]">₹{stats.totalValue?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
         </div>
       </div>
 

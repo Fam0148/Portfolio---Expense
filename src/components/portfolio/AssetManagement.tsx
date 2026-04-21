@@ -109,7 +109,7 @@ const HistoryModal = ({ isOpen, onClose, stock, showValues = true }: { isOpen: b
                     <div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-gray-400 ring-4 ring-white" />
                     <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Initial Position</p>
                     <p className={`text-sm font-bold text-[#171717] transition-all`}>{showValues ? `${stock?.quantity} units of ${stock?.symbol}` : '**** units'}</p>
-                    <p className={`text-[11px] text-gray-500 mt-0.5 transition-all`}>{showValues ? `At ₹${stock?.purchase_price.toLocaleString()} per unit` : 'At ₹**** per unit'}</p>
+                    <p className={`text-[11px] text-gray-500 mt-0.5 transition-all`}>{showValues ? `At ₹${stock?.purchase_price.toLocaleString('en-IN')} per unit` : 'At ₹**** per unit'}</p>
                   </div>
                 ) : logs.map((log) => (
                   <div key={log.id} className="relative pl-10">
@@ -121,7 +121,7 @@ const HistoryModal = ({ isOpen, onClose, stock, showValues = true }: { isOpen: b
                       {new Date(log.transaction_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                     </p>
                     <p className={`text-sm font-bold text-[#171717] transition-all`}>
-                      {showValues ? `${log.quantity} units @ ₹${Number(log.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '**** units @ ₹****'}
+                      {showValues ? `${log.quantity} units @ ₹${Number(log.price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '**** units @ ₹****'}
                     </p>
                     <p className="text-[10px] text-gray-500 mt-0.5">Transaction logged</p>
                   </div>
@@ -655,9 +655,14 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                     </label>
                     <div className="relative group/price">
                       <BadgeIndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/price:text-[#171717] transition-colors" size={16} />
-                      <input type="number" placeholder="0.00" step="0.01"
+                      <input type="text" placeholder="0.00"
                         className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
-                        value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
+                        value={form.price ? Number(form.price.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                        onChange={e => {
+                          const val = e.target.value.replace(/,/g, '');
+                          if (!isNaN(Number(val)) || val === "") setForm({ ...form, price: val });
+                        }} 
+                      />
                     </div>
                   </div>
                   {/* Tenure/YTM or Quantity */}
@@ -698,9 +703,14 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                       </label>
                       <div className="relative group/qty">
                         <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/qty:text-[#171717] transition-colors" size={16} />
-                        <input type="number" placeholder="0"
+                        <input type="text" placeholder="0"
                           className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
-                          value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} />
+                          value={form.quantity ? Number(form.quantity.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                          onChange={e => {
+                            const val = e.target.value.replace(/,/g, '');
+                            if (!isNaN(Number(val)) || val === "") setForm({ ...form, quantity: val });
+                          }} 
+                        />
                       </div>
                     </div>
                   )}

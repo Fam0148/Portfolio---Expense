@@ -78,9 +78,9 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
   const [mappingForm, setMappingForm] = useState({ itemName: "", category: "" })
   const [activeTab, setActiveTab] = useState('All')
   const [showCatManager, setShowCatManager] = useState(false)
-  const [isEditingIncome, setIsEditingIncome] = useState(false)
-  const [isEditingFixed, setIsEditingFixed] = useState(false)
-  const [isIncomeCollapsed, setIsIncomeCollapsed] = useState(true)
+  const [isEditingIncome, setIsEditingIncome] = useState(true)
+  const [isEditingFixed, setIsEditingFixed] = useState(true)
+  const [isIncomeCollapsed, setIsIncomeCollapsed] = useState(false)
   const [isFixedCollapsed, setIsFixedCollapsed] = useState(true)
   const [isLogsCollapsed, setIsLogsCollapsed] = useState(true)
   const [viewDate, setViewDate] = useState(new Date())
@@ -203,28 +203,38 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
         }, { onConflict: 'user_id,month_year' })
 
       if (error) throw error
-      setIsEditingIncome(false)
-      setIsEditingFixed(false)
     } catch (err: any) {
       console.error('Error saving config:', err)
       const localKey = `user_finance_config_${currentMonthYear}`
       localStorage.setItem(localKey, JSON.stringify({ income, fixedExpenses }))
       alert(`Config saved locally for ${currentMonthYear}, but failed to sync with Cloud: ${err.message || 'Check connection'}`)
-      setIsEditingIncome(false)
-      setIsEditingFixed(false)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleIncomeToggle = () => {
-    if (isEditingIncome) saveConfig()
-    else setIsEditingIncome(true)
+  const handleIncomeToggle = async () => {
+    if (isEditingIncome) {
+      await saveConfig()
+      setIsEditingIncome(false)
+      setIsIncomeCollapsed(true)
+      setIsFixedCollapsed(false)
+      setIsEditingFixed(true) // Open next section in edit mode
+    } else {
+      setIsEditingIncome(true)
+      setIsIncomeCollapsed(false)
+    }
   }
 
-  const handleFixedToggle = () => {
-    if (isEditingFixed) saveConfig()
-    else setIsEditingFixed(true)
+  const handleFixedToggle = async () => {
+    if (isEditingFixed) {
+      await saveConfig()
+      setIsEditingFixed(false)
+      setIsFixedCollapsed(true)
+    } else {
+      setIsEditingFixed(true)
+      setIsFixedCollapsed(false)
+    }
   }
 
   const addTransaction = async () => {
@@ -354,17 +364,20 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           .maybeSingle()
 
         if (budgetData) {
-          setIncome({ salary: budgetData.salary.toString(), sideHustle: budgetData.side_hustle.toString() })
-          setFixedExpenses({
-            rent: (budgetData.fixed_rent || "").toString(),
-            cook: (budgetData.fixed_cook || "").toString(),
-            travel: (budgetData.fixed_travel || "").toString(),
-            insurance: (budgetData.fixed_insurance || "").toString(),
-            communication: (budgetData.fixed_comms || "").toString()
+          setIncome({ 
+            salary: budgetData.salary ? budgetData.salary.toString() : "", 
+            sideHustle: budgetData.side_hustle ? budgetData.side_hustle.toString() : "" 
           })
-          setIsEditingIncome(false)
-          setIsEditingFixed(false)
-          setIsIncomeCollapsed(true)
+          setFixedExpenses({
+            rent: budgetData.fixed_rent ? budgetData.fixed_rent.toString() : "",
+            cook: budgetData.fixed_cook ? budgetData.fixed_cook.toString() : "",
+            travel: budgetData.fixed_travel ? budgetData.fixed_travel.toString() : "",
+            insurance: budgetData.fixed_insurance ? budgetData.fixed_insurance.toString() : "",
+            communication: budgetData.fixed_comms ? budgetData.fixed_comms.toString() : ""
+          })
+          setIsEditingIncome(true)
+          setIsEditingFixed(true)
+          setIsIncomeCollapsed(false)
           setIsFixedCollapsed(true)
         } else {
           // If current month is empty, start fresh as requested
@@ -373,7 +386,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           setIsEditingIncome(true)
           setIsEditingFixed(true)
           setIsIncomeCollapsed(false)
-          setIsFixedCollapsed(false)
+          setIsFixedCollapsed(true)
         }
 
         const { data: txData } = await supabase.from('transactions').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
@@ -540,22 +553,32 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                 className="overflow-hidden"
               >
                 <div className="flex flex-col sm:flex-row items-end gap-4 lg:gap-6">
-                  <div className={`space-y-2 flex-1 w-full transition-all duration-500 ${!isEditingIncome ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                  <div className={`space-y-2 flex-1 w-full transition-all duration-500 ${!isEditingIncome ? "opacity-50 grayscale pointer-events-none" : ""}`}>
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Monthly Salary (Primary)</label>
                     <div className="relative group/input">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-[#171717] transition-colors font-bold text-sm">₹</div>
-                      <input type="number" placeholder="0.00" disabled={!isEditingIncome}
+                      <input type="text" placeholder="0.00" disabled={!isEditingIncome}
                         className="w-full pl-9 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-md text-sm font-bold focus:ring-2 focus:ring-gray-100 focus:bg-white transition-all outline-none"
-                        value={income.salary} onChange={(e) => setIncome({ ...income, salary: e.target.value })} />
+                        value={income.salary ? Number(income.salary.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/,/g, '');
+                          if (!isNaN(Number(val)) || val === "") setIncome({ ...income, salary: val });
+                        }} 
+                      />
                     </div>
                   </div>
-                  <div className={`space-y-2 flex-1 w-full transition-all duration-500 ${!isEditingIncome ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                  <div className={`space-y-2 flex-1 w-full transition-all duration-500 ${!isEditingIncome ? "opacity-50 grayscale pointer-events-none" : ""}`}>
                     <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Side Hustle (Optional)</label>
                     <div className="relative group/input">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-[#171717] transition-colors font-bold text-sm">₹</div>
-                      <input type="number" placeholder="0.00" disabled={!isEditingIncome}
+                      <input type="text" placeholder="0.00" disabled={!isEditingIncome}
                         className="w-full pl-9 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-md text-sm font-bold focus:ring-2 focus:ring-gray-100 focus:bg-white transition-all outline-none"
-                        value={income.sideHustle} onChange={(e) => setIncome({ ...income, sideHustle: e.target.value })} />
+                        value={income.sideHustle ? Number(income.sideHustle.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/,/g, '');
+                          if (!isNaN(Number(val)) || val === "") setIncome({ ...income, sideHustle: val });
+                        }} 
+                      />
                     </div>
                   </div>
 
@@ -568,7 +591,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                           ? 'bg-[#171717] text-white hover:scale-105 active:scale-95'
                           : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-[#171717]'}`}
                     >
-                      {loading ? '...' : isEditingIncome ? 'Save Changes' : 'Edit Income'}
+                      {loading ? '...' : isEditingIncome ? 'Save Changes' : 'Edit Changes'}
                     </button>
                   </div>
                 </div>
@@ -608,14 +631,18 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                     { key: 'insurance', label: 'Insurance' },
                     { key: 'communication', label: 'Communication Bill' },
                   ].map((item) => (
-                    <div key={item.key} className={`space-y-2 transition-all duration-500 ${!isEditingFixed ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                    <div key={item.key} className={`space-y-2 transition-all duration-500 ${!isEditingFixed ? "opacity-50 grayscale pointer-events-none" : ""}`}>
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">{item.label}</label>
                       <div className="relative group/input">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-gray-500 transition-colors font-bold text-sm">₹</div>
-                        <input type="number" placeholder="0.00" disabled={!isEditingFixed}
+                        <input type="text" placeholder="0.00" disabled={!isEditingFixed}
                           className="w-full pl-9 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-50 focus:bg-white transition-all outline-none"
-                          value={fixedExpenses[item.key as keyof typeof fixedExpenses]}
-                          onChange={(e) => setFixedExpenses({ ...fixedExpenses, [item.key]: e.target.value })} />
+                          value={fixedExpenses[item.key as keyof typeof fixedExpenses] ? Number(fixedExpenses[item.key as keyof typeof fixedExpenses].replace(/,/g, '')).toLocaleString('en-IN') : ""}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/,/g, '');
+                            if (!isNaN(Number(val)) || val === "") setFixedExpenses({ ...fixedExpenses, [item.key]: val });
+                          }} 
+                        />
                       </div>
                     </div>
                   ))}
@@ -633,7 +660,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                           ? 'bg-[#171717] text-white hover:scale-105 active:scale-95 shadow-lg shadow-black/5'
                           : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50 hover:text-[#171717]'}`}
                     >
-                      {loading ? 'Saving...' : isEditingFixed ? 'Save Changes' : 'Edit Expenses'}
+                      {loading ? '...' : isEditingFixed ? 'Save Changes' : 'Edit Changes'}
                     </button>
                   </div>
                 </div>
@@ -879,8 +906,12 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                       <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Amount</label>
                       <div className="relative">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</div>
-                        <input type="number" placeholder="0.00"
-                          value={txForm.amount} onChange={(e) => setTxForm({ ...txForm, amount: e.target.value })}
+                        <input type="text" placeholder="0.00"
+                          value={txForm.amount ? Number(txForm.amount.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/,/g, '');
+                            if (!isNaN(Number(val)) || val === "") setTxForm({ ...txForm, amount: val });
+                          }} 
                           className="w-full pl-8 pr-4 py-3 bg-white border border-gray-200 rounded-md text-sm font-bold outline-none focus:ring-2 focus:ring-gray-100 transition-all" />
                       </div>
                     </div>
