@@ -34,7 +34,7 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
                 <span className="text-2xl font-display font-bold text-green-600">{stats?.bondWeight.toFixed(0)}%</span>
               </div>
             </div>
-            <div className="w-full h-8 bg-gray-50 rounded-md overflow-hidden flex border border-gray-100/50 mt-1">
+            <div className="w-[92%] h-7 bg-gray-50 rounded-sm overflow-hidden flex border border-gray-100/50 mt-2">
               <div className="h-full bg-blue-600 transition-all duration-1000 ease-out flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${stats?.stockWeight}%` }}>
                 {stats?.stockWeight > 15 && `${stats?.stockWeight.toFixed(0)}%`}
               </div>

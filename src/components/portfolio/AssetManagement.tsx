@@ -833,17 +833,17 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                         </div>
                       </td>
                       <td className="py-5 px-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                        <div className="flex items-center justify-end gap-1">
                           <button onClick={() => setHistoryModal({ isOpen: true, stock })}
-                            className="p-2 text-gray-300 hover:text-blue-500 hover:bg-white rounded-md transition-all shadow-sm border border-transparent hover:border-gray-100">
+                            className="p-2 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="History">
                             <History size={16} />
                           </button>
                           <button onClick={() => handleEdit(stock)}
-                            className="p-2 text-gray-300 hover:text-[#171717] hover:bg-white rounded-md transition-all shadow-sm border border-transparent hover:border-gray-100">
+                            className="p-2 rounded-md text-gray-400 hover:text-[#171717] hover:bg-gray-100 transition-colors" title="Edit">
                             <Pencil size={16} />
                           </button>
                           <button onClick={() => setDeleteModal({ isOpen: true, id: stock.id })}
-                            className="p-2 text-gray-300 hover:text-rose-500 hover:bg-white rounded-md transition-all shadow-sm border border-transparent hover:border-gray-100">
+                            className="p-2 rounded-md text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -919,17 +919,17 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-3 border-t border-gray-50">
+                  <div className="flex items-center justify-end gap-1 pt-3 border-t border-gray-50">
                     <button onClick={() => setHistoryModal({ isOpen: true, stock })}
-                      className="p-2.5 bg-gray-50 text-blue-500 rounded-lg border border-gray-100/50">
+                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
                       <History size={16} />
                     </button>
                     <button onClick={() => handleEdit(stock)}
-                      className="p-2.5 bg-gray-50 text-gray-600 rounded-lg border border-gray-100/50">
+                      className="p-2 text-gray-400 hover:text-[#171717] hover:bg-gray-100 rounded-md transition-colors">
                       <Pencil size={16} />
                     </button>
                     <button onClick={() => setDeleteModal({ isOpen: true, id: stock.id })}
-                      className="p-2.5 bg-rose-50 text-rose-500 rounded-lg border border-rose-100/50">
+                      className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors">
                       <Trash2 size={16} />
                     </button>
                   </div>

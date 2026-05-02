@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect, useCallback } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "../../lib/supabase"
 import {
   SignOut,
@@ -12,7 +12,9 @@ import {
   PencilLine,
   Check,
   Robot,
-  CalendarBlank
+  CalendarBlank,
+  ArrowCounterClockwise,
+  Trash
 } from "@phosphor-icons/react"
 import { NumberTicker } from "../ui/NumberTicker"
 import { FinancialInsight } from "../ui/FinancialInsight"
@@ -66,6 +68,59 @@ const StatCard = ({ title, numericValue, illustration, badgeText, badgeColor = "
   )
 }
 
+// ─── Confirm Modal ────────────────────────────────────────────────────────────
+const ConfirmModal = ({ open, title, message, onConfirm, onCancel }: {
+  open: boolean
+  title: string
+  message: string
+  onConfirm: () => void
+  onCancel: () => void
+}) => (
+  <AnimatePresence>
+    {open && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.15 }}
+        className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm"
+        onClick={onCancel}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 8 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 8 }}
+          transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+          className="bg-white rounded-xl border border-gray-100 shadow-2xl shadow-black/10 w-full max-w-sm p-6 flex flex-col gap-5"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="w-10 h-10 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
+            <ArrowCounterClockwise size={18} weight="bold" className="text-[#171717]" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <h3 className="text-[17px] font-serif font-bold text-[#171717]">{title}</h3>
+            <p className="text-sm text-gray-500 leading-relaxed">{message}</p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={onCancel}
+              className="flex-1 py-2.5 rounded-md border border-gray-200 text-[13px] font-bold text-gray-600 hover:bg-gray-50 hover:text-[#171717] transition-all active:scale-95"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={onConfirm}
+              className="flex-1 py-2.5 rounded-md bg-[#171717] text-[13px] font-bold text-white hover:bg-[#2a2a2a] transition-all active:scale-95 shadow-lg shadow-black/10"
+            >
+              Reset
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+)
+
 export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'portfolio' | 'expense') => void, userName: string }) => {
   const [income, setIncome] = useState({ salary: "", sideHustle: "" })
   const [fixedExpenses, setFixedExpenses] = useState({
@@ -84,17 +139,26 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
   const [isFixedCollapsed, setIsFixedCollapsed] = useState(true)
   const [isLogsCollapsed, setIsLogsCollapsed] = useState(true)
   const [viewDate, setViewDate] = useState(new Date())
+  const [currentBudgetId, setCurrentBudgetId] = useState<string | null>(null)
   const [editingMappingId, setEditingMappingId] = useState<string | null>(null)
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false)
   const [showMappingCategoryDropdown, setShowMappingCategoryDropdown] = useState(false)
   const [catSearch, setCatSearch] = useState("")
   const [mappingCatSearch, setMappingCatSearch] = useState("")
+  const [confirmModal, setConfirmModal] = useState<{ open: boolean; title: string; message: string; onConfirm: () => void }>(
+    { open: false, title: '', message: '', onConfirm: () => { } }
+  )
 
-  const defaultCategories = [
-    "Food & Dining", "Transport", "Shopping", "Entertainment", "Health",
-    "Gift", "Education", "Variable Expense", "Fixed Expense", "Investment",
-    "Income/Return", "Salary", "Bonus", "Rental Income", "Dividend"
-  ]
+  const openConfirm = useCallback((title: string, message: string, onConfirm: () => void) => {
+    setConfirmModal({ open: true, title, message, onConfirm })
+  }, [])
+
+  const closeConfirm = useCallback(() => {
+    setConfirmModal(prev => ({ ...prev, open: false }))
+  }, [])
+
+
+  const defaultCategories: string[] = []
 
   const existingCategories: string[] = (Array.from(
     ([...defaultCategories, ...transactions.map(t => t.category), ...categoryMappings.map(m => m.category)] as any[])
@@ -146,12 +210,17 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
   const selectedYear = viewDate.getFullYear()
   const currentMonthYear = `${(selectedMonth + 1).toString().padStart(2, '0')}-${selectedYear}`
 
-  const totalIncome = Number(income.salary || 0) + Number(income.sideHustle || 0)
-  const totalFixed = Number(fixedExpenses.rent || 0) +
-    Number(fixedExpenses.cook || 0) +
-    Number(fixedExpenses.travel || 0) +
-    Number(fixedExpenses.insurance || 0) +
-    Number(fixedExpenses.communication || 0)
+  const cleanNum = (val: any) => {
+    if (typeof val === 'number') return val;
+    return Number(String(val || "0").replace(/,/g, '')) || 0;
+  }
+
+  const totalIncome = cleanNum(income.salary) + cleanNum(income.sideHustle)
+  const totalFixed = cleanNum(fixedExpenses.rent) +
+    cleanNum(fixedExpenses.cook) +
+    cleanNum(fixedExpenses.travel) +
+    cleanNum(fixedExpenses.insurance) +
+    cleanNum(fixedExpenses.communication)
 
   const monthTxs = transactions.filter(tx => {
     const d = new Date(tx.created_at)
@@ -183,31 +252,71 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
     setLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      if (!user) {
+        alert("Session expired. Please log in again.");
+        return;
+      }
 
-      const { error } = await supabase
+      const payload = {
+        user_id: user.id,
+        month_year: currentMonthYear,
+        salary: cleanNum(income.salary),
+        side_hustle: cleanNum(income.sideHustle),
+        fixed_rent: cleanNum(fixedExpenses.rent),
+        fixed_cook: cleanNum(fixedExpenses.cook),
+        fixed_travel: cleanNum(fixedExpenses.travel),
+        fixed_insurance: cleanNum(fixedExpenses.insurance),
+        fixed_comms: cleanNum(fixedExpenses.communication),
+        total_income: totalIncome,
+        available_budget: availableBudget,
+        updated_at: new Date().toISOString()
+      }
+
+      // We use upsert with onConflict on the business keys (user_id, month_year)
+      // This is the most reliable way as it doesn't depend on us having the 'id' beforehand.
+      const { data, error } = await supabase
         .from('budgets')
-        .upsert({
-          user_id: user.id,
-          month_year: currentMonthYear,
-          salary: Number(income.salary),
-          side_hustle: Number(income.sideHustle),
-          fixed_rent: Number(fixedExpenses.rent),
-          fixed_cook: Number(fixedExpenses.cook),
-          fixed_travel: Number(fixedExpenses.travel),
-          fixed_insurance: Number(fixedExpenses.insurance),
-          fixed_comms: Number(fixedExpenses.communication),
-          total_income: totalIncome,
-          available_budget: availableBudget,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id,month_year' })
+        .upsert(payload, { onConflict: 'user_id,month_year' })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (error) {
+        console.error('Supabase Save Error:', error);
+
+        // Fallback: If upsert fails with a duplicate key error (23505), 
+        // it often means RLS is blocking the UPDATE part of the upsert.
+        // We try a manual Delete + Insert as a workaround.
+        if (error.code === '23505') {
+          console.warn('Conflict detected. Attempting Delete-then-Insert workaround...');
+          await supabase
+            .from('budgets')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('month_year', currentMonthYear)
+
+          const { data: retryData, error: retryError } = await supabase
+            .from('budgets')
+            .insert([payload])
+            .select()
+            .single()
+
+          if (retryError) throw retryError;
+          if (retryData) {
+            setCurrentBudgetId(retryData.id);
+            console.log('Successfully saved via Delete-then-Insert fallback:', retryData);
+          }
+        } else {
+          throw error;
+        }
+      } else if (data) {
+        setCurrentBudgetId(data.id);
+        console.log('Successfully synced with cloud:', data);
+      }
     } catch (err: any) {
       console.error('Error saving config:', err)
       const localKey = `user_finance_config_${currentMonthYear}`
       localStorage.setItem(localKey, JSON.stringify({ income, fixedExpenses }))
-      alert(`Config saved locally for ${currentMonthYear}, but failed to sync with Cloud: ${err.message || 'Check connection'}`)
+      alert(`Config saved locally for ${currentMonthYear}, but failed to sync with Cloud: ${err.message || 'Check connection'}. Error Code: ${err.code || 'None'}`)
     } finally {
       setLoading(false)
     }
@@ -235,6 +344,72 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       setIsEditingFixed(true)
       setIsFixedCollapsed(false)
     }
+  }
+
+  const resetIncome = () => {
+    openConfirm(
+      'Reset Monthly Cashflow',
+      'This will clear your saved income for this month and set all values to zero.',
+      async () => {
+        closeConfirm()
+        setIncome({ salary: '', sideHustle: '' })
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user && currentBudgetId) {
+            await supabase.from('budgets').update({
+              salary: 0, side_hustle: 0, total_income: 0, updated_at: new Date().toISOString()
+            }).eq('id', currentBudgetId)
+          }
+        } catch (err) { console.error('Reset income error:', err) }
+      }
+    )
+  }
+
+  const resetFixed = () => {
+    openConfirm(
+      'Reset Fixed Monthly Expenses',
+      'This will clear all your fixed expense values for this month and set them to zero.',
+      async () => {
+        closeConfirm()
+        setFixedExpenses({ rent: '', cook: '', travel: '', insurance: '', communication: '' })
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user && currentBudgetId) {
+            await supabase.from('budgets').update({
+              fixed_rent: 0, fixed_cook: 0, fixed_travel: 0,
+              fixed_insurance: 0, fixed_comms: 0, updated_at: new Date().toISOString()
+            }).eq('id', currentBudgetId)
+          }
+        } catch (err) { console.error('Reset fixed error:', err) }
+      }
+    )
+  }
+
+  const resetTransactions = () => {
+    const monthLabel = `${viewDate.toLocaleString('default', { month: 'long' })} ${viewDate.getFullYear()}`
+    openConfirm(
+      'Delete All Transactions',
+      `Delete all transactions for ${monthLabel}? This cannot be undone.`,
+      async () => {
+        closeConfirm()
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user) {
+            const startOfMonth = new Date(selectedYear, selectedMonth, 1).toISOString()
+            const endOfMonth = new Date(selectedYear, selectedMonth + 1, 0, 23, 59, 59).toISOString()
+            await supabase.from('transactions')
+              .delete()
+              .eq('user_id', user.id)
+              .gte('created_at', startOfMonth)
+              .lte('created_at', endOfMonth)
+          }
+          setTransactions(prev => prev.filter(tx => {
+            const d = new Date(tx.created_at)
+            return !(d.getMonth() === selectedMonth && d.getFullYear() === selectedYear)
+          }))
+        } catch (err) { console.error('Reset transactions error:', err) }
+      }
+    )
   }
 
   const addTransaction = async () => {
@@ -347,6 +522,31 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
     } catch (err) { console.error(err) }
   }
 
+  const handleDeleteCategory = async (e: React.MouseEvent, categoryToDelete: string) => {
+    e.stopPropagation()
+    if (defaultCategories.includes(categoryToDelete)) return
+
+    openConfirm(
+      `Delete "${categoryToDelete}" Category`,
+      `This will re-assign all transactions and mappings using "${categoryToDelete}" to "Other". This cannot be undone.`,
+      async () => {
+        try {
+          const { data: { user } } = await supabase.auth.getUser()
+          if (!user) return
+
+          await supabase.from('transactions').update({ category: 'Other' }).eq('category', categoryToDelete).eq('user_id', user.id)
+          await supabase.from('category_mappings').update({ category: 'Other' }).eq('category', categoryToDelete).eq('user_id', user.id)
+
+          setTransactions(transactions.map(t => t.category === categoryToDelete ? { ...t, category: 'Other' } : t))
+          setCategoryMappings(categoryMappings.map(m => m.category === categoryToDelete ? { ...m, category: 'Other' } : m))
+
+          if (mappingForm.category === categoryToDelete) setMappingForm({ ...mappingForm, category: "" })
+          if (txForm.category === categoryToDelete) setTxForm({ ...txForm, category: "" })
+        } catch (err) { console.error('Error deleting category:', err) }
+      }
+    )
+  }
+
   const handleExportStatement = () => {
     window.print()
   }
@@ -364,23 +564,25 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           .maybeSingle()
 
         if (budgetData) {
-          setIncome({ 
-            salary: budgetData.salary ? budgetData.salary.toString() : "", 
-            sideHustle: budgetData.side_hustle ? budgetData.side_hustle.toString() : "" 
+          setCurrentBudgetId(budgetData.id)
+          setIncome({
+            salary: (budgetData.salary ?? "").toString(),
+            sideHustle: (budgetData.side_hustle ?? "").toString()
           })
           setFixedExpenses({
-            rent: budgetData.fixed_rent ? budgetData.fixed_rent.toString() : "",
-            cook: budgetData.fixed_cook ? budgetData.fixed_cook.toString() : "",
-            travel: budgetData.fixed_travel ? budgetData.fixed_travel.toString() : "",
-            insurance: budgetData.fixed_insurance ? budgetData.fixed_insurance.toString() : "",
-            communication: budgetData.fixed_comms ? budgetData.fixed_comms.toString() : ""
+            rent: (budgetData.fixed_rent ?? "").toString(),
+            cook: (budgetData.fixed_cook ?? "").toString(),
+            travel: (budgetData.fixed_travel ?? "").toString(),
+            insurance: (budgetData.fixed_insurance ?? "").toString(),
+            communication: (budgetData.fixed_comms ?? "").toString()
           })
-          setIsEditingIncome(true)
+          setIsEditingIncome(true) // Keep editable for better UX
           setIsEditingFixed(true)
           setIsIncomeCollapsed(false)
-          setIsFixedCollapsed(true)
+          setIsFixedCollapsed(false) // Open both if data exists
         } else {
           // If current month is empty, start fresh as requested
+          setCurrentBudgetId(null)
           setIncome({ salary: "", sideHustle: "" })
           setFixedExpenses({ rent: "", cook: "", travel: "", insurance: "", communication: "" })
           setIsEditingIncome(true)
@@ -457,6 +659,13 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
 
   return (
     <>
+      <ConfirmModal
+        open={confirmModal.open}
+        title={confirmModal.title}
+        message={confirmModal.message}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={closeConfirm}
+      />
       <div className="no-print max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
         <div>
           {/* Centered Greeting & Global Actions */}
@@ -534,16 +743,23 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                   <h2 className="text-2xl font-serif font-bold text-[#171717]">Monthly Cashflow</h2>
                   <p className="text-sm text-gray-500">Configure your primary and secondary income streams.</p>
                 </div>
-                <button
-                  onClick={() => setIsIncomeCollapsed(!isIncomeCollapsed)}
-                  className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all cursor-pointer"
-                >
-                  <motion.div
-                    animate={{ rotate: isIncomeCollapsed ? -90 : 0 }}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={resetIncome}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all cursor-pointer text-[11px] font-bold"
                   >
-                    <CaretDown size={18} weight="bold" />
-                  </motion.div>
-                </button>
+                    <ArrowCounterClockwise size={12} weight="bold" />
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setIsIncomeCollapsed(!isIncomeCollapsed)}
+                    className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all cursor-pointer"
+                  >
+                    <motion.div animate={{ rotate: isIncomeCollapsed ? -90 : 0 }}>
+                      <CaretDown size={18} weight="bold" />
+                    </motion.div>
+                  </button>
+                </div>
               </div>
 
               <motion.div
@@ -558,12 +774,12 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                     <div className="relative group/input">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-[#171717] transition-colors font-bold text-sm">₹</div>
                       <input type="text" placeholder="0.00" disabled={!isEditingIncome}
-                        className="w-full pl-9 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-md text-sm font-bold focus:ring-2 focus:ring-gray-100 focus:bg-white transition-all outline-none"
-                        value={income.salary ? Number(income.salary.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                        className="w-full pl-9 pr-4 py-3.5 bg-white border border-gray-200 rounded-md text-sm font-bold focus:ring-2 focus:ring-gray-100 focus:bg-white transition-all outline-none"
+                        value={income.salary ? Number(income.salary.replace(/,/g, '')).toLocaleString('en-IN') : ""}
                         onChange={(e) => {
                           const val = e.target.value.replace(/,/g, '');
                           if (!isNaN(Number(val)) || val === "") setIncome({ ...income, salary: val });
-                        }} 
+                        }}
                       />
                     </div>
                   </div>
@@ -572,12 +788,12 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                     <div className="relative group/input">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-[#171717] transition-colors font-bold text-sm">₹</div>
                       <input type="text" placeholder="0.00" disabled={!isEditingIncome}
-                        className="w-full pl-9 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-md text-sm font-bold focus:ring-2 focus:ring-gray-100 focus:bg-white transition-all outline-none"
-                        value={income.sideHustle ? Number(income.sideHustle.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                        className="w-full pl-9 pr-4 py-3.5 bg-white border border-gray-200 rounded-md text-sm font-bold focus:ring-2 focus:ring-gray-100 focus:bg-white transition-all outline-none"
+                        value={income.sideHustle ? Number(income.sideHustle.replace(/,/g, '')).toLocaleString('en-IN') : ""}
                         onChange={(e) => {
                           const val = e.target.value.replace(/,/g, '');
                           if (!isNaN(Number(val)) || val === "") setIncome({ ...income, sideHustle: val });
-                        }} 
+                        }}
                       />
                     </div>
                   </div>
@@ -605,16 +821,23 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                   <h2 className="text-2xl font-serif font-bold text-[#171717]">Fixed Monthly Expenses</h2>
                   <p className="text-sm text-gray-500">Essential obligations to be deducted from your total income.</p>
                 </div>
-                <button
-                  onClick={() => setIsFixedCollapsed(!isFixedCollapsed)}
-                  className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all cursor-pointer"
-                >
-                  <motion.div
-                    animate={{ rotate: isFixedCollapsed ? -90 : 0 }}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={resetFixed}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all cursor-pointer text-[11px] font-bold"
                   >
-                    <CaretDown size={18} weight="bold" />
-                  </motion.div>
-                </button>
+                    <ArrowCounterClockwise size={12} weight="bold" />
+                    Reset
+                  </button>
+                  <button
+                    onClick={() => setIsFixedCollapsed(!isFixedCollapsed)}
+                    className="w-8 h-8 rounded-full bg-gray-50 border border-gray-200 flex items-center justify-center text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition-all cursor-pointer"
+                  >
+                    <motion.div animate={{ rotate: isFixedCollapsed ? -90 : 0 }}>
+                      <CaretDown size={18} weight="bold" />
+                    </motion.div>
+                  </button>
+                </div>
               </div>
 
               <motion.div
@@ -636,12 +859,12 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                       <div className="relative group/input">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-gray-500 transition-colors font-bold text-sm">₹</div>
                         <input type="text" placeholder="0.00" disabled={!isEditingFixed}
-                          className="w-full pl-9 pr-4 py-3.5 bg-gray-50/50 border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-50 focus:bg-white transition-all outline-none"
+                          className="w-full pl-9 pr-4 py-3.5 bg-white border border-gray-200 rounded-lg text-sm font-medium focus:ring-2 focus:ring-gray-50 focus:bg-white transition-all outline-none"
                           value={fixedExpenses[item.key as keyof typeof fixedExpenses] ? Number(fixedExpenses[item.key as keyof typeof fixedExpenses].replace(/,/g, '')).toLocaleString('en-IN') : ""}
                           onChange={(e) => {
                             const val = e.target.value.replace(/,/g, '');
                             if (!isNaN(Number(val)) || val === "") setFixedExpenses({ ...fixedExpenses, [item.key]: val });
-                          }} 
+                          }}
                         />
                       </div>
                     </div>
@@ -672,9 +895,9 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
               <div className="flex items-start justify-between group/header">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-2xl font-serif font-bold text-[#171717]">Daily Spending Logs</h2>
-                  <p className="text-sm text-gray-500 mb-2">Log every minor and major expense to track exactly where your money goes.</p>
-                  
-                  {/* Contextual Month Picker: Larger & Clearer */}
+                  <p className="text-sm text-gray-500 mb-2">Track where every rupee goes.</p>
+
+                  {/* Contextual Month Picker */}
                   <div className="w-fit flex items-center gap-2 p-1 bg-white rounded-md border border-gray-100 shadow-[0_1px_2px_rgba(0,0,0,0.06)] transition-all hover:border-gray-200">
                     <button
                       onClick={() => setViewDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}
@@ -701,6 +924,13 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
+                  <button
+                    onClick={resetTransactions}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 border border-gray-200 text-gray-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all cursor-pointer text-[11px] font-bold"
+                  >
+                    <ArrowCounterClockwise size={12} weight="bold" />
+                    Reset Logs
+                  </button>
                   <div className="hidden sm:flex items-center gap-2 bg-gray-50 p-1 rounded-md" onClick={(e) => e.stopPropagation()}>
                     {['All', 'Expenses', 'Income'].map((tab) => (
                       <button
@@ -730,7 +960,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
               >
 
                 {/* Smart Categorization (Internal Collapsible) */}
-                <div className="mb-8 border border-gray-100 rounded-lg overflow-hidden bg-gray-50/20">
+                <div className="mb-8 border border-gray-100 rounded-lg bg-gray-50/20 relative z-10">
                   <div className="flex items-center justify-between p-4 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#171717] shadow-sm">
@@ -753,7 +983,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                   <motion.div
                     initial={false}
                     animate={{ height: showCatManager ? 'auto' : 0, opacity: showCatManager ? 1 : 0 }}
-                    className="overflow-hidden"
+                    className={showCatManager ? "overflow-visible" : "overflow-hidden"}
                   >
                     <div className="p-6 pt-0">
                       <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 mb-6">
@@ -782,6 +1012,18 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                               }}
                               className="w-full px-4 py-3 bg-white border border-gray-200 rounded-md text-sm font-bold outline-none focus:ring-2 focus:ring-gray-100 transition-all cursor-pointer"
                             />
+                            {mappingForm.category && (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setMappingForm({ ...mappingForm, category: "" })
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 p-1 rounded-md transition-all"
+                              >
+                                <X size={14} weight="bold" />
+                              </button>
+                            )}
                             {showMappingCategoryDropdown && (
                               <motion.div
                                 initial={{ opacity: 0, y: 10 }}
@@ -802,20 +1044,30 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                                 <div className="max-h-[200px] overflow-y-auto py-2">
                                   {filteredMappingCategories.length > 0 ? (
                                     filteredMappingCategories.map((cat, idx) => (
-                                      <button
+                                      <div
                                         key={idx}
+                                        className="w-full px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-between group cursor-pointer"
                                         onClick={() => {
                                           setMappingForm({ ...mappingForm, category: cat })
                                           setShowMappingCategoryDropdown(false)
                                         }}
-                                        className="w-full text-left px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-between group"
                                       >
                                         <div className="flex items-center gap-2">
                                           <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-gray-500 transition-colors" />
                                           <span>{cat}</span>
                                         </div>
-                                        <Check size={14} className="opacity-0 group-hover:opacity-100 text-emerald-500" />
-                                      </button>
+                                        {!defaultCategories.includes(cat) ? (
+                                          <button
+                                            onClick={(e) => handleDeleteCategory(e, cat)}
+                                            className="p-1.5 text-gray-400 hover:bg-rose-100 hover:text-rose-600 rounded-md opacity-0 group-hover:opacity-100 transition-all z-10"
+                                            title="Delete custom category"
+                                          >
+                                            <Trash size={14} />
+                                          </button>
+                                        ) : (
+                                          <Check size={14} className="opacity-0 group-hover:opacity-100 text-emerald-500" />
+                                        )}
+                                      </div>
                                     ))
                                   ) : (
                                     <div className="px-4 py-2 text-xs text-gray-400">No matches...</div>
@@ -907,11 +1159,11 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                       <div className="relative">
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-xs">₹</div>
                         <input type="text" placeholder="0.00"
-                          value={txForm.amount ? Number(txForm.amount.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                          value={txForm.amount ? Number(txForm.amount.replace(/,/g, '')).toLocaleString('en-IN') : ""}
                           onChange={(e) => {
                             const val = e.target.value.replace(/,/g, '');
                             if (!isNaN(Number(val)) || val === "") setTxForm({ ...txForm, amount: val });
-                          }} 
+                          }}
                           className="w-full pl-8 pr-4 py-3 bg-white border border-gray-200 rounded-md text-sm font-bold outline-none focus:ring-2 focus:ring-gray-100 transition-all" />
                       </div>
                     </div>
@@ -975,17 +1227,30 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
                             </div>
                             {filteredCategories.length > 0 ? (
                               filteredCategories.map((cat, idx) => (
-                                <button
+                                <div
                                   key={idx}
+                                  className="w-full px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-between group cursor-pointer"
                                   onClick={() => {
                                     setTxForm({ ...txForm, category: cat })
                                     setShowCategoryDropdown(false)
                                   }}
-                                  className="w-full text-left px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors flex items-center justify-between group"
                                 >
-                                  <span>{cat}</span>
-                                  <Check size={14} className="opacity-0 group-hover:opacity-100 text-emerald-500" />
-                                </button>
+                                  <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300 group-hover:bg-gray-500 transition-colors" />
+                                    <span>{cat}</span>
+                                  </div>
+                                  {!defaultCategories.includes(cat) ? (
+                                    <button
+                                      onClick={(e) => handleDeleteCategory(e, cat)}
+                                      className="p-1.5 text-gray-400 hover:bg-rose-100 hover:text-rose-600 rounded-md opacity-0 group-hover:opacity-100 transition-all z-10"
+                                      title="Delete custom category"
+                                    >
+                                      <Trash size={14} />
+                                    </button>
+                                  ) : (
+                                    <Check size={14} className="opacity-0 group-hover:opacity-100 text-emerald-500" />
+                                  )}
+                                </div>
                               ))
                             ) : (
                               <div className="px-4 py-2 text-xs text-gray-400">No exact matches...</div>
