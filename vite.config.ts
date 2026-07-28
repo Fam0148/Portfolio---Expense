@@ -10,4 +10,18 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      '/api/tradingview': {
+        target: 'https://scanner.tradingview.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/tradingview/, ''),
+      },
+      '/api/tickertape': {
+        target: 'https://api.tickertape.in',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/tickertape/, ''),
+      },
+    },
+  },
 })

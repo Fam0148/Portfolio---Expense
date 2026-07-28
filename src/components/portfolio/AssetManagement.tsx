@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { supabase } from "../../lib/supabase"
+import { getLocalMatches, searchStocks, fetchLivePrice } from "../../lib/stockApi"
+import { calculateBondPayouts } from "../../lib/utils"
 import {
   Pencil, Trash2, History, X, Search, Calendar,
   BadgeIndianRupee, Hash, ShieldCheck,
-  TrendingUp, Timer, Percent, Plus
+  TrendingUp, Timer, Percent, Plus, MoreHorizontal
 } from "lucide-react"
 
 interface Stock {
@@ -32,22 +34,22 @@ const ConfirmationModal = ({ isOpen, onClose, onConfirm, title, message }: {
     {isOpen && (
       <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
-        <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 20 }}
-          className="relative bg-white p-6 sm:p-8 rounded-xl border border-gray-100 shadow-2xl max-w-sm w-full text-center z-10">
-          <div className="w-14 h-14 bg-red-50 rounded-lg flex items-center justify-center mx-auto mb-5 text-red-500">
-            <Trash2 size={28} />
+          onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+        <motion.div initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 16 }}
+          className="relative bg-white p-6 sm:p-8 rounded-2xl border border-[#E5E7EB] shadow-[0_4px_24px_rgba(0,0,0,0.08)] max-w-sm w-full text-center z-10">
+          <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center mx-auto mb-4 text-rose-600">
+            <Trash2 size={24} />
           </div>
-          <h3 className="text-xl font-serif font-bold text-[#171717] mb-2">{title}</h3>
-          <p className="text-sm text-gray-500 mb-8 leading-relaxed">{message}</p>
-          <div className="flex flex-col sm:flex-row gap-3">
+          <h3 className="text-lg font-semibold text-[#111827] mb-1.5">{title}</h3>
+          <p className="text-xs text-[#6B7280] mb-6 leading-relaxed font-normal">{message}</p>
+          <div className="flex flex-col sm:flex-row gap-2.5">
             <button onClick={onClose}
-              className="flex-1 px-6 py-2.5 rounded-md border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+              className="flex-1 h-10 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-[#6B7280] hover:bg-[#F4F5F7] transition-all cursor-pointer">
               Cancel
             </button>
             <button onClick={() => { onConfirm(); onClose() }}
-              className="flex-1 px-6 py-2.5 rounded-md bg-red-600 text-white text-sm font-bold hover:bg-red-700 transition-all shadow-md shadow-red-100 active:scale-95">
+              className="flex-1 h-10 rounded-xl bg-rose-600 text-white text-xs font-semibold hover:bg-rose-700 transition-all shadow-xs cursor-pointer">
               Delete Asset
             </button>
           </div>
@@ -92,43 +94,43 @@ const HistoryModal = ({ isOpen, onClose, stock, showValues = true }: { isOpen: b
       {isOpen && (
         <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
-          <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="relative bg-white p-6 sm:p-8 rounded-xl border border-gray-100 shadow-2xl max-w-sm w-full z-10">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-serif font-bold text-[#171717]">Asset History</h3>
-              <button onClick={onClose} className="p-1.5 hover:bg-gray-100 rounded-md text-gray-400"><X size={20} /></button>
+            onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+          <motion.div initial={{ scale: 0.95, opacity: 0, y: 16 }} animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 16 }}
+            className="relative bg-white p-6 sm:p-8 rounded-2xl border border-[#E5E7EB] shadow-[0_4px_24px_rgba(0,0,0,0.08)] max-w-sm w-full z-10">
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-semibold text-[#111827]">Asset History</h3>
+              <button onClick={onClose} className="p-1.5 hover:bg-[#F4F5F7] rounded-xl text-[#6B7280] transition-colors"><X size={18} /></button>
             </div>
-            <div className="max-h-[40vh] overflow-y-auto mb-8 pr-2">
-              <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-gray-100">
+            <div className="max-h-[40vh] overflow-y-auto mb-6 pr-2">
+              <div className="space-y-5 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1.5px] before:bg-[#E5E7EB]">
                 {loading ? (
-                  <div className="pl-10 py-4 text-xs text-gray-400">Fetching transaction history...</div>
+                  <div className="pl-10 py-4 text-xs text-[#6B7280]">Fetching transaction history...</div>
                 ) : logs.length === 0 ? (
                   <div className="relative pl-10">
-                    <div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-gray-400 ring-4 ring-white" />
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Initial Position</p>
-                    <p className={`text-sm font-bold text-[#171717] transition-all`}>{showValues ? `${stock?.quantity} units of ${stock?.symbol}` : '**** units'}</p>
-                    <p className={`text-[11px] text-gray-500 mt-0.5 transition-all`}>{showValues ? `At ₹${stock?.purchase_price.toLocaleString('en-IN')} per unit` : 'At ₹**** per unit'}</p>
+                    <div className="absolute left-1.5 top-1.5 w-3 h-3 rounded-full bg-[#6B7280] ring-4 ring-white" />
+                    <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-0.5">Initial Position</p>
+                    <p className={`text-sm font-semibold text-[#111827]`}>{showValues ? `${stock?.quantity} units of ${stock?.symbol}` : '**** units'}</p>
+                    <p className={`text-[11px] text-[#6B7280] mt-0.5`}>{showValues ? `At ₹${stock?.purchase_price.toLocaleString('en-IN')} per unit` : 'At ₹**** per unit'}</p>
                   </div>
                 ) : logs.map((log) => (
                   <div key={log.id} className="relative pl-10">
-                    <div className={`absolute left-1.5 top-1.5 w-3 h-3 rounded-full ring-4 ring-white ${log.type === 'BUY' ? 'bg-[#171717]' : log.type === 'AVERAGE' ? 'bg-blue-500' :
-                      log.type === 'UPDATE' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">
+                    <div className={`absolute left-1.5 top-1.5 w-3 h-3 rounded-full ring-4 ring-white ${log.type === 'BUY' ? 'bg-[#111827]' : log.type === 'AVERAGE' ? 'bg-blue-500' :
+                      log.type === 'UPDATE' ? 'bg-amber-500' : 'bg-rose-500'}`} />
+                    <p className="text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider mb-0.5">
                       {log.type === 'BUY' ? 'Initial Position' : log.type === 'AVERAGE' ? 'Units Added (Averaged)' :
                         log.type === 'UPDATE' ? 'Position Updated' : 'Asset Removed'} —{' '}
                       {new Date(log.transaction_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                     </p>
-                    <p className={`text-sm font-bold text-[#171717] transition-all`}>
+                    <p className={`text-sm font-semibold text-[#111827]`}>
                       {showValues ? `${log.quantity} units @ ₹${Number(log.price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '**** units @ ₹****'}
                     </p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Transaction logged</p>
+                    <p className="text-[10px] text-[#6B7280] mt-0.5">Transaction logged</p>
                   </div>
                 ))}
               </div>
             </div>
-            <button onClick={onClose} className="w-full px-6 py-2.5 rounded-md bg-gray-50 border border-gray-100 text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+            <button onClick={onClose} className="w-full h-10 rounded-xl bg-[#F4F5F7] border border-[#E5E7EB] text-xs font-semibold text-[#111827] hover:bg-[#E5E7EB] transition-all cursor-pointer">
               Close History
             </button>
           </motion.div>
@@ -166,9 +168,6 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  const SUPABASE_FUNCTION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stock-search`
-  const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || ""
-
   // ── Fetch stocks ───────────────────────────────────────────────────────────
   const fetchStocks = async () => {
     try {
@@ -181,26 +180,15 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
 
       const rawStocks = data || []
 
-      // Fetch live prices for non-bonds
+      // Fetch live prices for non-bonds via direct Yahoo Finance API
       const withPrice = await Promise.all(rawStocks.map(async (s: Stock) => {
         const type = s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
         let current = s.purchase_price
 
         if (type !== 'BOND') {
           try {
-            const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
-            const r = await fetch(`${SUPABASE_FUNCTION_URL}?action=price&q=${encodeURIComponent(sym)}`,
-              { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } })
-            if (r.ok) {
-              const d = await r.json()
-              if (d?.price) current = d.price
-            } else {
-              // Second fallback to Yahoo Chart API directly via proxy
-              const p = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`)}`)
-              const d = await p.json()
-              const lp = d?.chart?.result?.[0]?.meta?.regularMarketPrice
-              if (lp) current = parseFloat(lp)
-            }
+            const result = await fetchLivePrice(s.symbol)
+            if (result.price) current = result.price
           } catch { /* keep purchase price as fallback */ }
         }
 
@@ -216,66 +204,11 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
 
 
 
-  const calculateTotalRepayment = (stock: Stock) => {
-    const type = stock.asset_type || (stock.ytm || stock.tenure ? 'BOND' : 'STOCK');
-    if (!stock.ytm || type !== 'BOND') return 0;
-    const ytm = parseFloat(stock.ytm);
-    if (isNaN(ytm)) return 0;
-
-    // Parse tenure to numeric months - handle "12 Months" or "12"
-    const tenureMonths = stock.tenure ? parseInt(stock.tenure.replace(/\D/g, '')) || 12 : 12;
-
-    // Safely parse date to avoid format discrepancies
-    const [pYear, pMonth, pDay] = stock.purchase_date.split('-').map(Number);
-
-    const now = new Date();
-    let count = 0;
-    let tempDate = new Date(pYear, pMonth - 1, 10); // Start on the 10th of the purchase month
-
-    // If bought on or after the 10th, the first payout is the NEXT month's 10th
-    if (pDay >= 10) {
-      tempDate.setMonth(tempDate.getMonth() + 1);
-    }
-
-    while (tempDate <= now) {
-      count++;
-      tempDate.setMonth(tempDate.getMonth() + 1);
-
-      // Stop counting if tenure is reached
-      if (count >= tenureMonths) break;
-    }
-
-    return (stock.purchase_price * stock.quantity * (ytm / 100)) * (count / 12);
-  };
+  // calculateBondPayouts imported from utils.ts
 
   useEffect(() => { fetchStocks() }, [])
 
-  // ── NSE Stock List for search ──────────────────────────────────────────────
-  const NSE_STOCKS = [
-    { symbol: 'RELIANCE', shortname: 'Reliance Industries Ltd.', exchange: 'NSE' },
-    { symbol: 'TCS', shortname: 'Tata Consultancy Services', exchange: 'NSE' },
-    { symbol: 'HDFCBANK', shortname: 'HDFC Bank Ltd.', exchange: 'NSE' },
-    { symbol: 'INFY', shortname: 'Infosys Ltd.', exchange: 'NSE' },
-    { symbol: 'ICICIBANK', shortname: 'ICICI Bank Ltd.', exchange: 'NSE' },
-    { symbol: 'HINDUNILVR', shortname: 'Hindustan Unilever Ltd.', exchange: 'NSE' },
-    { symbol: 'SBIN', shortname: 'State Bank of India', exchange: 'NSE' },
-    { symbol: 'BAJFINANCE', shortname: 'Bajaj Finance Ltd.', exchange: 'NSE' },
-    { symbol: 'BHARTIARTL', shortname: 'Bharti Airtel Ltd.', exchange: 'NSE' },
-    { symbol: 'KOTAKBANK', shortname: 'Kotak Mahindra Bank Ltd.', exchange: 'NSE' },
-    { symbol: 'AXISBANK', shortname: 'Axis Bank Ltd.', exchange: 'NSE' },
-    { symbol: 'MARUTI', shortname: 'Maruti Suzuki India Ltd.', exchange: 'NSE' },
-    { symbol: 'SUNPHARMA', shortname: 'Sun Pharmaceutical Industries', exchange: 'NSE' },
-    { symbol: 'TITAN', shortname: 'Titan Company Ltd.', exchange: 'NSE' },
-    { symbol: 'WIPRO', shortname: 'Wipro Ltd.', exchange: 'NSE' },
-    { symbol: 'HCLTECH', shortname: 'HCL Technologies Ltd.', exchange: 'NSE' },
-    { symbol: 'TATAMOTORS', shortname: 'Tata Motors Ltd.', exchange: 'NSE' },
-    { symbol: 'TATASTEEL', shortname: 'Tata Steel Ltd.', exchange: 'NSE' },
-    { symbol: 'ZOMATO', shortname: 'Zomato Ltd.', exchange: 'NSE' },
-    { symbol: 'IRFC', shortname: 'Indian Railway Finance Corp.', exchange: 'NSE' },
-    { symbol: 'HAL', shortname: 'Hindustan Aeronautics Ltd.', exchange: 'NSE' },
-    { symbol: 'ITC', shortname: 'ITC Ltd.', exchange: 'NSE' },
-    { symbol: 'ADANIENT', shortname: 'Adani Enterprises Ltd.', exchange: 'NSE' },
-  ]
+  // NSE_STOCKS list is now in stockApi.ts — used via getLocalMatches()
 
 
 
@@ -283,48 +216,42 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
     if (!form.symbol || form.symbol.length < 1 || !showSuggestions || activeTab !== 'STOCK') {
       setSuggestions([]); return
     }
-    const query = form.symbol.toUpperCase().trim()
-    const localMatches = NSE_STOCKS.filter(s =>
-      s.symbol.startsWith(query) || s.shortname.toUpperCase().includes(query)
-    ).slice(0, 8)
+    // Show instant local matches
+    const localMatches = getLocalMatches(form.symbol)
     setSuggestions(localMatches)
+
+    // Then fetch broader results from Yahoo Finance via CORS proxy
     const timer = setTimeout(async () => {
       try {
-        const resp = await fetch(`${SUPABASE_FUNCTION_URL}?action=search&q=${encodeURIComponent(query)}`,
-          { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } })
-        if (!resp.ok) return
-        const data = await resp.json()
-        if (data?.results?.length > 0) {
-          // Filter for NSE only: check exchange field or .NS suffix in symbol
-          const nseOnly = data.results.filter((s: any) =>
-            s.exchange === 'NSE' ||
-            (s.symbol && s.symbol.endsWith('.NS')) ||
-            (s.fullExchangeName && s.fullExchangeName.includes('NSE'))
-          )
-          setSuggestions(nseOnly.slice(0, 8))
-        }
+        const results = await searchStocks(form.symbol)
+        if (results.length > 0) setSuggestions(results)
       } catch { /* keep local results */ }
     }, 300)
     return () => clearTimeout(timer)
   }, [form.symbol, showSuggestions, activeTab])
 
   const handleSelectSuggestion = async (quote: any) => {
-    const yahooSymbol = quote.yahooSymbol || `${quote.symbol}.NS`
-    setForm({ ...form, symbol: quote.symbol, name: quote.shortname })
+    const livePriceStr = quote.price ? quote.price.toString() : ""
+    setForm(prev => ({
+      ...prev,
+      symbol: quote.symbol,
+      name: quote.shortname,
+      price: livePriceStr || prev.price
+    }))
     setShowSuggestions(false)
-    try {
-      const resp = await fetch(`${SUPABASE_FUNCTION_URL}?action=price&q=${encodeURIComponent(yahooSymbol)}`,
-        { headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` } })
-      if (!resp.ok) throw new Error()
-      const data = await resp.json()
-      if (data?.price) setForm(prev => ({ ...prev, symbol: quote.symbol, name: quote.shortname, price: data.price.toString() }))
-    } catch {
+
+    if (!livePriceStr) {
       try {
-        const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(`https://query1.finance.yahoo.com/v8/finance/chart/${yahooSymbol}?interval=1d&range=1d`)}`)
-        const d = await r.json()
-        const price = d?.chart?.result?.[0]?.meta?.regularMarketPrice
-        if (price) setForm(prev => ({ ...prev, symbol: quote.symbol, name: quote.shortname, price: parseFloat(price).toFixed(2) }))
-      } catch { /* silent */ }
+        const result = await fetchLivePrice(quote.symbol)
+        if (result.price) {
+          setForm(prev => ({
+            ...prev,
+            symbol: quote.symbol,
+            name: quote.shortname,
+            price: result.price!.toString()
+          }))
+        }
+      } catch { /* silent fallback */ }
     }
   }
 
@@ -426,7 +353,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
   })
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm text-left">
+    <div className="bg-[#F5F5F7] border border-[#E5E7EB] p-4 sm:p-5 rounded-2xl flex flex-col space-y-3 text-left">
       <ConfirmationModal
         isOpen={deleteModal.isOpen}
         onClose={() => setDeleteModal({ isOpen: false, id: "" })}
@@ -434,13 +361,6 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
         title="Remove Asset?"
         message="Are you sure you want to remove this asset from your portfolio? This action cannot be undone."
       />
-      {/* AI Import Modal — coming soon
-      <AIImportModal
-        isOpen={isAIModalOpen}
-        onClose={() => setIsAIModalOpen(false)}
-        onSuccess={() => { fetchStocks(); onUpdate?.(); }}
-      />
-      */}
       <HistoryModal
         isOpen={historyModal.isOpen}
         onClose={() => setHistoryModal({ isOpen: false, stock: null })}
@@ -448,36 +368,34 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
         showValues={showValues}
       />
 
-      <div className="p-6 sm:p-8">
-        {/* ── Header ── */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
-          <div>
-            <h2 className="text-2xl font-serif font-bold text-[#171717]">Asset Management</h2>
-            <p className="text-sm text-gray-500 font-sans mt-1">Manage your holdings and track performance across your portfolio.</p>
-          </div>
-          {/* AI Import button — coming soon
-          <button
-            onClick={() => setIsAIModalOpen(true)}
-            className="flex items-center justify-center gap-2.5 px-5 py-2.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all font-bold text-xs ring-1 ring-blue-100/50 hover:ring-blue-600 active:scale-95 group shadow-sm shadow-blue-50/50"
-          >
-            <Sparkles size={16} className="group-hover:animate-pulse" />
-            AI Import
-          </button>
-          */}
-        </div>
+      {/* Outer Card Header matching Reference Image */}
+      <div className="flex items-center justify-between px-1">
+        <h3 className="font-sans text-sm font-semibold text-[#111827]">
+          Asset Management & Holdings
+        </h3>
+      </div>
 
-        {/* ── Tab Switcher ── */}
-        <div className="flex items-center gap-2 p-1.5 bg-gray-50/80 rounded-md w-fit mb-8 border border-gray-100">
+      {/* Inner Crisp White Card Container */}
+      <div className="bg-white p-6 sm:p-8 rounded-xl border border-neutral-100 shadow-[0_2px_8px_rgba(0,0,0,0.03)] flex flex-col">
+        {/* ── Sleek Pill Tab Switcher ── */}
+        <div className="flex items-center gap-1 p-1 bg-[#E5E7EB] rounded-full w-fit mb-8 shadow-inner relative">
           {([
             { id: 'STOCK', label: 'Stocks', icon: TrendingUp },
             { id: 'BOND', label: 'Bonds', icon: ShieldCheck }
           ] as const).map((tab) => (
             <button key={tab.id} onClick={() => { setActiveTab(tab.id); if (isAdding && !editingId) handleCancel() }}
-              className={`flex items-center gap-2.5 px-4 py-2 rounded-md text-xs font-bold transition-all ${activeTab === tab.id
-                ? 'bg-white text-[#171717] shadow-sm text-[13px] border border-gray-100'
-                : 'text-gray-400 hover:text-gray-600'
+              className={`relative flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold transition-colors cursor-pointer z-10 ${activeTab === tab.id
+                ? 'text-white'
+                : 'text-[#6B7280] hover:text-[#111827]'
                 }`}>
-              <tab.icon size={15} />
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeAssetTab"
+                  className="absolute inset-0 bg-[#111827] rounded-full shadow-xs -z-10"
+                  transition={{ type: "spring", stiffness: 500, damping: 35 }}
+                />
+              )}
+              <tab.icon size={14} />
               {tab.label}
             </button>
           ))}
@@ -492,16 +410,16 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
               exit={{ opacity: 0, height: 0 }}
               className="overflow-hidden mb-6"
             >
-              <div className="bg-blue-50/60 border border-blue-100 rounded-lg p-5">
+              <div className="bg-[#F4F5F7] border border-[#E5E7EB] rounded-lg p-5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-5 bg-blue-500 rounded-full" />
-                    <span className="text-sm font-bold text-[#171717]">
-                      Editing: <span className="text-blue-600">{form.symbol}</span>
+                    <div className="w-1.5 h-5 bg-[#111827] rounded-full" />
+                    <span className="text-sm font-bold text-[#111827]">
+                      Editing: <span className="text-[#111827]">{form.symbol}</span>
                     </span>
                   </div>
                   <button type="button" onClick={handleCancel}
-                    className="p-1.5 hover:bg-blue-100 rounded-md text-gray-400 transition-colors">
+                    className="p-1.5 hover:bg-[#E5E7EB] rounded-md text-[#6B7280] transition-colors">
                     <X size={16} />
                   </button>
                 </div>
@@ -519,7 +437,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                       <input type="date"
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
+                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#111827] transition-all"
                         value={form.purchase_date} onChange={e => setForm({ ...form, purchase_date: e.target.value })} />
                     </div>
                   </div>
@@ -531,7 +449,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                     <div className="relative">
                       <BadgeIndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                       <input type="number" step="0.01" placeholder="0.00"
-                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
+                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#111827] transition-all"
                         value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} />
                     </div>
                   </div>
@@ -543,7 +461,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                         <div className="relative">
                           <Timer className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                           <input type="text" placeholder="e.g. 12 Months"
-                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
+                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#111827] transition-all"
                             value={form.tenure} onChange={e => setForm({ ...form, tenure: e.target.value })} />
                         </div>
                       </div>
@@ -552,7 +470,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                         <div className="relative">
                           <Percent className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                           <input type="text" placeholder="e.g. 10.25"
-                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
+                            className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#111827] transition-all"
                             value={form.ytm} onChange={e => setForm({ ...form, ytm: e.target.value })} />
                         </div>
                       </div>
@@ -565,7 +483,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                       <div className="relative">
                         <Hash className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
                         <input type="number" placeholder="0"
-                          className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-blue-300 transition-all"
+                          className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm focus:outline-none focus:border-[#111827] transition-all"
                           value={form.quantity} onChange={e => setForm({ ...form, quantity: e.target.value })} />
                       </div>
                     </div>
@@ -596,23 +514,23 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
               exit={{ opacity: 0, height: 0 }}
               className="mb-8 overflow-visible"
             >
-              <div className="bg-gray-50/50 p-6 sm:p-8 rounded-lg border border-gray-100 w-full overflow-visible">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-serif font-bold text-[#171717]">
+              <div className="bg-[#F4F5F7] p-6 sm:p-7 rounded-xl border border-[#E5E7EB] w-full overflow-visible">
+                <div className="flex items-center justify-between mb-5">
+                  <h3 className="text-base font-semibold text-[#111827]">
                     Add New {activeTab === 'STOCK' ? 'Stock' : 'Bond'}
                   </h3>
                 </div>
-                <form onSubmit={handleAddOrUpdate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                <form onSubmit={handleAddOrUpdate} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
                   {/* Symbol */}
                   <div className="space-y-1.5 text-left stock-search-group">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+                    <label className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider ml-1">
                       {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
                     </label>
                     <div className="relative group/search">
-                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/search:text-[#171717] transition-colors" size={16} />
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] group-focus-within/search:text-[#111827] transition-colors" size={15} />
                       <input type="text" placeholder={activeTab === 'STOCK' ? "e.g. RELIANCE" : "e.g. HDFC Bond"}
                         autoComplete="off"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                        className="w-full pl-10 pr-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#D1D5DB] transition-all text-[#111827] placeholder:text-[#9CA3AF] outline-none"
                         value={form.symbol}
                         onChange={e => {
                           setForm({ ...form, symbol: e.target.value.toUpperCase() })
@@ -621,47 +539,65 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                         }}
                       />
                       {showSuggestions && suggestions.length > 0 && activeTab === 'STOCK' && (
-                        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                          className="absolute top-[calc(100%+8px)] left-0 right-0 bg-white border border-gray-100 rounded-lg shadow-xl z-[120] overflow-hidden py-2">
-                          {suggestions.map((quote: any) => (
-                            <div key={quote.symbol}
-                              className="px-4 py-3 hover:bg-gray-50 cursor-pointer flex justify-between items-center transition-colors group"
-                              onClick={() => handleSelectSuggestion(quote)}>
-                              <div className="flex flex-col">
-                                <span className="font-bold text-sm text-[#171717] group-hover:text-blue-600">{quote.symbol}</span>
-                                <span className="text-[10px] text-gray-400 truncate max-w-[150px]">{quote.shortname || quote.longname}</span>
+                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                          className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.08)] z-[120] overflow-hidden py-1.5 min-w-[280px]">
+                          <div className="px-3.5 py-1.5 border-b border-[#E5E7EB] bg-[#F4F5F7] flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">Live Suggestions</span>
+                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Google Finance / Tickertape</span>
+                          </div>
+                          <div className="max-h-[240px] overflow-y-auto">
+                            {suggestions.map((quote: any) => (
+                              <div key={quote.symbol}
+                                className="px-4 py-2.5 hover:bg-[#F4F5F7] cursor-pointer flex justify-between items-center transition-colors group"
+                                onClick={() => handleSelectSuggestion(quote)}>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-xs text-[#111827] group-hover:text-emerald-600 transition-colors">{quote.symbol}</span>
+                                    <span className="text-[9px] font-semibold bg-[#E5E7EB] text-[#374151] px-1.5 py-0.2 rounded uppercase">{quote.exchange}</span>
+                                  </div>
+                                  <span className="text-[11px] font-medium text-[#6B7280] truncate max-w-[180px]">{quote.shortname || quote.longname}</span>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                  {quote.price ? (
+                                    <div className="flex flex-col items-end">
+                                      <span className="font-bold text-xs text-emerald-600">₹{Number(quote.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                      <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">Live</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-[10px] font-semibold text-emerald-600 group-hover:underline">Auto Fill →</span>
+                                  )}
+                                </div>
                               </div>
-                              <span className="text-[10px] font-bold bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm uppercase">{quote.exchange}</span>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </motion.div>
                       )}
                     </div>
                   </div>
                   {/* Date */}
                   <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Investment Date</label>
+                    <label className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider ml-1">Investment Date</label>
                     <div className="relative group/date">
-                      <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/date:text-[#171717] transition-colors" size={16} />
+                      <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] group-focus-within/date:text-[#111827] transition-colors" size={15} />
                       <input type="date"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all cursor-pointer text-[#171717]"
+                        className="w-full pl-10 pr-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#E5E5EB] focus:border-[#D1D5DB] transition-all cursor-pointer text-[#111827] outline-none"
                         value={form.purchase_date} onChange={e => setForm({ ...form, purchase_date: e.target.value })} />
                     </div>
                   </div>
                   {/* Price */}
                   <div className="space-y-1.5 text-left">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+                    <label className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider ml-1">
                       {activeTab === 'BOND' ? 'Total Investment (₹)' : 'Price (₹)'}
                     </label>
                     <div className="relative group/price">
-                      <BadgeIndianRupee className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/price:text-[#171717] transition-colors" size={16} />
+                      <BadgeIndianRupee className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] group-focus-within/price:text-[#111827] transition-colors" size={15} />
                       <input type="text" placeholder="0.00"
-                        className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
-                        value={form.price ? Number(form.price.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                        className="w-full pl-10 pr-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#D1D5DB] transition-all text-[#111827] placeholder:text-[#9CA3AF] outline-none"
+                        value={form.price ? Number(form.price.replace(/,/g, '')).toLocaleString('en-IN') : ""}
                         onChange={e => {
                           const val = e.target.value.replace(/,/g, '');
                           if (!isNaN(Number(val)) || val === "") setForm({ ...form, price: val });
-                        }} 
+                        }}
                       />
                     </div>
                   </div>
@@ -669,26 +605,26 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                   {activeTab === 'BOND' ? (
                     <>
                       <div className="space-y-1.5 text-left">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Tenure (Months)</label>
+                        <label className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider ml-1">Tenure (Months)</label>
                         <div className="relative group/tenure">
-                          <Timer className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/tenure:text-[#171717] transition-colors" size={16} />
+                          <Timer className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] group-focus-within/tenure:text-[#111827] transition-colors" size={15} />
                           <input type="text" placeholder="e.g. 12 Months"
-                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                            className="w-full pl-10 pr-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#D1D5DB] transition-all text-[#111827] placeholder:text-[#9CA3AF] outline-none"
                             value={form.tenure} onChange={e => setForm({ ...form, tenure: e.target.value })} />
                         </div>
                       </div>
                       <div className="space-y-1.5 text-left">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">YTM (%)</label>
+                        <label className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider ml-1">YTM (%)</label>
                         <div className="relative group/ytm">
-                          <Percent className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/ytm:text-[#171717] transition-colors" size={16} />
+                          <Percent className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] group-focus-within/ytm:text-[#111827] transition-colors" size={15} />
                           <input type="text" placeholder="e.g. 10.25"
-                            className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
+                            className="w-full pl-10 pr-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#D1D5DB] transition-all text-[#111827] placeholder:text-[#9CA3AF] outline-none"
                             value={form.ytm} onChange={e => setForm({ ...form, ytm: e.target.value })} />
                         </div>
                       </div>
                       <div className="space-y-1.5 text-left lg:col-span-2">
-                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">Est. Monthly Repayment</label>
-                        <div className={`w-full px-4 py-[13px] bg-emerald-50/50 border border-emerald-100 rounded-md text-sm font-bold text-emerald-700 flex items-center justify-between transition-all`}>
+                        <label className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider ml-1">Est. Monthly Repayment</label>
+                        <div className={`w-full px-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-xs font-semibold text-emerald-600 flex items-center justify-between transition-all`}>
                           <span>Calculated Repayment</span>
                           <span>{showValues ? `₹${(form.price && form.ytm && !isNaN(parseFloat(form.price)) && !isNaN(parseFloat(form.ytm))
                             ? ((parseFloat(form.price) * (parseFloat(form.ytm) / 100)) / 12).toLocaleString('en-IN', { maximumFractionDigits: 0 })
@@ -698,27 +634,27 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                     </>
                   ) : (
                     <div className="space-y-1.5 text-left">
-                      <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider ml-1">
+                      <label className="text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider ml-1">
                         Total Quantity
                       </label>
                       <div className="relative group/qty">
-                        <Hash className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/qty:text-[#171717] transition-colors" size={16} />
+                        <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#6B7280] group-focus-within/qty:text-[#111827] transition-colors" size={15} />
                         <input type="text" placeholder="0"
-                          className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 shadow-sm rounded-md text-sm font-medium focus:ring-2 focus:ring-gray-100 transition-all text-[#171717] placeholder:text-gray-400"
-                          value={form.quantity ? Number(form.quantity.replace(/,/g, '')).toLocaleString('en-IN') : ""} 
+                          className="w-full pl-10 pr-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#D1D5DB] transition-all text-[#111827] placeholder:text-[#9CA3AF] outline-none"
+                          value={form.quantity ? Number(form.quantity.replace(/,/g, '')).toLocaleString('en-IN') : ""}
                           onChange={e => {
                             const val = e.target.value.replace(/,/g, '');
                             if (!isNaN(Number(val)) || val === "") setForm({ ...form, quantity: val });
-                          }} 
+                          }}
                         />
                       </div>
                     </div>
                   )}
                   {/* Submit */}
-                  <div className="col-span-full flex items-center justify-start pt-4 border-t border-gray-100/50 mt-2">
+                  <div className="col-span-full flex items-center justify-start pt-3 border-t border-[#E5E7EB] mt-1">
                     <button type="submit"
-                      className="w-full sm:w-auto min-w-[220px] flex items-center justify-center gap-3 px-8 py-3.5 rounded-md bg-[#171717] hover:bg-black text-white text-sm font-bold transition-all shadow-sm active:scale-95 group">
-                      <Plus size={18} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
+                      className="w-full sm:w-auto min-w-[200px] flex items-center justify-center gap-2.5 px-6 h-11 rounded-xl bg-[#111827] hover:bg-[#1F2937] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95 group">
+                      <Plus size={16} strokeWidth={2.5} className="group-hover:rotate-90 transition-transform duration-300" />
                       <span>Add {activeTab === 'STOCK' ? 'Stock' : 'Bond'}</span>
                     </button>
                   </div>
@@ -731,120 +667,127 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
         {/* ── Table (Desktop) / Cards (Mobile) ── */}
         <div className="mt-4">
           {/* Desktop Table View */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden md:block overflow-x-auto bg-white border border-[#E5E7EB] rounded-xl shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
             <table className="w-full font-sans">
               <thead>
-                <tr className="border-b border-gray-100">
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest leading-relaxed whitespace-nowrap">
+                <tr className="border-b border-[#E5E7EB] bg-white">
+                  <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">
                     {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
                   </th>
                   {activeTab === 'BOND' && (
-                    <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Tenure</th>
+                    <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">Tenure</th>
                   )}
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Purchase Date</th>
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                  <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">Purchase Date</th>
+                  <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">
                     {activeTab === 'BOND' ? 'Investment' : 'Holdings'}
                   </th>
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">
+                  <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">
                     {activeTab === 'BOND' ? 'YTM' : 'Avg. Price'}
                   </th>
                   {activeTab !== 'BOND' && (
-                    <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Current Price</th>
+                    <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">Current Price</th>
                   )}
                   {activeTab === 'BOND' && (
-                    <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Repayment</th>
+                    <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">Monthly Payout</th>
                   )}
-                  <th className="text-left py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Total Value</th>
-                  <th className="text-right py-4 px-4 text-[11px] font-bold text-gray-400 uppercase tracking-widest">Actions</th>
+                  <th className="text-left py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider whitespace-nowrap">Total Value</th>
+                  <th className="text-right py-3.5 px-4 text-[11px] font-semibold text-[#6B7280] uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[#E5E7EB]">
                 {loading ? (
-                  <tr><td colSpan={10} className="py-12 text-center text-gray-400 text-sm">Loading your assets...</td></tr>
+                  <tr><td colSpan={10} className="py-12 text-center text-[#6B7280] text-xs">Loading your assets...</td></tr>
                 ) : visibleStocks.length === 0 ? (
-                  <tr><td colSpan={10} className="py-12 text-center text-gray-400 text-sm">
+                  <tr><td colSpan={10} className="py-12 text-center text-[#6B7280] text-xs">
                     No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
                   </td></tr>
-                ) : visibleStocks.map((stock) => {
-                  const repayment = calculateTotalRepayment(stock)
-                  const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + repayment
+                ) : visibleStocks.map((stock, index) => {
+                  const bondPayout = calculateBondPayouts(stock)
+                  const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + bondPayout.tillDate
                   const invested = stock.quantity * stock.purchase_price
                   const absolutePnl = totalValue - invested
                   const pnl = invested > 0 ? (absolutePnl / invested) * 100 : 0
 
                   return (
-                    <tr key={stock.id} className="border-b border-gray-50 hover:bg-gray-50/50 transition-colors group">
-                      <td className="py-5 px-4 whitespace-nowrap">
+                    <tr key={stock.id} className="hover:bg-[#F4F5F7]/60 transition-colors group">
+                      <td className="py-3.5 px-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <span className="font-bold text-blue-600 text-xs uppercase tracking-wider">{stock.symbol}</span>
-                          <span className="text-[11px] text-gray-400 font-medium">{stock.name || stock.symbol}</span>
+                          <span className="font-semibold text-[#111827] text-xs uppercase tracking-wider">{stock.symbol}</span>
+                          <span className="text-[11px] text-[#6B7280] font-normal">{stock.name || stock.symbol}</span>
                         </div>
                       </td>
                       {activeTab === 'BOND' && (
-                        <td className="py-5 px-4 text-sm text-gray-600 font-medium whitespace-nowrap">
+                        <td className="py-3.5 px-4 text-xs text-[#111827] font-medium whitespace-nowrap">
                           {stock.tenure ? `${stock.tenure} Mon` : '—'}
                         </td>
                       )}
-                      <td className="py-5 px-4 text-sm text-gray-600 font-medium whitespace-nowrap">
+                      <td className="py-3.5 px-4 text-xs text-[#6B7280] font-normal whitespace-nowrap">
                         {new Date(stock.purchase_date).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                       </td>
-                      <td className="py-5 px-4 font-bold text-[#171717] text-sm whitespace-nowrap">
-                        <div className={`transition-all duration-300`}>
+                      <td className="py-3.5 px-4 font-semibold text-[#111827] text-xs whitespace-nowrap">
+                        <div>
                           {showValues ? (
                             activeTab === 'BOND'
                               ? `₹${stock.purchase_price.toLocaleString('en-IN')}`
-                              : <>{stock.quantity} <span className="text-gray-400 font-medium text-xs ml-1">Qty</span></>
+                              : <>{stock.quantity} <span className="text-[#6B7280] font-normal text-[11px] ml-1">Qty</span></>
                           ) : '****'}
                         </div>
                       </td>
-                      <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                        <div className={`transition-all duration-300`}>
+                      <td className="py-3.5 px-4 font-normal text-[#111827] text-xs whitespace-nowrap">
+                        <div>
                           {showValues ? (
                             activeTab === 'BOND'
                               ? `${stock.ytm || '—'}%`
-                              : `₹${stock.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                              : `₹${stock.purchase_price.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                           ) : '****'}
                         </div>
                       </td>
                       {activeTab !== 'BOND' && (
-                        <td className="py-5 px-4 font-medium text-gray-700 text-sm whitespace-nowrap">
-                          <div className={`transition-all duration-300`}>
-                            {showValues ? `₹${(stock.current_price || stock.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '₹****'}
+                        <td className="py-3.5 px-4 font-semibold text-[#111827] text-xs whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <span>{showValues ? `₹${(stock.current_price || stock.purchase_price).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '₹****'}</span>
+                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded-full border border-emerald-100/80 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                              Live
+                            </span>
                           </div>
                         </td>
                       )}
                       {activeTab === 'BOND' && (
-                        <td className="py-5 px-4 font-bold text-emerald-600 text-sm whitespace-nowrap">
-                          <div className={`transition-all duration-300`}>
-                            {showValues ? `+₹${repayment.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '+₹****'}
+                        <td className="py-3.5 px-4 font-semibold text-emerald-600 text-xs whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span>{showValues ? `+₹${bondPayout.monthly.toLocaleString('en-IN', { maximumFractionDigits: 0 })} / mo` : '+₹****'}</span>
+                            <span className="text-[10px] text-[#6B7280] font-normal">
+                              {showValues ? `+₹${bondPayout.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })} total` : '****'}
+                            </span>
                           </div>
                         </td>
                       )}
-                      <td className="py-5 px-4">
-                        <div className={`flex flex-col transition-all duration-300`}>
-                          <span className="font-display font-bold text-[#171717] text-[15px]">
+                      <td className="py-3.5 px-4">
+                        <div className="flex flex-col">
+                          <span className="font-semibold text-[#111827] text-xs">
                             {showValues ? `₹${totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '₹****'}
                           </span>
-                          <span className={`text-[10px] font-bold uppercase tracking-widest ${pnl >= 0 ? 'text-emerald-500' : 'text-rose-500'}`}>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit mt-0.5 ${pnl >= 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                             {showValues ? (
-                              <>{pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}% {pnl >= 0 ? 'Profit' : 'Loss'}</>
+                              <>{pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}%</>
                             ) : '***%'}
                           </span>
                         </div>
                       </td>
-                      <td className="py-5 px-4 text-right">
+                      <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => setHistoryModal({ isOpen: true, stock })}
-                            className="p-2 rounded-md text-gray-400 hover:text-blue-600 hover:bg-blue-50 transition-colors" title="History">
-                            <History size={16} />
+                            className="p-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F4F5F7] rounded-xl transition-all cursor-pointer">
+                            <History size={15} />
                           </button>
                           <button onClick={() => handleEdit(stock)}
-                            className="p-2 rounded-md text-gray-400 hover:text-[#171717] hover:bg-gray-100 transition-colors" title="Edit">
-                            <Pencil size={16} />
+                            className="p-1.5 text-[#6B7280] hover:text-[#111827] hover:bg-[#F4F5F7] rounded-xl transition-all cursor-pointer">
+                            <Pencil size={15} />
                           </button>
                           <button onClick={() => setDeleteModal({ isOpen: true, id: stock.id })}
-                            className="p-2 rounded-md text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
-                            <Trash2 size={16} />
+                            className="p-1.5 text-[#6B7280] hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-all cursor-pointer">
+                            <Trash2 size={15} />
                           </button>
                         </div>
                       </td>
@@ -856,81 +799,81 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
           </div>
 
           {/* Mobile Card View */}
-          <div className="md:hidden space-y-4">
+          <div className="md:hidden space-y-3">
             {loading ? (
-              <div className="py-12 text-center text-gray-400 text-sm">Loading your assets...</div>
+              <div className="py-12 text-center text-[#6B7280] text-xs">Loading your assets...</div>
             ) : visibleStocks.length === 0 ? (
-              <div className="py-12 text-center text-gray-400 text-sm">
+              <div className="py-12 text-center text-[#6B7280] text-xs">
                 No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
               </div>
             ) : visibleStocks.map((stock) => {
-              const repayment = calculateTotalRepayment(stock)
-              const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + repayment
+              const bondPayout = calculateBondPayouts(stock)
+              const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + bondPayout.tillDate
               const invested = stock.quantity * stock.purchase_price
               const absolutePnl = totalValue - invested
               const pnl = invested > 0 ? (absolutePnl / invested) * 100 : 0
 
               return (
-                <div key={stock.id} className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
-                  <div className="flex items-start justify-between mb-4">
+                <div key={stock.id} className="bg-white border border-[#E5E7EB] rounded-2xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.03)]">
+                  <div className="flex items-start justify-between mb-3">
                     <div className="flex flex-col">
-                      <span className="font-bold text-blue-600 text-[10px] uppercase tracking-[0.2em]">{stock.symbol}</span>
-                      <h4 className="font-serif font-bold text-[17px] text-[#171717] mt-0.5">{stock.name || stock.symbol}</h4>
+                      <span className="font-semibold text-xs text-[#111827] uppercase tracking-wider">{stock.symbol}</span>
+                      <h4 className="font-medium text-xs text-[#6B7280] mt-0.5">{stock.name || stock.symbol}</h4>
                     </div>
                     <div className="flex flex-col items-end">
-                      <span className="font-display font-bold text-[18px] text-[#171717]">₹{totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full mt-1 ${pnl >= 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'}`}>
+                      <span className="font-semibold text-base text-[#111827]">₹{totalValue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full mt-1 ${pnl >= 0 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-rose-50 text-rose-600 border border-rose-100'}`}>
                         {pnl >= 0 ? '+' : ''}{pnl.toFixed(1)}%
                       </span>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-y-3 border-t border-gray-50 pt-3 mb-4 text-[13px]">
+                  <div className="grid grid-cols-2 gap-y-2 border-t border-[#E5E7EB] pt-3 mb-3 text-xs">
                     {activeTab === 'STOCK' ? (
                       <>
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Holdings</span>
-                          <span className="font-bold text-gray-700">{stock.quantity} Qty</span>
+                          <span className="text-[10px] text-[#6B7280] font-semibold uppercase tracking-wider">Holdings</span>
+                          <span className="font-semibold text-[#111827]">{stock.quantity} Qty</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Avg Price</span>
-                          <span className="font-bold text-gray-700">₹{stock.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                          <span className="text-[10px] text-[#6B7280] font-semibold uppercase tracking-wider">Avg Price</span>
+                          <span className="font-semibold text-[#111827]">₹{stock.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                         </div>
                       </>
                     ) : (
                       <>
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Tenure</span>
-                          <span className="font-bold text-gray-700">{stock.tenure} Mon</span>
+                          <span className="text-[10px] text-[#6B7280] font-semibold uppercase tracking-wider">Tenure</span>
+                          <span className="font-semibold text-[#111827]">{stock.tenure} Mon</span>
                         </div>
                         <div className="flex flex-col">
-                          <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">YTM</span>
-                          <span className="font-bold text-gray-700">{stock.ytm}%</span>
+                          <span className="text-[10px] text-[#6B7280] font-semibold uppercase tracking-wider">Monthly Payout</span>
+                          <span className="font-semibold text-emerald-600">+₹{bondPayout.monthly.toLocaleString('en-IN', { maximumFractionDigits: 0 })} / mo</span>
                         </div>
                       </>
                     )}
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Purchase Date</span>
-                      <span className="font-bold text-gray-700">{new Date(stock.purchase_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
+                      <span className="text-[10px] text-[#6B7280] font-semibold uppercase tracking-wider">Purchase Date</span>
+                      <span className="font-semibold text-[#111827]">{new Date(stock.purchase_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Invested</span>
-                      <span className="font-bold text-gray-700">₹{invested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+                      <span className="text-[10px] text-[#6B7280] font-semibold uppercase tracking-wider">Invested</span>
+                      <span className="font-semibold text-[#111827]">₹{invested.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-1 pt-3 border-t border-gray-50">
+                  <div className="flex items-center justify-end gap-1.5 pt-2.5 border-t border-[#E5E7EB]">
                     <button onClick={() => setHistoryModal({ isOpen: true, stock })}
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors">
-                      <History size={16} />
+                      className="p-2 bg-[#F4F5F7] text-[#111827] rounded-xl border border-[#E5E7EB]">
+                      <History size={15} />
                     </button>
                     <button onClick={() => handleEdit(stock)}
-                      className="p-2 text-gray-400 hover:text-[#171717] hover:bg-gray-100 rounded-md transition-colors">
-                      <Pencil size={16} />
+                      className="p-2 bg-[#F4F5F7] text-[#111827] rounded-xl border border-[#E5E7EB]">
+                      <Pencil size={15} />
                     </button>
                     <button onClick={() => setDeleteModal({ isOpen: true, id: stock.id })}
-                      className="p-2 text-gray-400 hover:text-rose-600 hover:bg-rose-50 rounded-md transition-colors">
-                      <Trash2 size={16} />
+                      className="p-2 bg-rose-50 text-rose-600 rounded-xl border border-rose-100">
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 </div>

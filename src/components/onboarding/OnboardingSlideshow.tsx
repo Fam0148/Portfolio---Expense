@@ -2,7 +2,6 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Background } from "../auth/Background"
 
-
 interface OnboardingSlideshowProps {
   onComplete: (choice: 'portfolio' | 'expense' | 'profile') => void
 }
@@ -11,7 +10,6 @@ type Slide = {
   id: number
   title: string
   description: string
-  icon?: React.ReactNode
   image?: string
 }
 
@@ -46,14 +44,12 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
   const [currentIndex, setCurrentIndex] = useState(0)
   const [direction, setDirection] = useState(0) 
 
-  // Image Preloading Logic
   useEffect(() => {
     slides.forEach(slide => {
       const img = new Image();
       img.src = slide.image || "";
     });
-  }, [slides])
-
+  }, [])
 
   const handleNext = () => {
     if (currentIndex < slides.length - 1) {
@@ -73,108 +69,119 @@ export const OnboardingSlideshow = ({ onComplete }: OnboardingSlideshowProps) =>
 
   return (
     <Background>
-      <div className="w-full min-h-screen flex items-center justify-center p-6 font-sans relative">
+      <div className="w-full min-h-screen flex items-center justify-center p-4 sm:p-6 font-sans relative">
         <motion.div 
-          initial={{ opacity: 0, scale: 0.98, y: 20 }}
+          initial={{ opacity: 0, scale: 0.98, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="w-full max-w-[440px] bg-white rounded-lg overflow-hidden border border-gray-100 flex flex-col relative"
+          className={`w-full max-w-[640px] rounded-3xl overflow-hidden flex flex-col relative shadow-[0_8px_32px_rgba(0,0,0,0.05)] border transition-all duration-500 ${
+            currentIndex === 0 ? 'bg-[#E2F1E3] border-[#C8E6C9]' :
+            currentIndex === 1 ? 'bg-[#ECE8F6] border-[#E9D5FF]' :
+            currentIndex === 2 ? 'bg-[#FDF0E3] border-[#FED7AA]' :
+            'bg-[#FBF6D5] border-[#FEF08A]'
+          }`}
         >
-
-          {/* Minimal Pure White Header */}
-          <div className="h-[260px] w-full bg-white relative flex items-center justify-center overflow-hidden border-b border-gray-100/50">
-            {/* Decorative Patterns & Grid Lines */}
-            <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(45deg, #000 0px, #000 0.5px, transparent 0.5px, transparent 20px)`,
-                }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(-45deg, #000 0px, #000 0.5px, transparent 0.5px, transparent 20px)`,
-                }}
-              />
-              <div className="absolute top-1/2 left-3 -translate-y-1/2 w-24 h-48 border-y border-r border-black rounded-r-2xl" />
-              <div className="absolute top-1/2 right-3 -translate-y-1/2 w-24 h-48 border-y border-l border-black rounded-l-2xl" />
-            </div>
-
-            {/* Central Illustration - Floating on White */}
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={currentIndex}
-                custom={direction}
-                initial={{ x: direction * 80, opacity: 0, rotate: direction * 5 }}
-                animate={{ x: 0, opacity: 1, rotate: 0 }}
-                exit={{ x: -direction * 80, opacity: 0, rotate: -direction * 5 }}
-                transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
-                className="relative z-10 w-56 h-56 flex items-center justify-center text-center"
-              >
-                <img
-                  src={slides[currentIndex].image}
-                  alt={slides[currentIndex].title}
-                  className="w-full h-full object-contain"
-                  loading="eager"
-                  decoding="async"
-                  fetchPriority="high"
-                />
-              </motion.div>
-            </AnimatePresence>
+          {/* Decorative Background Graphics matching new reference */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
+            {currentIndex === 0 && (
+              <div className="absolute right-0 bottom-0 w-80 h-80 bg-emerald-600 rounded-tl-full" />
+            )}
+            {currentIndex === 1 && (
+              <div className="absolute right-10 top-10 flex gap-4">
+                <div className="w-20 h-20 border-4 border-purple-800 rounded-lg rotate-12" />
+                <div className="w-20 h-20 border-4 border-purple-800 rounded-lg -rotate-12" />
+              </div>
+            )}
+            {currentIndex === 2 && (
+              <div className="absolute right-12 top-12 w-64 h-64 border-[12px] border-orange-500 rounded-full" />
+            )}
+            {currentIndex === 3 && (
+              <div className="absolute right-20 top-20 w-40 h-40 bg-yellow-500 rounded-full blur-2xl" />
+            )}
           </div>
 
-          <div className="p-8 pt-8 text-center flex flex-col items-center">
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={currentIndex}
-                custom={direction}
-                initial={{ x: direction * 30, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -direction * 30, opacity: 0 }}
-                transition={{ duration: 0.4, ease: "easeOut" }}
-                className="flex flex-col items-center w-full"
-              >
-                <div className="px-3 py-1 bg-blue-50 border border-blue-100 rounded-full mb-8">
-                  <span className="text-blue-700 text-[11px] font-bold tracking-wider">
-                    STEP {currentIndex + 1} OF {slides.length}
-                  </span>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 min-h-[380px]">
+            {/* Left Column: Image/Illustration Area */}
+            <div className="p-8 flex items-center justify-center border-b md:border-b-0 md:border-r border-black/5">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentIndex}
+                  custom={direction}
+                  initial={{ x: direction * 50, opacity: 0, scale: 0.9 }}
+                  animate={{ x: 0, opacity: 1, scale: 1 }}
+                  exit={{ x: -direction * 50, opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.35, ease: "easeOut" }}
+                  className="w-full h-48 md:h-64 flex items-center justify-center"
+                >
+                  <img
+                    src={slides[currentIndex].image}
+                    alt={slides[currentIndex].title}
+                    className="max-w-full max-h-full object-contain"
+                    loading="eager"
+                  />
+                </motion.div>
+              </AnimatePresence>
+            </div>
 
-                <h2 className="text-[#171717] text-[24px] font-bold tracking-tight mb-3 leading-tight">
-                  {slides[currentIndex].title}
-                </h2>
+            {/* Right Column: Text & Navigation Controls */}
+            <div className="p-8 sm:p-10 flex flex-col justify-between">
+              <AnimatePresence mode="wait" custom={direction}>
+                <motion.div
+                  key={currentIndex}
+                  custom={direction}
+                  initial={{ x: direction * 30, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -direction * 30, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
+                  className="flex flex-col items-start w-full text-left"
+                >
+                  <div className="px-3 py-1 bg-white/60 border border-black/5 rounded-full mb-6">
+                    <span className="text-black/60 text-[10px] font-bold tracking-wider uppercase">
+                      Slide {currentIndex + 1} of {slides.length}
+                    </span>
+                  </div>
 
-                <p className="text-[#737373] text-[14px] leading-[1.6] max-w-[300px] mb-8 font-medium">
-                  {slides[currentIndex].description}
-                </p>
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight mb-3 text-neutral-900 leading-tight">
+                    {slides[currentIndex].title}
+                  </h2>
 
-                <div className="flex gap-3 w-full mt-2">
+                  <p className="text-neutral-700 text-xs sm:text-sm leading-relaxed mb-8 font-medium">
+                    {slides[currentIndex].description}
+                  </p>
+                </motion.div>
+              </AnimatePresence>
+
+              {/* Navigation Controls & Pagination */}
+              <div className="space-y-6">
+                <div className="flex gap-2.5 w-full">
                   {currentIndex > 0 && (
                     <button
                       onClick={handlePrev}
-                      className="flex-1 py-4 border border-[#E5E5E5] hover:bg-[#F5F5F5] rounded-md text-[#737373] hover:text-[#171717] text-[14px] font-bold tracking-wider transition-all"
+                      className="flex-1 h-11 border border-black/10 bg-white/40 hover:bg-white/60 rounded-xl text-neutral-800 text-xs font-bold transition-all cursor-pointer shadow-xs"
                     >
-                      PREVIOUS
+                      Back
                     </button>
                   )}
                   <button 
                     onClick={handleNext}
-                    className="flex-1 py-4 bg-blue-600 hover:bg-blue-700 rounded-md text-white text-[14px] font-bold transition-all flex items-center justify-center active:scale-98"
+                    className="flex-1 h-11 bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center shadow-md cursor-pointer border border-neutral-900"
                   >
-                    <span>{currentIndex === slides.length - 1 ? 'Get Started' : 'Next Step'}</span>
+                    <span>{currentIndex === slides.length - 1 ? 'Get Started' : 'Next'}</span>
                   </button>
                 </div>
-              </motion.div>
-            </AnimatePresence>
 
-            {/* Micro Pagination */}
-            <div className="flex gap-2 mt-8 mb-2">
-              {slides.map((_, idx) => (
-                <div
-                  key={idx}
-                  className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'w-5 bg-blue-600' : 'w-1.5 bg-[#E5E5E5]'}`}
-                />
-              ))}
+                {/* Pagination Dots */}
+                <div className="flex gap-2 justify-center">
+                  {slides.map((_, idx) => (
+                    <div
+                      key={idx}
+                      className={`h-2 rounded-full transition-all duration-300 ${
+                        idx === currentIndex ? 'w-5 bg-neutral-800' : 'w-2 bg-neutral-800/20'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+
             </div>
           </div>
         </motion.div>

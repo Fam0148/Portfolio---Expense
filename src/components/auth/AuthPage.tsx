@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Background } from "./Background"
-import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle2, Star } from "lucide-react"
+import { Eye, EyeOff, AlertCircle, Loader2, CheckCircle2, Zap } from "lucide-react"
 import { supabase } from "@/lib/supabase"
 
 interface AuthPageProps {
@@ -26,7 +26,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [showSignupSuccess, setShowSignupSuccess] = useState(false)
 
-  // Reset form when switching modes
   useEffect(() => {
     setFormData({
       name: "",
@@ -47,7 +46,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
 
     try {
       if (mode === "signup") {
-        // 1. Sign up the user in Supabase Auth
         localStorage.setItem('signup_in_progress', 'true')
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email: formData.email,
@@ -65,7 +63,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
           throw authError
         }
 
-        // 2. Store additional profile data in the "profiles" table
         if (authData.user) {
           const { error: profileError } = await supabase
             .from('profiles')
@@ -81,14 +78,11 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
           }
         }
 
-        // 🔄 Switch to Sign In page after account creation
-        // We sign out to ensure they go through the Sign In page as requested
         await supabase.auth.signOut()
         localStorage.removeItem('signup_in_progress')
         setShowSignupSuccess(true)
         onToggle()
       } else {
-        // Sign in only via Email (Gmail)
         const { error } = await supabase.auth.signInWithPassword({
           email: formData.email,
           password: formData.password,
@@ -102,10 +96,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
     }
   }
 
-  // Security: Removed real-time email existence check to prevent User Enumeration.
-  // Instead, rely on Supabase Auth errors during login for better privacy.
-
-  // Gmail Validation Logic
   const emailError = useMemo(() => {
     if (!formData.email) return null
     if (formData.email.includes("@") && !formData.email.endsWith("@gmail.com")) {
@@ -114,7 +104,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
     return null
   }, [formData.email])
 
-  // Password Strength Logic
   const passwordStrength = useMemo(() => {
     const pwd = formData.password
     if (!pwd) return 0
@@ -126,7 +115,6 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
     return score
   }, [formData.password])
 
-  const strengthColor = ["bg-gray-100", "bg-red-500", "bg-orange-500", "bg-yellow-500", "bg-green-500"][passwordStrength]
   const strengthText = ["", "Weak", "Fair", "Good", "Strong"][passwordStrength]
 
   const isFormValid = useMemo(() => {
@@ -143,124 +131,111 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
 
   return (
     <Background>
-      <div className="w-full max-w-[440px] mx-auto px-4 text-[#171717]">
-        <Card className="border border-gray-100 rounded-2xl bg-white overflow-hidden p-8 md:p-9">
-          {/* Header & Global Errors */}
-          <div className="flex flex-col items-center text-center space-y-4 mb-8">
-            <div className="w-16 h-16 flex items-center justify-center rounded-2xl bg-[#171717] border border-gray-800">
-              <Star 
-                className="w-8 h-8 text-white fill-white animate-logo-float" 
-                style={{ animationDuration: '6s' }}
-              />
+      <div className="w-full max-w-[520px] mx-auto px-4 text-[#111827] font-sans">
+        <Card className="border-t-[6px] border-t-indigo-500 border border-[#E5E7EB] rounded-2xl bg-white p-8 sm:p-10 shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+          {/* Header */}
+          <div className="flex flex-col items-center text-center space-y-3 mb-7">
+            <div className="w-11 h-11 flex items-center justify-center rounded-xl bg-[#111827] text-white shadow-sm">
+              <Zap className="w-5 h-5 fill-white" />
             </div>
-            <div className="space-y-1.5">
-              <h1 className="text-2xl font-bold tracking-tight text-[#171717]">
+            <div className="space-y-1">
+              <h1 className="text-xl font-semibold tracking-tight text-[#111827]">
                 {mode === "login" ? "Welcome back" : "Get started"}
               </h1>
-              <p className="text-sm text-[#8E8E8E] font-medium leading-relaxed">
+              <p className="text-xs text-[#6B7280] font-medium">
                 {mode === "login"
-                  ? "Happy to see you again."
-                  : "A simpler way to manage your wealth."}
+                  ? "Sign in to your personal financial workspace."
+                  : "A simpler way to manage your portfolio and expenses."}
               </p>
             </div>
           </div>
 
           {(verificationSuccess || showSignupSuccess) && mode === "login" && !errorMsg && (
-            <div className="mb-6 p-4 bg-green-50 border border-green-100 rounded-lg flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-              <p className="text-sm font-semibold text-green-800">
-                {showSignupSuccess ? "Account created! Start your journey" : "Email verified! Please sign in below."}
+            <div className="mb-5 p-3.5 bg-[#F4F5F7] border border-[#E5E7EB] rounded-xl flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <p className="text-xs font-medium text-[#111827]">
+                {showSignupSuccess ? "Account created! Please sign in." : "Email verified! Please sign in below."}
               </p>
             </div>
           )}
 
           {errorMsg && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-              <p className="text-sm font-medium text-red-800 leading-tight">{errorMsg}</p>
+            <div className="mb-5 p-3.5 bg-[#F4F5F7] border border-[#E5E7EB] rounded-xl flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <p className="text-xs font-medium text-[#111827] leading-tight">{errorMsg}</p>
             </div>
           )}
 
-          {/* Form - Compact & Direct */}
-          <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Form */}
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {mode === "signup" && (
-              <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-sm font-semibold text-[#171717] ml-0.5">Full name</Label>
+              <div>
+                <Label htmlFor="name">Full name</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="border-gray-200 bg-white focus:ring-0 focus:border-[#171717] transition-all rounded-md h-11 px-4 text-sm"
-                  placeholder="Full name"
+                  placeholder="John Doe"
                   disabled={isLoading}
                 />
               </div>
             )}
 
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between px-0.5">
-                <Label htmlFor="email" className="text-sm font-semibold text-[#171717]">Email address</Label>
-                <div className="flex items-center gap-2">
-                  {emailError && (
-                    <span className="text-[12px] font-medium text-red-500/80 flex items-center gap-1 transition-all">
-                      <AlertCircle className="w-3 h-3" /> {emailError}
-                    </span>
-                  )}
-                </div>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="email">Email address</Label>
+                {emailError && (
+                  <span className="text-[11px] font-medium text-rose-600 flex items-center gap-1 mb-1.5">
+                    <AlertCircle className="w-3 h-3" /> {emailError}
+                  </span>
+                )}
               </div>
-              <div className="relative">
-                <Input
-                  id="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  placeholder="Email address"
-                  disabled={isLoading}
-                  className={`transition-all rounded-md h-11 px-4 text-sm ${
-                    emailError
-                      ? "border-red-100 bg-red-50/10 focus:border-red-300"
-                      : "border-gray-200 bg-white focus:ring-0 focus:border-[#171717]"
-                  }`}
-                />
-              </div>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                placeholder="name@gmail.com"
+                disabled={isLoading}
+              />
             </div>
 
-            <div className="space-y-1.5 relative">
-              <div className="flex items-center justify-between px-0.5">
-                <Label htmlFor="password" className="text-sm font-semibold text-[#171717]">Password</Label>
+            <div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Password</Label>
                 {mode === "login" ? (
-                  <button type="button" className="text-sm font-bold text-[#171717] hover:underline" disabled={isLoading}>Forgot password?</button>
+                  <button type="button" className="text-xs font-medium text-[#6B7280] hover:text-[#111827] transition-colors mb-1.5" disabled={isLoading}>
+                    Forgot password?
+                  </button>
                 ) : (
-                  <span className={`text-[12px] font-bold transition-colors ${passwordStrength >= 3 ? "text-green-600" : "text-[#B5B5B5]"
-                    }`}>
+                  <span className="text-[11px] font-medium text-[#6B7280] mb-1.5">
                     {strengthText}
                   </span>
                 )}
               </div>
-              <div className="relative group">
+              <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
-                  placeholder="Password"
+                  placeholder="••••••••"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  className="border-gray-200 bg-white focus:ring-0 focus:border-[#171717] transition-all rounded-md h-11 px-4 pr-12 text-sm"
+                  className="pr-10"
                   disabled={isLoading}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#171717] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#6B7280] hover:text-[#111827] transition-colors p-1"
                   disabled={isLoading}
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {/* Strength Indicator Bar */}
               {mode === "signup" && (
-                <div className="h-1 w-full bg-gray-100 rounded-full overflow-hidden mt-2">
+                <div className="h-1 w-full bg-[#F4F5F7] rounded-full overflow-hidden mt-2">
                   <div
-                    className={`h-full transition-all duration-500 ease-out ${strengthColor}`}
+                    className="h-full bg-[#111827] transition-all duration-300 rounded-full"
                     style={{ width: `${(passwordStrength / 4) * 100}%` }}
                   />
                 </div>
@@ -268,32 +243,22 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
             </div>
 
             {mode === "signup" && (
-              <div className="space-y-1.5 relative">
-                <div className="flex items-center justify-between px-0.5">
-                  <Label htmlFor="confirmPassword" className="text-sm font-semibold text-[#171717]">Verify password</Label>
-                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <span className="text-[12px] font-medium text-red-500/80 flex items-center gap-1 transition-all">
-                      <AlertCircle className="w-3 h-3" /> Passwords do not match.
-                    </span>
-                  )}
-                </div>
-                <div className="relative group">
+              <div>
+                <Label htmlFor="confirmPassword">Verify password</Label>
+                <div className="relative">
                   <Input
                     id="confirmPassword"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm password"
+                    placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    className={`transition-all rounded-md h-11 px-4 pr-12 text-sm ${formData.confirmPassword && formData.password !== formData.confirmPassword
-                      ? "border-red-100 bg-red-50/10 focus:border-red-300"
-                      : "border-gray-200 bg-white focus:ring-0 focus:border-[#171717]"
-                      }`}
+                    className="pr-10"
                     disabled={isLoading}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-[#171717] transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8A8A8A] hover:text-[#1A1A1A] transition-colors p-1"
                     disabled={isLoading}
                   >
                     {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -305,7 +270,7 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
             <button
               type="submit"
               disabled={!isFormValid || isLoading}
-              className="w-full bg-[#171717] hover:bg-[#262626] text-white font-bold h-11 rounded-md transition-all text-sm mt-2 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full bg-[#111827] hover:bg-[#1F2937] text-white font-medium h-11 rounded-xl transition-all text-sm mt-3 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[0_1px_2px_rgba(0,0,0,0.06)] active:scale-[0.99]"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -315,14 +280,14 @@ export const AuthPage = ({ mode, onToggle, verificationSuccess }: AuthPageProps)
             </button>
           </form>
 
-          <div className="mt-8 text-center border-t border-gray-100 pt-8">
-            <p className="text-sm text-[#8E8E8E] font-medium leading-relaxed">
+          <div className="mt-6 text-center border-t border-[#E5E7EB] pt-5">
+            <p className="text-xs text-[#6B7280] font-medium">
               {mode === "login"
                 ? "Don't have an account yet?"
-                : "Already using our app?"}{" "}
+                : "Already using our workspace?"}{" "}
               <button
                 onClick={onToggle}
-                className="text-[#171717] font-bold hover:underline transition-all ml-1"
+                className="text-[#111827] font-semibold hover:underline ml-0.5"
               >
                 {mode === "login" ? "Sign up" : "Sign in"}
               </button>

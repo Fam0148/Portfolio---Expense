@@ -76,7 +76,7 @@ function App() {
 
     if (userChoice === 'portfolio') {
       return (
-        <div className="min-h-screen bg-[#F8F8F8]">
+        <div className="min-h-screen bg-white">
           <PortfolioOverview
             onSwitch={setUserChoice}
             userName={userName}
@@ -87,7 +87,7 @@ function App() {
 
     if (userChoice === 'expense') {
       return (
-        <div className="min-h-screen bg-[#F8F8F8]">
+        <div className="min-h-screen bg-white">
           <ExpenseDashboard
             onSwitch={setUserChoice}
             userName={userName}
@@ -99,7 +99,7 @@ function App() {
     // Default Profile page
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center p-8 text-center space-y-6">
-        <h1 className="text-4xl font-bold text-[#171717]">
+        <h1 className="text-4xl font-bold text-[#111827]">
           Welcome to the {userChoice} module
         </h1>
         <p className="text-gray-500 max-w-md">
@@ -107,13 +107,13 @@ function App() {
         </p>
         <button
           onClick={() => setUserChoice(null)}
-          className="text-sm font-bold text-gray-400 hover:text-[#171717] transition-colors underline"
+          className="text-sm font-bold text-gray-500 hover:text-[#111827] transition-colors underline"
         >
           Back to Selection
         </button>
         <button
           onClick={handleLogout}
-          className="px-6 py-2 bg-[#171717] text-white rounded-md font-bold hover:bg-[#262626] transition-all"
+          className="px-6 py-2 bg-[#111827] text-white rounded-xl font-semibold hover:bg-[#1F2937] transition-all"
         >
           Sign Out
         </button>

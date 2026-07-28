@@ -4,36 +4,128 @@ import { PortfolioChart } from "./PortfolioChart"
 import { NumberTicker } from "../ui/NumberTicker"
 import { AssetManagement } from "./AssetManagement"
 import { supabase } from "../../lib/supabase"
+import { fetchLivePrice } from "../../lib/stockApi"
 import { FilePdf, SignOut, Eye, EyeSlash } from "@phosphor-icons/react"
 import { StatementView } from "./StatementView"
 import { FinancialInsight } from "../ui/FinancialInsight"
+import { Plus, MoreHorizontal, Search, SlidersHorizontal, LayoutGrid, Rows } from "lucide-react"
+import { calculateBondPayouts } from "../../lib/utils"
 
-const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay = 0, customDisplay = false, stats, className = "", showValues = true }: any) => {
+const PortfolioCard = ({
+  title,
+  numericValue,
+  illustration,
+  profitPercent,
+  delay = 0,
+  customDisplay = false,
+  stats,
+  className = "",
+  showValues = true,
+  theme = "pink",
+  description = "Real-time performance tracking and live asset analysis.",
+  badge = "Valuation",
+  linkText = "Learn More →"
+}: any) => {
   const isNegative = !customDisplay && Number(numericValue) < 0
+
+  const themeStyles: Record<string, { bg: string; border: string; text: string; desc: string; badgeText: string; badgeBorder: string; btn: string; yieldPill: string }> = {
+    pink: {
+      bg: "bg-[#F7F3FD]",
+      border: "border-[#E9D5FF]",
+      text: "text-[#581C87]",
+      desc: "text-purple-950/70",
+      badgeText: "text-[#7E22CE]",
+      badgeBorder: "border-[#E9D5FF] bg-white",
+      btn: "text-[#7E22CE] hover:text-[#581C87]",
+      yieldPill: "bg-purple-100/80 text-[#7E22CE] border border-[#E9D5FF]"
+    },
+    blue: {
+      bg: "bg-[#EFF6FE]",
+      border: "border-[#BFDBFE]",
+      text: "text-[#1E3A8A]",
+      desc: "text-blue-950/70",
+      badgeText: "text-[#1D4ED8]",
+      badgeBorder: "border-[#BFDBFE] bg-white",
+      btn: "text-[#1D4ED8] hover:text-[#1E3A8A]",
+      yieldPill: "bg-blue-100/80 text-[#1D4ED8] border border-[#BFDBFE]"
+    },
+    green: {
+      bg: "bg-[#F4FAEF]",
+      border: "border-[#BBF7D0]",
+      text: "text-[#15803D]",
+      desc: "text-emerald-950/70",
+      badgeText: "text-[#16A34A]",
+      badgeBorder: "border-[#BBF7D0] bg-white",
+      btn: "text-[#16A34A] hover:text-[#15803D]",
+      yieldPill: "bg-emerald-100/80 text-[#16A34A] border border-[#BBF7D0]"
+    },
+    amber: {
+      bg: "bg-[#FDF5EC]",
+      border: "border-[#FED7AA]",
+      text: "text-[#C2410C]",
+      desc: "text-orange-950/70",
+      badgeText: "text-[#EA580C]",
+      badgeBorder: "border-[#FED7AA] bg-white",
+      btn: "text-[#EA580C] hover:text-[#C2410C]",
+      yieldPill: "bg-orange-100/80 text-[#EA580C] border border-[#FED7AA]"
+    },
+  }
+
+  const currentTheme = themeStyles[theme] || themeStyles.pink
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className={`bg-white p-5 sm:p-6 rounded-lg border border-gray-100/80 shadow-sm flex flex-row items-center justify-between gap-4 group transition-all duration-300 ${className}`}
+      transition={{ duration: 0.3, delay: delay }}
+      className={`relative overflow-hidden ${currentTheme.bg} border ${currentTheme.border} p-6 sm:p-7 ${customDisplay ? 'min-h-0' : 'min-h-[220px]'} rounded-3xl flex flex-col justify-between transition-all group hover:shadow-xs cursor-pointer ${className}`}
     >
-      <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
-        <h3 className="font-serif text-[14px] sm:text-[16px] text-gray-500 leading-tight truncate">
-          {title}
-        </h3>
-        {customDisplay ? (
-          <div className="flex flex-col gap-3 mt-1">
-            <div className="flex flex-row items-center gap-6">
-              <div className="flex flex-row items-baseline gap-2">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Stocks</span>
-                <span className="text-2xl font-display font-bold text-blue-600">{stats?.stockWeight.toFixed(0)}%</span>
+      {/* Decorative background shapes from the uploaded background images */}
+      <div
+        className="absolute right-0 top-0 bottom-0 w-[45%] h-full pointer-events-none transition-transform duration-500 rounded-r-3xl z-0 overflow-hidden"
+        style={{
+          backgroundImage:
+            theme === 'pink' ? "url('/assets/pink-card-background.png')" :
+              theme === 'blue' ? "url('/assets/blue-card-background.png')" :
+                theme === 'green' ? "url('/assets/green-card-background.png')" :
+                  "url('/assets/amber-card-background.png')",
+          backgroundSize: "contain",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right center"
+        }}
+      />
+
+      <div className="flex flex-col space-y-3 z-10 text-left">
+        {/* Header tag badge */}
+        <div className="flex items-center justify-between">
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${currentTheme.badgeBorder} ${currentTheme.badgeText}`}>
+            {badge}
+          </span>
+          {profitPercent && (
+            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isNegative ? 'bg-rose-100 text-rose-700 border border-rose-200' : currentTheme.yieldPill}`}>
+              {profitPercent}
+            </span>
+          )}
+        </div>
+
+        {/* Title / Main Metric */}
+        <div className="space-y-1">
+          <h3 className={`text-xs font-bold uppercase tracking-wider text-[#6B7280]`}>
+            {title}
+          </h3>
+          {customDisplay ? (
+            <div className="flex flex-col gap-2 pt-1 w-full max-w-[900px]">
+              <div className={`flex items-center gap-3 text-xs font-bold ${currentTheme.text}`}>
+                <span>Stocks: {stats?.stockWeight.toFixed(0)}%</span>
+                <span className="opacity-30">|</span>
+                <span>Bonds: {stats?.bondWeight.toFixed(0)}%</span>
               </div>
-              <div className="h-6 w-[1px] bg-gray-100" />
-              <div className="flex flex-row items-baseline gap-2">
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Bonds</span>
-                <span className="text-2xl font-display font-bold text-green-600">{stats?.bondWeight.toFixed(0)}%</span>
+              <div className="w-full h-2.5 bg-purple-200/60 rounded-full overflow-hidden flex">
+                <div className="h-full bg-[#7E22CE] transition-all duration-700" style={{ width: `${stats?.stockWeight}%` }} />
+                <div className="h-full bg-[#C084FC] transition-all duration-700" style={{ width: `${stats?.bondWeight}%` }} />
               </div>
             </div>
+<<<<<<< HEAD
             <div className="w-[92%] h-7 bg-gray-50 rounded-sm overflow-hidden flex border border-gray-100/50 mt-2">
               <div className="h-full bg-blue-600 transition-all duration-1000 ease-out flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${stats?.stockWeight}%` }}>
                 {stats?.stockWeight > 15 && `${stats?.stockWeight.toFixed(0)}%`}
@@ -41,36 +133,24 @@ const PortfolioCard = ({ title, numericValue, illustration, profitPercent, delay
               <div className="h-full bg-green-500 transition-all duration-1000 ease-out flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${stats?.bondWeight}%` }}>
                 {stats?.bondWeight > 15 && `${stats?.bondWeight.toFixed(0)}%`}
               </div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex flex-row items-baseline gap-2 mt-1">
-            <div className={`flex items-baseline font-display font-bold text-[26px] sm:text-[30px] tracking-tight ${isNegative ? 'text-rose-600' : 'text-[#171717]'} transition-all duration-300`}>
-              <span className="text-[18px] sm:text-[22px] mr-1 font-bold">{isNegative ? '-₹' : '₹'}</span>
+          ) : (
+            <div className={`flex items-baseline font-sans font-bold text-[26px] sm:text-[30px] tracking-tight ${currentTheme.text}`}>
+              <span className="text-[18px] sm:text-[20px] mr-0.5 font-semibold">{isNegative ? '-₹' : '₹'}</span>
               {showValues ? (
                 <NumberTicker value={Math.abs(numericValue)} />
               ) : (
-                <span className="text-[22px] sm:text-[26px]" style={{ letterSpacing: '-0.06em' }}>******</span>
+                <span className="text-[20px] sm:text-[24px]" style={{ letterSpacing: '-0.06em' }}>******</span>
               )}
             </div>
-            {profitPercent && (
-              <span className={`text-[11px] font-display font-normal px-2 py-0.5 rounded-full ${isNegative ? 'text-rose-600 bg-rose-50' : 'text-green-600 bg-green-50'} transition-all duration-300`}>
-                {profitPercent}
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Description */}
+        <p className={`text-xs leading-relaxed font-medium ${currentTheme.desc} ${customDisplay ? 'max-w-[900px]' : 'max-w-[240px]'}`}>
+          {description}
+        </p>
       </div>
 
-      <div className="w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0 flex items-center justify-center relative">
-        <img
-          src={illustration}
-          alt={title}
-          className="w-full h-full object-contain transition-all duration-500 hover:scale-105 rotate-[5deg] group-hover:rotate-0"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
     </motion.div>
   )
 }
@@ -118,10 +198,6 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
       const { data } = await supabase.from('stocks').select('*').eq('user_id', user.id)
       if (!data) return
 
-      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-      const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-      const FUNCTION_URL = `${SUPABASE_URL}/functions/v1/stock-search`
-
       const calculateAll = (withPrices: any[]) => {
         let totalInvested = 0
         let totalCurrentMarket = 0
@@ -147,18 +223,11 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
             stockCurrent += totalAtCurrent
           }
           if (type === 'BOND' && s.ytm) {
-            const ytm = parseFloat(s.ytm)
-            if (!isNaN(ytm)) {
-              totalBondInvested += totalAtPurchase
-              interestIncome += (totalAtCurrent * (ytm / 100)) / 12
-              const [pYear, pMonth, pDay] = s.purchase_date.split('-').map(Number);
-              let months = 0; let temp = new Date(pYear, pMonth - 1, 10);
-              if (pDay >= 10) temp.setMonth(temp.getMonth() + 1);
-              while (temp <= now) { months++; temp.setMonth(temp.getMonth() + 1); }
-              const accrued = totalAtPurchase * (ytm / 100) * (months / 12)
-              bondProfitAccrued += accrued
-              totalBondValue += totalAtPurchase + accrued
-            }
+            const bp = calculateBondPayouts(s, now)
+            totalBondInvested += totalAtPurchase
+            interestIncome += bp.monthly
+            bondProfitAccrued += bp.tillDate
+            totalBondValue += totalAtPurchase + bp.tillDate
           }
         })
 
@@ -174,15 +243,14 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
             if (new Date(s.purchase_date) <= mEnd) {
               const totalAtP = s.purchase_price * s.quantity; mVal += totalAtP;
               if (s.asset_type_c === 'BOND' && s.ytm) {
-                const ytm = parseFloat(s.ytm);
-                const [bY, bM, bD] = s.purchase_date.split('-').map(Number);
-                let tDate = new Date(bY, bM - 1, 10); if (bD >= 10) tDate.setMonth(tDate.getMonth() + 1);
-                let mCount = 0; while (tDate <= mEnd && tDate <= now) { mCount++; tDate.setMonth(tDate.getMonth() + 1); }
-                mVal += totalAtP * (ytm / 100) * (mCount / 12);
+                const bp = calculateBondPayouts(s, mEnd <= now ? mEnd : now)
+                mVal += bp.tillDate
               }
             }
           });
-          return { label, value: Math.round(mVal), isFuture: mIdx > now.getMonth() };
+          const isCurrentMonth = mIdx === now.getMonth();
+          const val = isCurrentMonth && finalTotalValue > 0 ? Math.round(finalTotalValue) : Math.round(mVal);
+          return { label, value: val, isFuture: mIdx > now.getMonth() };
         }).filter(d => !d.isFuture);
 
         return {
@@ -200,11 +268,9 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           stockInvested,
           bondInvested: totalBondInvested,
           bondProfitDetails: withPrices.reduce((acc, s) => {
-            if (s.asset_type_c === 'BOND') {
-              const ytm = parseFloat(s.ytm); const [pY, pM, pD] = s.purchase_date.split('-').map(Number);
-              let c = 0; let t = new Date(pY, pM - 1, 10); if (pD >= 10) t.setMonth(t.getMonth() + 1);
-              while (t <= now) { c++; t.setMonth(t.getMonth() + 1); }
-              acc[s.id] = (s.purchase_price * s.quantity * (ytm / 100)) * (c / 12);
+            if (s.asset_type_c === 'BOND' && s.ytm) {
+              const bp = calculateBondPayouts(s, now)
+              acc[s.id] = bp.tillDate
             }
             return acc;
           }, {} as any),
@@ -212,7 +278,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
         }
       }
 
-      // 1. Initial Render with DB values (Instant < 1s)
+      // 1. Initial Render with DB values (Instant <1s)
       const initialData = data.map(s => ({
         ...s,
         current_p: s.purchase_price,
@@ -221,17 +287,14 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
       setStats(prev => ({ ...prev, ...calculateAll(initialData) }))
       setStocksData(initialData)
 
-      // 2. Background Live Price Fetch
+      // 2. Background Live Price Fetch via direct Yahoo Finance API
       const liveData = await Promise.all(data.map(async (s) => {
         const type = s.asset_type || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
         let current = s.purchase_price
         if (type === 'STOCK') {
           try {
-            const sym = s.symbol.includes('.') ? s.symbol : `${s.symbol}.NS`
-            const r = await fetch(`${FUNCTION_URL}?action=price&q=${encodeURIComponent(sym)}`, {
-              headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${SUPABASE_ANON_KEY}` }
-            })
-            if (r.ok) { const d = await r.json(); if (d?.price) current = d.price; }
+            const result = await fetchLivePrice(s.symbol)
+            if (result.price) current = result.price
           } catch { /* Silent fail */ }
         }
         return { ...s, current_p: current, asset_type_c: type }
@@ -254,42 +317,62 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
       numericValue: stats.totalValue,
       illustration: "/assets/Total Portfolio.png",
       profitPercent: stats.profitPercent >= 0 ? `+${stats.profitPercent.toFixed(1)}%` : `${stats.profitPercent.toFixed(1)}%`,
-      delay: 0.1
+      delay: 0.1,
+      theme: "pink",
+      description: "Sum of all live equity holdings, bonds, and savings balances.",
+      badge: "Valuation",
+      linkText: "Review balance sheet →"
     },
     {
       title: "Total Stock Profit",
       numericValue: stats.totalProfit,
       illustration: "/assets/Stock Profit.png",
       profitPercent: `${stats.stockYield.toFixed(1)}% Yield`,
-      delay: 0.2
+      delay: 0.2,
+      theme: "blue",
+      description: "Consolidated growth rate of stock assets with live BSE/NSE data.",
+      badge: "Equity Yield",
+      linkText: "Manage holdings →"
     },
     {
       title: "Monthly Passive Income",
       numericValue: stats.monthlyIncome,
       illustration: "/assets/Passive income.png",
-      delay: 0.3
+      delay: 0.3,
+      theme: "green",
+      description: "Accrued monthly interest income from active high-yield bonds.",
+      badge: "Interest Accrual",
+      linkText: "View bond matrix →"
     },
     {
       title: "Historic Bond Profits",
       numericValue: stats.bondProfit,
       illustration: "/assets/Bonds.png",
       profitPercent: `${stats.bondYield.toFixed(1)}% Return`,
-      delay: 0.4
+      delay: 0.4,
+      theme: "amber",
+      description: "Accrued interest payouts since bond activation date.",
+      badge: "Historical Return",
+      linkText: "Export statements →"
     },
     {
       title: "Asset Allocation",
       numericValue: 0,
       illustration: "/assets/asset allocation.png",
       customDisplay: true,
-      delay: 0.5
+      delay: 0.5,
+      theme: "pink",
+      description: "Distribution weight between high-growth equities and bonds.",
+      badge: "Asset Mix",
+      linkText: "Rebalance portfolio →"
     }
   ]
 
   const getInsightMessage = () => {
     if (stats.totalValue === 0) return { text: "START BY ADDING YOUR FIRST ASSET TO TRACK YOUR WEALTH.", type: "info" as const };
-    if (stats.bondWeight > 70) return { text: "HEAVILY INVESTED IN BONDS (LOW RISK, STABLE RETURNS 👍)", type: "success" as const };
-    if (stats.profitPercent > 5) return { text: `PORTFOLIO IS UP ${stats.profitPercent.toFixed(1)}% (OUTPERFORMING BENCHMARKS 📈)`, type: "success" as const };
-    if (stats.profitPercent < -2) return { text: `PORTFOLIO DROPPED ${Math.abs(stats.profitPercent).toFixed(1)}% THIS WEEK (STAY THE COURSE 📉)`, type: "error" as const };
+    if (stats.bondWeight > 70) return { text: "HEAVILY INVESTED IN BONDS (LOW RISK, STABLE RETURNS)", type: "success" as const };
+    if (stats.profitPercent > 5) return { text: `PORTFOLIO IS UP ${stats.profitPercent.toFixed(1)}% (OUTPERFORMING BENCHMARKS)`, type: "success" as const };
+    if (stats.profitPercent < -2) return { text: `PORTFOLIO DROPPED ${Math.abs(stats.profitPercent).toFixed(1)}% THIS WEEK (STAY THE COURSE)`, type: "error" as const };
     return { text: "PORTFOLIO IS BALANCED AND HEALTHY. KEEP TRACKING REAL-TIME.", type: "info" as const };
   }
 
@@ -297,66 +380,75 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
 
   return (
     <>
-      <div className="no-print max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-blue-50 selection:text-blue-600">
-        <div className="flex flex-col items-center justify-center gap-6 pb-6 border-b border-gray-100">
-          <div className="flex flex-col space-y-1 text-center">
-            <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
-              Hi, {userName}
-            </h1>
-            <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight max-w-[280px] sm:max-w-none mx-auto">
-              Analyze your wealth and track real-time asset performance.
-            </p>
+      <div className="no-print max-w-[1440px] mx-auto px-4 sm:px-8 pt-6 sm:pt-8 min-h-screen font-sans selection:bg-neutral-200 selection:text-neutral-900">
+        {/* Top Header matching reference image: Breadcrumb, Pill Search Input, Filter Button, View mode toggles */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-5 border-b border-[#E5E7EB] mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-[#9CA3AF] font-medium">&lt; Home /</span>
+            <span className="text-sm font-semibold text-[#111827]">Portfolio Overview</span>
           </div>
 
-          <div className="flex items-center justify-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-3">
+
+            {/* View Switcher Icons [ III ::: ] */}
+            <div className="flex items-center bg-[#F0F1F3] p-1 rounded-xl border border-[#E5E7EB]">
+              <button className="p-1.5 rounded-lg bg-white shadow-2xs text-[#111827]">
+                <Rows size={14} />
+              </button>
+              <button className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#111827]">
+                <LayoutGrid size={14} />
+              </button>
+            </div>
+
             <button
               onClick={() => setShowValues(!showValues)}
-              className="flex-shrink-0 flex items-center justify-center p-2.5 rounded-sm border border-gray-200 bg-white text-[#171717] hover:bg-gray-50 transition-all active:scale-95 shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F4F5F7] transition-all text-xs font-medium shadow-2xs active:scale-95 cursor-pointer"
               title={showValues ? "Hide Values" : "Show Values"}
             >
-              {showValues ? <Eye size={16} weight="regular" /> : <EyeSlash size={16} weight="regular" />}
+              {showValues ? <Eye size={14} /> : <EyeSlash size={14} />}
+              <span>{showValues ? "Hide" : "Show"}</span>
             </button>
             <button
-              onClick={() => { setTimeout(() => { window.print(); }, 500); }}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group shadow-sm border border-[#111827]"
+              onClick={() => { setTimeout(() => { window.print(); }, 300); }}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#111827] text-white hover:bg-[#1F2937] transition-all text-xs font-semibold shadow-2xs active:scale-95 border border-[#111827] cursor-pointer"
             >
-              <FilePdf size={14} weight="bold" className="text-gray-300 group-hover:text-white transition-colors" />
-              Export
+              <FilePdf size={14} weight="bold" />
+              <span>Export PDF</span>
             </button>
             <button
               onClick={handleLogOut}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-100 transition-all font-bold text-[12px] active:scale-95 group shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#6B7280] hover:text-[#111827] hover:bg-[#F4F5F7] transition-all text-xs font-medium shadow-2xs active:scale-95 cursor-pointer"
             >
-              <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
-              Sign Out
+              <SignOut size={14} />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
 
-        {/* Secondary Navigation Row: Centered Tabs aligned to Top */}
-        <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20">
-          <div className="flex items-center justify-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
+        {/* Sleek Pill Tab Navigation matching reference */}
+        <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md py-2.5 mb-6">
+          <div className="bg-[#E5E7EB] p-1 rounded-full inline-flex items-center gap-1 shadow-inner relative">
             <button
               onClick={() => onSwitch('portfolio')}
-              className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
+              className="relative px-4 py-1.5 rounded-full text-xs font-semibold text-[#111827] transition-colors cursor-pointer z-10"
             >
-              Portfolio Overview
               <motion.div
-                layoutId="active-nav-tab"
-                className="absolute bottom-0 left-0 right-0 h-[2px] bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.2)]"
-                transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
+                layoutId="activeNavModule"
+                className="absolute inset-0 bg-white rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-[#E5E7EB]/60 -z-10"
+                transition={{ type: "spring", stiffness: 500, damping: 35 }}
               />
+              Portfolio Overview
             </button>
             <button
               onClick={() => onSwitch('expense')}
-              className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
+              className="relative px-4 py-1.5 rounded-full text-xs font-medium text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer z-10"
             >
               Expense Tracker
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6">
           {cards.map((card, idx) => {
             const isLastCard = idx === cards.length - 1;
             return (

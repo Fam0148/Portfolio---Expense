@@ -10,28 +10,28 @@ interface FinancialInsightProps {
 export const FinancialInsight = ({ message, type = 'info', delay = 0 }: FinancialInsightProps) => {
   const configs = {
     success: {
-      bg: 'bg-emerald-50/50',
-      border: 'border-emerald-100',
-      text: 'text-emerald-700',
-      icon: <CheckCircle weight="bold" size={16} strokeWidth={2.5} />
+      bg: 'bg-white',
+      border: 'border-[#E5E7EB]',
+      text: 'text-[#111827]',
+      icon: <CheckCircle weight="bold" size={16} className="text-emerald-600" />
     },
     warning: {
-      bg: 'bg-amber-50/50',
-      border: 'border-amber-100',
-      text: 'text-amber-700',
-      icon: <WarningCircle weight="bold" size={16} strokeWidth={2.5} />
+      bg: 'bg-white',
+      border: 'border-[#E5E7EB]',
+      text: 'text-[#111827]',
+      icon: <WarningCircle weight="bold" size={16} className="text-amber-600" />
     },
     error: {
-      bg: 'bg-rose-50/50',
-      border: 'border-rose-100',
-      text: 'text-rose-700',
-      icon: <Warning weight="bold" size={16} strokeWidth={2.5} />
+      bg: 'bg-white',
+      border: 'border-[#E5E7EB]',
+      text: 'text-[#111827]',
+      icon: <Warning weight="bold" size={16} className="text-rose-600" />
     },
     info: {
-      bg: 'bg-blue-50/50',
-      border: 'border-blue-100',
-      text: 'text-blue-700',
-      icon: <Info weight="bold" size={16} strokeWidth={2.5} />
+      bg: 'bg-white',
+      border: 'border-[#E5E7EB]',
+      text: 'text-[#111827]',
+      icon: <Info weight="bold" size={16} className="text-[#6B7280]" />
     }
   }
 
@@ -39,26 +39,17 @@ export const FinancialInsight = ({ message, type = 'info', delay = 0 }: Financia
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: delay }}
-      className={`flex items-center gap-3 px-5 py-4 rounded-md border ${current.bg} ${current.border} shadow-sm backdrop-blur-sm`}
+      transition={{ duration: 0.3, delay: delay }}
+      className={`flex items-center gap-3 px-4 py-3 rounded-2xl border ${current.bg} ${current.border} shadow-[0_1px_3px_rgba(0,0,0,0.03)] relative overflow-hidden`}
     >
-      <div className={`flex-shrink-0 ${current.text}`}>
+      <div className="flex-shrink-0">
         {current.icon}
       </div>
-      <p className={`text-[12px] font-bold tracking-tight ${current.text} uppercase leading-tight`}>
+      <p className="text-[13px] font-medium text-[#111827] leading-snug">
         {message}
       </p>
-
-      {/* Subtle Shine Animation */}
-      <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none">
-        <motion.div
-          animate={{ x: ['-100%', '100%'] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "linear", repeatDelay: 5 }}
-          className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12"
-        />
-      </div>
     </motion.div>
   )
 }
