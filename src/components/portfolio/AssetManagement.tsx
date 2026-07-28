@@ -213,21 +213,22 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
 
 
   useEffect(() => {
-    if (!form.symbol || form.symbol.length < 1 || !showSuggestions || activeTab !== 'STOCK') {
+    if (!showSuggestions || activeTab !== 'STOCK') {
       setSuggestions([]); return
     }
-    // Show instant local matches
-    const localMatches = getLocalMatches(form.symbol)
+    // Show instant local matches (including default popular stocks if empty)
+    const localMatches = getLocalMatches(form.symbol || '')
     setSuggestions(localMatches)
 
-    // Then fetch broader results from Yahoo Finance via CORS proxy
-    const timer = setTimeout(async () => {
-      try {
-        const results = await searchStocks(form.symbol)
-        if (results.length > 0) setSuggestions(results)
-      } catch { /* keep local results */ }
-    }, 300)
-    return () => clearTimeout(timer)
+    if (form.symbol && form.symbol.length >= 1) {
+      const timer = setTimeout(async () => {
+        try {
+          const results = await searchStocks(form.symbol)
+          if (results.length > 0) setSuggestions(results)
+        } catch { /* keep local results */ }
+      }, 250)
+      return () => clearTimeout(timer)
+    }
   }, [form.symbol, showSuggestions, activeTab])
 
   const handleSelectSuggestion = async (quote: any) => {
@@ -425,10 +426,59 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                 </div>
                 <form onSubmit={handleAddOrUpdate} className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {/* Symbol — read-only when editing */}
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Symbol</label>
-                    <div className="px-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm font-bold text-[#171717]">
-                      {form.symbol}
+                  {/* Symbol / Search with Live Suggestions */}
+                  <div className="space-y-1 text-left stock-search-group relative">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                      {activeTab === 'STOCK' ? 'Symbol' : 'Bond Name'}
+                    </label>
+                    <div className="relative group/search">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                      <input type="text" placeholder={activeTab === 'STOCK' ? "e.g. RELIANCE" : "e.g. HDFC Bond"}
+                        autoComplete="off"
+                        className="w-full pl-9 pr-3 py-2.5 bg-white border border-gray-200 rounded-md text-sm font-bold focus:outline-none focus:border-[#111827] transition-all"
+                        value={form.symbol}
+                        onFocus={() => { if (activeTab === 'STOCK') setShowSuggestions(true); }}
+                        onClick={() => { if (activeTab === 'STOCK') setShowSuggestions(true); }}
+                        onChange={e => {
+                          setForm({ ...form, symbol: e.target.value.toUpperCase() })
+                          if (activeTab === 'STOCK') setShowSuggestions(true)
+                          else setShowSuggestions(false)
+                        }}
+                      />
+                      {showSuggestions && suggestions.length > 0 && activeTab === 'STOCK' && (
+                        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                          className="absolute top-[calc(100%+6px)] left-0 right-0 bg-white border border-[#E5E7EB] rounded-xl shadow-[0_8px_24px_rgba(0,0,0,0.12)] z-[120] overflow-hidden py-1.5 min-w-[280px]">
+                          <div className="px-3.5 py-1.5 border-b border-[#E5E7EB] bg-[#F4F5F7] flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">Live Suggestions</span>
+                            <span className="text-[9px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">Live Prices</span>
+                          </div>
+                          <div className="max-h-[220px] overflow-y-auto">
+                            {suggestions.map((quote: any) => (
+                              <div key={quote.symbol}
+                                className="px-4 py-2.5 hover:bg-[#F4F5F7] cursor-pointer flex justify-between items-center transition-colors group"
+                                onClick={() => handleSelectSuggestion(quote)}>
+                                <div className="flex flex-col">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-bold text-xs text-[#111827] group-hover:text-emerald-600 transition-colors">{quote.symbol}</span>
+                                    <span className="text-[9px] font-semibold bg-[#E5E7EB] text-[#374151] px-1.5 py-0.2 rounded uppercase">{quote.exchange}</span>
+                                  </div>
+                                  <span className="text-[11px] font-medium text-[#6B7280] truncate max-w-[180px]">{quote.shortname || quote.symbol}</span>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                  {quote.price ? (
+                                    <div className="flex flex-col items-end">
+                                      <span className="font-bold text-xs text-emerald-600">₹{Number(quote.price).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                                      <span className="text-[8px] font-semibold text-emerald-600 bg-emerald-50 px-1 py-0.2 rounded">Live</span>
+                                    </div>
+                                  ) : (
+                                    <span className="text-[10px] font-semibold text-emerald-600 group-hover:underline">Auto Fill →</span>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
                     </div>
                   </div>
                   {/* Date */}
@@ -532,6 +582,8 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                         autoComplete="off"
                         className="w-full pl-10 pr-4 h-11 bg-white border border-[#E5E7EB] rounded-xl text-sm font-medium focus:ring-2 focus:ring-[#E5E7EB] focus:border-[#D1D5DB] transition-all text-[#111827] placeholder:text-[#9CA3AF] outline-none"
                         value={form.symbol}
+                        onFocus={() => { if (activeTab === 'STOCK') setShowSuggestions(true); }}
+                        onClick={() => { if (activeTab === 'STOCK') setShowSuggestions(true); }}
                         onChange={e => {
                           setForm({ ...form, symbol: e.target.value.toUpperCase() })
                           if (activeTab === 'STOCK') setShowSuggestions(true)

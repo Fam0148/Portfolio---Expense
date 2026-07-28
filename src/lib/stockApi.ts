@@ -299,8 +299,8 @@ const LOCAL_STOCKS: StockSearchResult[] = [
 ]
 
 export function getLocalMatches(query: string): StockSearchResult[] {
-  const q = query.toUpperCase().trim()
-  if (!q) return []
+  const q = query ? query.toUpperCase().trim() : ''
+  if (!q) return LOCAL_STOCKS.slice(0, 8)
 
   const matches = LOCAL_STOCKS.filter(
     s =>
