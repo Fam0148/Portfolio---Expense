@@ -14,55 +14,122 @@ import {
   Robot,
   CalendarBlank,
   ArrowCounterClockwise,
-  Trash
+  Trash,
+  Eye,
+  EyeSlash
 } from "@phosphor-icons/react"
+import { Rows, LayoutGrid } from "lucide-react"
 import { NumberTicker } from "../ui/NumberTicker"
 import { FinancialInsight } from "../ui/FinancialInsight"
 
-const StatCard = ({ title, numericValue, illustration, badgeText, badgeColor = "emerald", delay = 0 }: any) => {
+const StatCard = ({
+  title,
+  numericValue,
+  illustration,
+  badgeText,
+  theme = "emerald",
+  delay = 0,
+  description = "Real-time monthly expense tracking and financial analysis.",
+  badge = "Cashflow",
+  showValues = true
+}: any) => {
   const isNegative = numericValue < 0
-  const colorMap: any = {
-    emerald: "text-[#171717] bg-gray-100",
-    amber: "text-gray-500 bg-gray-50",
-    indigo: "text-[#171717] bg-gray-100",
-    rose: "text-gray-500 bg-gray-50"
+
+  const themeStyles: Record<string, { bg: string; border: string; text: string; desc: string; badgeText: string; badgeBorder: string; btn: string; yieldPill: string }> = {
+    emerald: {
+      bg: "bg-[#F4FAEF]",
+      border: "border-[#BBF7D0]",
+      text: "text-[#15803D]",
+      desc: "text-emerald-950/70",
+      badgeText: "text-[#16A34A]",
+      badgeBorder: "border-[#BBF7D0] bg-white",
+      btn: "text-[#16A34A] hover:text-[#15803D]",
+      yieldPill: "bg-emerald-100/80 text-[#16A34A] border border-[#BBF7D0]"
+    },
+    rose: {
+      bg: "bg-[#F7F3FD]",
+      border: "border-[#E9D5FF]",
+      text: "text-[#581C87]",
+      desc: "text-purple-950/70",
+      badgeText: "text-[#7E22CE]",
+      badgeBorder: "border-[#E9D5FF] bg-white",
+      btn: "text-[#7E22CE] hover:text-[#581C87]",
+      yieldPill: "bg-purple-100/80 text-[#7E22CE] border border-[#E9D5FF]"
+    },
+    indigo: {
+      bg: "bg-[#EFF6FE]",
+      border: "border-[#BFDBFE]",
+      text: "text-[#1E3A8A]",
+      desc: "text-blue-950/70",
+      badgeText: "text-[#1D4ED8]",
+      badgeBorder: "border-[#BFDBFE] bg-white",
+      btn: "text-[#1D4ED8] hover:text-[#1E3A8A]",
+      yieldPill: "bg-blue-100/80 text-[#1D4ED8] border border-[#BFDBFE]"
+    },
+    amber: {
+      bg: "bg-[#FDF5EC]",
+      border: "border-[#FED7AA]",
+      text: "text-[#C2410C]",
+      desc: "text-orange-950/70",
+      badgeText: "text-[#EA580C]",
+      badgeBorder: "border-[#FED7AA] bg-white",
+      btn: "text-[#EA580C] hover:text-[#C2410C]",
+      yieldPill: "bg-orange-100/80 text-[#EA580C] border border-[#FED7AA]"
+    },
   }
+
+  const currentTheme = themeStyles[theme] || themeStyles.emerald
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: delay, ease: [0.21, 0.47, 0.32, 0.98] }}
-      className="bg-white p-5 sm:p-6 rounded-lg border border-gray-200/80 flex flex-row items-center justify-between gap-4 group transition-all duration-300 shadow-sm"
+      transition={{ duration: 0.3, delay: delay }}
+      className={`relative overflow-hidden ${currentTheme.bg} border ${currentTheme.border} p-6 sm:p-7 min-h-[220px] rounded-3xl flex flex-col justify-between transition-all group hover:shadow-xs cursor-pointer`}
     >
-      <div className="flex flex-col space-y-1.5 flex-1 min-w-0">
-        <h3 className="font-serif text-[16px] text-gray-500 leading-tight truncate">
-          {title}
-        </h3>
-        <div className="flex flex-row items-baseline gap-2 mt-1">
-          <div className="flex items-baseline font-display font-bold text-[26px] sm:text-[30px] tracking-tight text-[#171717]">
-            <span className="text-[18px] sm:text-[22px] mr-1 font-bold">{isNegative ? '-₹' : '₹'}</span>
-            <NumberTicker value={Math.abs(numericValue)} />
-          </div>
+      <div
+        className="absolute right-0 top-0 bottom-0 w-[45%] h-full pointer-events-none transition-transform duration-500 rounded-r-3xl z-0 overflow-hidden"
+        style={{
+          backgroundImage:
+            theme === 'rose' ? "url('/assets/pink-card-background.png')" :
+              theme === 'indigo' ? "url('/assets/blue-card-background.png')" :
+                theme === 'emerald' ? "url('/assets/green-card-background.png')" :
+                  "url('/assets/amber-card-background.png')",
+          backgroundSize: "contain",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "right center"
+        }}
+      />
+
+      <div className="flex flex-col space-y-3 z-10 text-left">
+        <div className="flex items-center justify-between">
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border ${currentTheme.badgeBorder} ${currentTheme.badgeText}`}>
+            {badge}
+          </span>
           {badgeText && (
-            <span className={`text-[11px] font-display font-normal px-2 py-0.5 rounded-full ${colorMap[badgeColor]}`}>
+            <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${isNegative ? 'bg-rose-100 text-rose-700 border border-rose-200' : currentTheme.yieldPill}`}>
               {badgeText}
             </span>
           )}
         </div>
-      </div>
 
-      <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 flex-shrink-0 flex items-center justify-center relative">
-        <img
-          src={illustration}
-          alt={title}
-          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-500"
-          loading="lazy"
-          decoding="async"
-          onError={(e: any) => {
-            e.target.style.display = 'none'
-          }}
-        />
+        <div className="space-y-1">
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#6B7280]">
+            {title}
+          </h3>
+          <div className={`flex items-baseline font-sans font-bold text-[26px] sm:text-[30px] tracking-tight ${currentTheme.text}`}>
+            <span className="text-[18px] sm:text-[20px] mr-0.5 font-semibold">{isNegative ? '-₹' : '₹'}</span>
+            {showValues ? (
+              <NumberTicker value={Math.abs(numericValue)} />
+            ) : (
+              <span className="text-[20px] sm:text-[24px]" style={{ letterSpacing: '-0.06em' }}>******</span>
+            )}
+          </div>
+        </div>
+
+        <p className={`text-xs leading-relaxed font-medium ${currentTheme.desc} max-w-[240px]`}>
+          {description}
+        </p>
       </div>
     </motion.div>
   )
@@ -611,13 +678,24 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
     getData()
   }, [selectedMonth, selectedYear])
 
+  const [showValues, setShowValues] = useState(() => {
+    const saved = localStorage.getItem('show_portfolio_values')
+    return saved === null ? true : saved === 'true'
+  })
+
+  useEffect(() => {
+    localStorage.setItem('show_portfolio_values', String(showValues))
+  }, [showValues])
+
   const cards = [
     {
       title: "Monthly Total Income",
       numericValue: totalIncome,
       illustration: "/assets/income.png",
       badgeText: totalIncome > 0 ? "100%" : null,
-      badgeColor: "emerald",
+      theme: "emerald",
+      badge: "Income Source",
+      description: "Consolidated monthly earnings across primary salary and side hustles.",
       delay: 0.1
     },
     {
@@ -625,7 +703,9 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       numericValue: totalFixed,
       illustration: "/assets/expense.png",
       badgeText: totalIncome > 0 ? `${Math.round((totalFixed / totalIncome) * 100)}%` : null,
-      badgeColor: "rose",
+      theme: "rose",
+      badge: "Mandatory Expenses",
+      description: "Essential recurring obligations (rent, food, travel, insurance).",
       delay: 0.2
     },
     {
@@ -633,7 +713,9 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       numericValue: totalInvestments,
       illustration: "/assets/investment.png",
       badgeText: totalIncome > 0 ? `${Math.round((totalInvestments / totalIncome) * 100)}%` : null,
-      badgeColor: "indigo",
+      theme: "indigo",
+      badge: "Wealth Allocations",
+      description: "Capital routed into equities, bonds, and high-yield instruments.",
       delay: 0.3
     },
     {
@@ -641,7 +723,9 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
       numericValue: availableBudget,
       illustration: "/assets/savings.png",
       badgeText: totalIncome > 0 ? `Saved: ${Math.round((availableBudget / totalIncome) * 100)}%` : null,
-      badgeColor: "amber",
+      theme: "amber",
+      badge: "Net Surplus",
+      description: "Remaining unallocated liquid balance for discretionary spending.",
       delay: 0.4
     }
   ]
@@ -666,68 +750,78 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
         onConfirm={confirmModal.onConfirm}
         onCancel={closeConfirm}
       />
-      <div className="no-print max-w-5xl mx-auto px-4 sm:px-6 pt-8 sm:pt-12 min-h-screen font-sans selection:bg-gray-50 selection:text-gray-500">
-        <div>
-          {/* Centered Greeting & Global Actions */}
-          <div className="flex flex-col items-center justify-center gap-6 pb-6 border-b border-gray-100">
-            <div className="flex flex-col space-y-1 text-center">
-              <h1 className="text-[28px] sm:text-[34px] font-serif font-bold text-[#171717] leading-tight flex items-center justify-center gap-2">
-                Hi, {userName}
-              </h1>
-              <p className="text-gray-500 text-xs sm:text-sm font-sans tracking-tight max-w-[280px] sm:max-w-none mx-auto">
-                Monitor your daily spending and manage monthly cashflows.
-              </p>
-            </div>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 w-full sm:w-auto">
-              <div className="flex items-center gap-2 w-full sm:w-auto">
-                <button
-                  onClick={handleExportStatement}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-[#111827] text-white hover:bg-black transition-all font-bold text-[12px] active:scale-95 group border border-[#111827] shadow-sm whitespace-nowrap"
-                >
-                  <FilePdf size={14} className="text-gray-300 group-hover:text-white transition-colors" />
-                  Export
-                </button>
-
-                <button
-                  onClick={handleLogOut}
-                  className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-sm bg-white border border-gray-100 text-gray-500 hover:text-gray-600 hover:bg-gray-50 transition-all font-bold text-[12px] active:scale-95 group shadow-sm whitespace-nowrap"
-                >
-                  <SignOut size={16} weight="bold" className="text-red-400 group-hover:text-red-500 transition-colors" />
-                  Sign Out
-                </button>
-              </div>
-            </div>
+      <div className="no-print max-w-[1440px] mx-auto px-4 sm:px-8 pt-6 sm:pt-8 min-h-screen font-sans selection:bg-neutral-200 selection:text-neutral-900">
+        {/* Top Header matching Portfolio Overview */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 pb-5 border-b border-[#E5E7EB] mb-6">
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-[#9CA3AF] font-medium">&lt; Home /</span>
+            <span className="text-sm font-semibold text-[#111827]">Expense Tracker</span>
           </div>
 
-          {/* Secondary Navigation Row: Centered Tabs (Sticky) */}
-          <div className="sticky top-[-1px] z-50 bg-[#F8F8F8]/95 backdrop-blur-md -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 mb-10 border-b border-gray-200/20">
-            <div className="flex items-center justify-center gap-8 overflow-x-auto no-scrollbar scroll-smooth">
-              <button
-                onClick={() => onSwitch('portfolio')}
-                className="relative pb-4 text-[13px] font-bold tracking-tight text-gray-400 hover:text-gray-600 transition-all whitespace-nowrap"
-              >
-                Portfolio Overview
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center bg-[#F0F1F3] p-1 rounded-xl border border-[#E5E7EB]">
+              <button className="p-1.5 rounded-lg bg-white shadow-2xs text-[#111827]">
+                <Rows size={14} />
               </button>
-              <button
-                className="relative pb-4 text-[13px] font-bold tracking-tight text-[#171717] transition-all"
-              >
-                Expense Tracker
-                <motion.div
-                  layoutId="active-nav-tab"
-                  className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#171717]"
-                  transition={{ type: "spring", bounce: 0.1, duration: 0.5 }}
-                />
+              <button className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#111827]">
+                <LayoutGrid size={14} />
               </button>
             </div>
-          </div>
 
-          {/* Quick Stats Grid with Illustrations */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {cards.map((card, idx) => (
-              <StatCard key={idx} {...card} />
-            ))}
+            <button
+              onClick={() => setShowValues(!showValues)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F4F5F7] transition-all text-xs font-medium shadow-2xs active:scale-95 cursor-pointer"
+              title={showValues ? "Hide Values" : "Show Values"}
+            >
+              {showValues ? <Eye size={14} /> : <EyeSlash size={14} />}
+              <span>{showValues ? "Hide" : "Show"}</span>
+            </button>
+            <button
+              onClick={handleExportStatement}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#111827] text-white hover:bg-[#1F2937] transition-all text-xs font-semibold shadow-2xs active:scale-95 border border-[#111827] cursor-pointer"
+            >
+              <FilePdf size={14} weight="bold" />
+              <span>Export PDF</span>
+            </button>
+            <button
+              onClick={handleLogOut}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#E5E7EB] text-[#6B7280] hover:text-[#111827] hover:bg-[#F4F5F7] transition-all text-xs font-medium shadow-2xs active:scale-95 cursor-pointer"
+            >
+              <SignOut size={14} />
+              <span>Sign Out</span>
+            </button>
           </div>
+        </div>
+
+        {/* Sleek Pill Tab Navigation matching Portfolio Overview */}
+        <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md py-2.5 mb-6">
+          <div className="bg-[#E5E7EB] p-1 rounded-full inline-flex items-center gap-1 shadow-inner relative">
+            <button
+              onClick={() => onSwitch('portfolio')}
+              className="relative px-4 py-1.5 rounded-full text-xs font-medium text-[#6B7280] hover:text-[#111827] transition-colors cursor-pointer z-10"
+            >
+              Portfolio Overview
+            </button>
+            <button
+              onClick={() => onSwitch('expense')}
+              className="relative px-4 py-1.5 rounded-full text-xs font-semibold text-[#111827] transition-colors cursor-pointer z-10"
+            >
+              <motion.div
+                layoutId="activeNavModule"
+                className="absolute inset-0 bg-white rounded-full shadow-[0_1px_3px_rgba(0,0,0,0.05)] border border-[#E5E7EB]/60 -z-10"
+                transition={{ type: "spring", stiffness: 500, damping: 35 }}
+              />
+              Expense Tracker
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Stats Grid with Illustrations matching Portfolio Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6">
+          {cards.map((card, idx) => (
+            <StatCard key={idx} {...card} showValues={showValues} />
+          ))}
+        </div>
 
           {/* Strategic Insight below Quick Stats */}
           <div className="mb-10">
@@ -1452,7 +1546,6 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
             </div>
           </div>
         </div>
-      </div>
 
       {/* PRINT-ONLY STATEMENT (PORTFOLIO-GRADE FINANCIAL REPORT) */}
       <div id="expense-statement-print" className="hidden print:block fixed inset-0 bg-white z-[9999] overflow-auto p-12 text-[#1F2937] font-sans">
