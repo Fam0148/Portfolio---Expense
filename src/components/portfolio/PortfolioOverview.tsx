@@ -125,14 +125,6 @@ const PortfolioCard = ({
                 <div className="h-full bg-[#C084FC] transition-all duration-700" style={{ width: `${stats?.bondWeight}%` }} />
               </div>
             </div>
-<<<<<<< HEAD
-            <div className="w-[92%] h-7 bg-gray-50 rounded-sm overflow-hidden flex border border-gray-100/50 mt-2">
-              <div className="h-full bg-blue-600 transition-all duration-1000 ease-out flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${stats?.stockWeight}%` }}>
-                {stats?.stockWeight > 15 && `${stats?.stockWeight.toFixed(0)}%`}
-              </div>
-              <div className="h-full bg-green-500 transition-all duration-1000 ease-out flex items-center justify-center text-[10px] text-white font-bold" style={{ width: `${stats?.bondWeight}%` }}>
-                {stats?.bondWeight > 15 && `${stats?.bondWeight.toFixed(0)}%`}
-              </div>
           ) : (
             <div className={`flex items-baseline font-sans font-bold text-[26px] sm:text-[30px] tracking-tight ${currentTheme.text}`}>
               <span className="text-[18px] sm:text-[20px] mr-0.5 font-semibold">{isNegative ? '-₹' : '₹'}</span>
