@@ -46,7 +46,7 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
       `}</style>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── PAGE 1: EXECUTIVE WEALTH SUMMARY & TOTALS ─────────────────────── */}
+      {/* ── PAGE 1: EXECUTIVE WEALTH SUMMARY & TOTALS (MINIMAL & CLEAN) ───── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <div className="min-h-[265mm] flex flex-col justify-between pb-4">
         <div>
@@ -67,48 +67,28 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
               </div>
               <span className="text-sm font-bold tracking-tight text-[#111827]">Portfolio & Expense</span>
             </div>
-            <div className="text-xs font-mono font-bold text-[#111827] tracking-wider uppercase bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">
-              {statementId}
+
+            <div className="text-right space-y-0.5">
+              <div className="text-xs font-mono font-bold text-[#111827]">
+                Ref: <span className="text-[#111827]">{statementId}</span>
+              </div>
+              <div className="text-[11px] text-[#6B7280]">
+                Date: <span className="font-semibold text-[#111827]">{dateIssued}</span> • Investor: <span className="font-semibold text-[#111827]">{userName || "Valued Investor"}</span>
+              </div>
             </div>
           </div>
 
           {/* 3. Gigantic Main Statement Title */}
-          <div className="mb-6 border-b border-gray-100 pb-5">
+          <div className="mb-8 border-b border-gray-100 pb-5">
             <h1 className="text-4xl sm:text-5xl font-black text-[#111827] tracking-tight uppercase leading-none">
               CONSOLIDATED WEALTH STATEMENT
             </h1>
             <p className="text-xs text-[#6B7280] font-medium mt-2">
-              Certified real-time performance evaluation and certified asset holdings overview
+              Certified real-time performance evaluation and asset overview
             </p>
           </div>
 
-          {/* 4. Metadata Columns (From / Bill To / Issued) */}
-          <div className="grid grid-cols-3 gap-6 mb-8 text-xs">
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">FROM</span>
-              <p className="font-bold text-[#111827] text-sm">Portfolio & Expense Engine</p>
-              <p className="text-[#6B7280]">cloud.portfolio-expense.app</p>
-              <p className="text-[#6B7280]">Real-Time Market Node</p>
-              <p className="text-[#6B7280]">NSE / BSE Live API Integration</p>
-            </div>
-
-            <div className="space-y-1">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">PREPARED FOR</span>
-              <p className="font-bold text-[#111827] text-sm">{userName || "Valued Investor"}</p>
-              <p className="text-[#6B7280]">investor@portfolio.app</p>
-              <p className="text-[#6B7280]">Depository Ref: IN300214-9821</p>
-              <p className="text-[#6B7280]">Verified Individual Account</p>
-            </div>
-
-            <div className="space-y-1 text-right">
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">STATEMENT DETAILS</span>
-              <p className="text-[#6B7280]">Date Issued: <span className="font-bold text-[#111827]">{dateIssued}</span></p>
-              <p className="text-[#6B7280]">Audit Status: <span className="font-bold text-emerald-600">VERIFIED & LIVE</span></p>
-              <p className="text-[#6B7280]">Asset Holdings: <span className="font-bold text-[#111827]">{stocks.length} Assets</span></p>
-            </div>
-          </div>
-
-          {/* 5. Metric Summary Cards Bar */}
+          {/* 4. Metric Summary Cards Bar */}
           <div className="grid grid-cols-4 gap-4 mb-8">
             <div className="bg-[#F7F3FD] border border-[#E9D5FF] p-4 rounded-2xl flex flex-col justify-between">
               <div className="flex justify-between items-center mb-1">
@@ -168,7 +148,7 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
             </div>
           </div>
 
-          {/* 6. Asset Mix Breakdown */}
+          {/* 5. Asset Mix Breakdown */}
           <div className="bg-[#F9FAFB] border border-gray-200 rounded-2xl p-4 mb-8">
             <div className="flex justify-between items-center mb-2">
               <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">ASSET MIX ALLOCATION</span>
@@ -183,24 +163,15 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
             </div>
           </div>
 
-          {/* 7. Bottom Totals Summary Box & Audit Notes */}
+          {/* 6. Bottom Totals Summary Box & Minimal Notes */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-start border-t border-gray-200 pt-6 text-xs">
             <div className="space-y-4 text-[#6B7280]">
               <div>
                 <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                  STATEMENT DETAILS
-                </span>
-                <p className="text-[11px] leading-relaxed">
-                  Certified executive summary generated via Supabase Cloud Realtime Database with live market price synchronization.
-                </p>
-              </div>
-
-              <div>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
-                  NOTES & DISCLOSURE
+                  SUMMARY DISCLOSURE
                 </span>
                 <p className="text-[11px] leading-relaxed font-medium text-gray-500">
-                  Detailed asset holdings table starts on Page 2. All valuations reflect live market prices as of the date issued.
+                  Detailed asset holdings table is presented on Page 2. All portfolio valuations reflect certified live market prices.
                 </p>
               </div>
             </div>
