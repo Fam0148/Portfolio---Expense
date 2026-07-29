@@ -10,6 +10,9 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
   const dateIssued = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
   const statementId = `STMT-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`
 
+  const equityStocks = stocks.filter(s => s.asset_type_c !== 'BOND')
+  const fixedBonds = stocks.filter(s => s.asset_type_c === 'BOND')
+
   return (
     <div id="portfolio-statement" className="print-only-container bg-white p-6 sm:p-10 max-w-[920px] mx-auto text-[#111827] font-sans antialiased selection:bg-neutral-200">
       <style>{`
@@ -171,7 +174,7 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
                   SUMMARY DISCLOSURE
                 </span>
                 <p className="text-[11px] leading-relaxed font-medium text-gray-500">
-                  Detailed asset holdings table is presented on Page 2. All portfolio valuations reflect certified live market prices.
+                  Separated Equity & Fixed Yield Bond asset tables are presented on Page 2. All portfolio valuations reflect certified live market prices.
                 </p>
               </div>
             </div>
@@ -209,86 +212,140 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      {/* ── PAGE 2: PORTFOLIO ASSET HOLDINGS TABLE ────────────────────────── */}
+      {/* ── PAGE 2: SEPARATED TABLES FOR STOCKS & BONDS ───────────────────── */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
       <div className="page-break-before min-h-[265mm] flex flex-col justify-between pt-4 sm:pt-6 pb-4">
-        <div>
+        <div className="space-y-8">
           {/* Page 2 Header Strip */}
-          <div className="flex items-center justify-between pb-4 border-b border-gray-200 mb-6">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-200">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-[#111827] text-white flex items-center justify-center font-black text-xs">
                 P
               </div>
-              <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">PORTFOLIO ASSET HOLDINGS</span>
+              <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">DETAILED HOLDINGS BREAKDOWN</span>
             </div>
             <div className="text-[11px] text-gray-400 font-mono">
               Ref: {statementId} • Page 2 of 2
             </div>
           </div>
 
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
-              DETAILED ASSET BREAKDOWN ({stocks.length} HOLDINGS)
-            </h3>
-            <span className="text-[11px] text-gray-400 font-medium">Evaluated at current NSE/BSE market prices as of {dateIssued}</span>
+          {/* ── TABLE 1: STOCKS & EQUITIES ── */}
+          <div>
+            <div className="flex justify-between items-center mb-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#1D4ED8]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                  STOCKS & EQUITIES HOLDINGS ({equityStocks.length})
+                </h3>
+              </div>
+              <span className="text-[11px] text-gray-400 font-medium">NSE/BSE Live Market Data</span>
+            </div>
+
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-t border-b border-gray-200 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  <th className="py-3 px-3.5 whitespace-nowrap">ASSET SYMBOL & NAME</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-center">QUANTITY</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-right">AVG PURCHASE PRICE</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-right">CURRENT LIVE PRICE</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-right">TOTAL MARKET VALUE</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-xs">
+                {equityStocks.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-4 text-center text-gray-400 italic text-xs">No active equity holdings</td>
+                  </tr>
+                ) : (
+                  equityStocks.map((s, idx) => {
+                    const totalVal = s.quantity * (s.current_p || s.purchase_price)
+                    return (
+                      <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
+                          <div className="font-bold text-[#111827] uppercase text-xs truncate max-w-[220px]">{s.symbol}</div>
+                          <div className="text-[11px] text-gray-400 font-normal truncate max-w-[220px]">{s.name || s.symbol}</div>
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-center font-medium text-[#111827]">
+                          {s.quantity} Units
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-medium text-gray-500">
+                          ₹{s.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-medium text-gray-500">
+                          ₹{(s.current_p || s.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-bold text-[#111827]">
+                          ₹{totalVal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
 
-          {/* Holdings Table */}
-          <table className="w-full text-left border-collapse mb-8">
-            <thead>
-              <tr className="border-t border-b border-gray-200 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                <th className="py-3 px-3.5 whitespace-nowrap">ASSET SYMBOL & NAME</th>
-                <th className="py-3 px-3.5 whitespace-nowrap">CATEGORY</th>
-                <th className="py-3 px-3.5 whitespace-nowrap text-center">QTY / TENURE</th>
-                <th className="py-3 px-3.5 whitespace-nowrap text-right">AVG PRICE</th>
-                <th className="py-3 px-3.5 whitespace-nowrap text-right">CURRENT / ACCRUED</th>
-                <th className="py-3 px-3.5 whitespace-nowrap text-right">TOTAL MARKET VALUE</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 text-xs">
-              {stocks.map((s, idx) => {
-                const isBond = s.asset_type_c === 'BOND'
-                const bp = isBond ? calculateBondPayouts(s) : null
-                const totalVal = isBond
-                  ? (s.purchase_price * s.quantity) + (bp?.tillDate || 0)
-                  : s.quantity * (s.current_p || s.purchase_price)
+          {/* ── TABLE 2: FIXED YIELD BONDS ── */}
+          <div>
+            <div className="flex justify-between items-center mb-3 pt-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#EA580C]" />
+                <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+                  FIXED YIELD BOND HOLDINGS ({fixedBonds.length})
+                </h3>
+              </div>
+              <span className="text-[11px] text-gray-400 font-medium">Accrued YTM Returns</span>
+            </div>
 
-                return (
-                  <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3.5 px-3.5 whitespace-nowrap">
-                      <div className="font-bold text-[#111827] uppercase text-xs truncate max-w-[200px]">{s.symbol}</div>
-                      <div className="text-[11px] text-gray-400 font-normal truncate max-w-[200px]">{s.name || s.symbol}</div>
-                    </td>
-                    <td className="py-3.5 px-3.5 whitespace-nowrap">
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border inline-block whitespace-nowrap ${
-                        isBond
-                          ? 'bg-orange-50 text-[#EA580C] border-[#FED7AA]'
-                          : 'bg-blue-50 text-[#1D4ED8] border-[#BFDBFE]'
-                      }`}>
-                        {isBond ? 'FIXED INCOME' : 'EQUITY'}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3.5 whitespace-nowrap text-center font-medium text-[#111827]">
-                      {isBond ? (s.tenure ? `${s.tenure} Mon` : '12 Mon') : `${s.quantity} Units`}
-                    </td>
-                    <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-medium text-gray-500">
-                      ₹{s.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                    </td>
-                    <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-medium text-gray-500">
-                      {isBond ? (
-                        <span className="text-[#EA580C] font-semibold">+₹{(bp?.tillDate || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
-                      ) : (
-                        `₹${(s.current_p || s.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
-                      )}
-                    </td>
-                    <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-bold text-[#111827]">
-                      ₹{totalVal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                    </td>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-t border-b border-gray-200 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                  <th className="py-3 px-3.5 whitespace-nowrap">BOND NAME & ISSUER</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-center">TENURE</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-center">YTM (%)</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-right">PURCHASE INVESTMENT</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-right">ACCRUED INTEREST</th>
+                  <th className="py-3 px-3.5 whitespace-nowrap text-right">TOTAL ACCRUED VALUE</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-xs">
+                {fixedBonds.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-4 text-center text-gray-400 italic text-xs">No active fixed yield bonds</td>
                   </tr>
-                )
-              })}
-            </tbody>
-          </table>
+                ) : (
+                  fixedBonds.map((s, idx) => {
+                    const bp = calculateBondPayouts(s)
+                    const totalVal = (s.purchase_price * s.quantity) + (bp?.tillDate || 0)
+
+                    return (
+                      <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
+                          <div className="font-bold text-[#111827] uppercase text-xs truncate max-w-[200px]">{s.symbol}</div>
+                          <div className="text-[11px] text-gray-400 font-normal truncate max-w-[200px]">{s.name || s.symbol}</div>
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-center font-medium text-[#111827]">
+                          {s.tenure ? `${s.tenure} Mon` : '12 Mon'}
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-center font-medium text-[#EA580C]">
+                          {s.ytm ? `${s.ytm}%` : '—'}
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-medium text-gray-500">
+                          ₹{s.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-semibold text-[#EA580C]">
+                          +₹{(bp?.tillDate || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                        <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-bold text-[#111827]">
+                          ₹{totalVal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         {/* Page 2 Footer */}
