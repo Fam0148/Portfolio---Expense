@@ -416,7 +416,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
         </div>
 
         {/* Sleek Pill Tab Navigation matching reference */}
-        <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md py-2.5 mb-6">
+        <div className="sticky top-0 z-40 bg-white py-3 border-b border-[#E5E7EB] mb-6">
           <div className="bg-[#E5E7EB] p-1 rounded-full inline-flex items-center gap-1 shadow-inner relative">
             <button
               onClick={() => onSwitch('portfolio')}

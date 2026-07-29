@@ -793,7 +793,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
         </div>
 
         {/* Sleek Pill Tab Navigation matching Portfolio Overview */}
-        <div className="sticky top-0 z-50 bg-white/90 backdrop-blur-md py-2.5 mb-6">
+        <div className="sticky top-0 z-40 bg-white py-3 border-b border-[#E5E7EB] mb-6">
           <div className="bg-[#E5E7EB] p-1 rounded-full inline-flex items-center gap-1 shadow-inner relative">
             <button
               onClick={() => onSwitch('portfolio')}
@@ -828,7 +828,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
           </div>
 
           {/* Income & Mandatory Expenses Setup Section */}
-          <div className="max-w-4xl mx-auto space-y-8 mb-12">
+          <div className="w-full space-y-8 mb-12">
             {/* Monthly Income Card */}
             <div className="bg-white p-6 sm:p-8 rounded-3xl border border-gray-200 relative overflow-hidden group">
               <div className="flex items-start justify-between group/header">
