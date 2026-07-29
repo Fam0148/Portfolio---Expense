@@ -25,7 +25,6 @@ import { FinancialInsight } from "../ui/FinancialInsight"
 const StatCard = ({
   title,
   numericValue,
-  illustration,
   badgeText,
   theme = "emerald",
   delay = 0,

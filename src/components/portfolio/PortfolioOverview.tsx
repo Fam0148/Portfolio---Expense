@@ -8,13 +8,12 @@ import { fetchLivePrice } from "../../lib/stockApi"
 import { FilePdf, SignOut, Eye, EyeSlash } from "@phosphor-icons/react"
 import { StatementView } from "./StatementView"
 import { FinancialInsight } from "../ui/FinancialInsight"
-import { Plus, MoreHorizontal, Search, SlidersHorizontal, LayoutGrid, Rows } from "lucide-react"
+import { LayoutGrid, Rows } from "lucide-react"
 import { calculateBondPayouts } from "../../lib/utils"
 
 const PortfolioCard = ({
   title,
   numericValue,
-  illustration,
   profitPercent,
   delay = 0,
   customDisplay = false,
@@ -23,8 +22,7 @@ const PortfolioCard = ({
   showValues = true,
   theme = "pink",
   description = "Real-time performance tracking and live asset analysis.",
-  badge = "Valuation",
-  linkText = "Learn More →"
+  badge = "Valuation"
 }: any) => {
   const isNegative = !customDisplay && Number(numericValue) < 0
 

@@ -6,7 +6,7 @@ import { calculateBondPayouts } from "../../lib/utils"
 import {
   Pencil, Trash2, History, X, Search, Calendar,
   BadgeIndianRupee, Hash, ShieldCheck,
-  TrendingUp, Timer, Percent, Plus, MoreHorizontal
+  TrendingUp, Timer, Percent, Plus
 } from "lucide-react"
 
 interface Stock {
@@ -753,7 +753,7 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                   <tr><td colSpan={10} className="py-12 text-center text-[#6B7280] text-xs">
                     No {activeTab === 'STOCK' ? 'stocks' : 'bonds'} found. Add one above.
                   </td></tr>
-                ) : visibleStocks.map((stock, index) => {
+                ) : visibleStocks.map((stock) => {
                   const bondPayout = calculateBondPayouts(stock)
                   const totalValue = (stock.quantity * (stock.current_price || stock.purchase_price)) + bondPayout.tillDate
                   const invested = stock.quantity * stock.purchase_price

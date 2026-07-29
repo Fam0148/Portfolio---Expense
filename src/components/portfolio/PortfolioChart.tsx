@@ -25,22 +25,6 @@ const yearData = [
   { label: 'Dec', value: 75000 }
 ]
 
-const sixMonthData = [
-  { label: 'Jul', value: 122000 },
-  { label: 'Aug', value: 118000 },
-  { label: 'Sep', value: 126000 },
-  { label: 'Oct', value: 135000 },
-  { label: 'Nov', value: 139000 },
-  { label: 'Dec', value: 142500 }
-]
-
-const thirtyDayData = [
-  { label: 'W1', value: 135000 },
-  { label: 'W2', value: 138000 },
-  { label: 'W3', value: 141000 },
-  { label: 'W4', value: 142500 }
-]
-
 const CustomTooltip = ({ active, payload, label, showValues = true }: any) => {
   if (active && payload && payload.length) {
     return (
@@ -54,22 +38,6 @@ const CustomTooltip = ({ active, payload, label, showValues = true }: any) => {
   }
   return null
 }
-
-const CustomDot = (props: any) => {
-  const { cx, cy, index, data } = props;
-  const isLast = index === data.length - 1;
-
-  if (isLast) {
-    return (
-      <g key={`dot-${index}`}>
-        <circle cx={cx} cy={cy} r={8} fill="#10b981" fillOpacity={0.2} className="animate-pulse" />
-        <circle cx={cx} cy={cy} r={4} fill="#10b981" stroke="#fff" strokeWidth={2} />
-      </g>
-    );
-  }
-
-  return null;
-};
 
 export const PortfolioChart = ({ currentValue = 142500, profitPercent = 12.5, data, showValues = true }: { currentValue?: number; profitPercent?: number; data?: any[]; showValues?: boolean }) => {
   const [timeframe, setTimeframe] = useState('1Y')

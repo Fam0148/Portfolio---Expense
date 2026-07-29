@@ -1,4 +1,4 @@
-import { LayoutDashboard, ReceiptText, TrendingUp, ShieldCheck, Zap, LogOut, CheckCircle2, SlidersHorizontal, Sparkles, User } from "lucide-react"
+import { LayoutDashboard, ReceiptText, TrendingUp, ShieldCheck, Zap, LogOut, CheckCircle2, SlidersHorizontal, User } from "lucide-react"
 
 interface SidebarProps {
   currentTab: 'portfolio' | 'expense' | 'assets' | string
