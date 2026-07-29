@@ -237,12 +237,12 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
           <table className="w-full text-left border-collapse mb-8">
             <thead>
               <tr className="border-t border-b border-gray-200 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                <th className="py-3 px-3">ASSET SYMBOL & NAME</th>
-                <th className="py-3 px-3">CATEGORY</th>
-                <th className="py-3 px-3 text-center">QTY / TENURE</th>
-                <th className="py-3 px-3 text-right">AVG PRICE</th>
-                <th className="py-3 px-3 text-right">CURRENT / ACCRUED</th>
-                <th className="py-3 px-3 text-right">TOTAL MARKET VALUE</th>
+                <th className="py-3 px-3.5 whitespace-nowrap">ASSET SYMBOL & NAME</th>
+                <th className="py-3 px-3.5 whitespace-nowrap">CATEGORY</th>
+                <th className="py-3 px-3.5 whitespace-nowrap text-center">QTY / TENURE</th>
+                <th className="py-3 px-3.5 whitespace-nowrap text-right">AVG PRICE</th>
+                <th className="py-3 px-3.5 whitespace-nowrap text-right">CURRENT / ACCRUED</th>
+                <th className="py-3 px-3.5 whitespace-nowrap text-right">TOTAL MARKET VALUE</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 text-xs">
@@ -255,12 +255,12 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
 
                 return (
                   <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                    <td className="py-3.5 px-3">
-                      <div className="font-bold text-[#111827] uppercase text-xs">{s.symbol}</div>
-                      <div className="text-[11px] text-gray-400 font-normal">{s.name || s.symbol}</div>
+                    <td className="py-3.5 px-3.5 whitespace-nowrap">
+                      <div className="font-bold text-[#111827] uppercase text-xs truncate max-w-[200px]">{s.symbol}</div>
+                      <div className="text-[11px] text-gray-400 font-normal truncate max-w-[200px]">{s.name || s.symbol}</div>
                     </td>
-                    <td className="py-3.5 px-3">
-                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
+                    <td className="py-3.5 px-3.5 whitespace-nowrap">
+                      <span className={`text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full border inline-block whitespace-nowrap ${
                         isBond
                           ? 'bg-orange-50 text-[#EA580C] border-[#FED7AA]'
                           : 'bg-blue-50 text-[#1D4ED8] border-[#BFDBFE]'
@@ -268,20 +268,20 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
                         {isBond ? 'FIXED INCOME' : 'EQUITY'}
                       </span>
                     </td>
-                    <td className="py-3.5 px-3 text-center font-medium text-[#111827]">
+                    <td className="py-3.5 px-3.5 whitespace-nowrap text-center font-medium text-[#111827]">
                       {isBond ? (s.tenure ? `${s.tenure} Mon` : '12 Mon') : `${s.quantity} Units`}
                     </td>
-                    <td className="py-3.5 px-3 text-right font-medium text-gray-500">
+                    <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-medium text-gray-500">
                       ₹{s.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </td>
-                    <td className="py-3.5 px-3 text-right font-medium text-gray-500">
+                    <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-medium text-gray-500">
                       {isBond ? (
                         <span className="text-[#EA580C] font-semibold">+₹{(bp?.tillDate || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                       ) : (
                         `₹${(s.current_p || s.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
                       )}
                     </td>
-                    <td className="py-3.5 px-3 text-right font-bold text-[#111827]">
+                    <td className="py-3.5 px-3.5 whitespace-nowrap text-right font-bold text-[#111827]">
                       ₹{totalVal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </td>
                   </tr>
