@@ -150,6 +150,7 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
     const saved = localStorage.getItem('show_portfolio_values')
     return saved === null ? true : saved === 'true'
   })
+  const [cardViewMode, setCardViewMode] = useState<'grid' | 'rows'>('grid')
 
   useEffect(() => {
     localStorage.setItem('show_portfolio_values', String(showValues))
@@ -382,10 +383,22 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
 
             {/* View Switcher Icons [ III ::: ] */}
             <div className="flex items-center bg-[#F0F1F3] p-1 rounded-xl border border-[#E5E7EB]">
-              <button className="p-1.5 rounded-lg bg-white shadow-2xs text-[#111827]">
+              <button
+                onClick={() => setCardViewMode('rows')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  cardViewMode === 'rows' ? 'bg-white shadow-2xs text-[#111827]' : 'text-[#9CA3AF] hover:text-[#111827]'
+                }`}
+                title="Single Column View"
+              >
                 <Rows size={14} />
               </button>
-              <button className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#111827]">
+              <button
+                onClick={() => setCardViewMode('grid')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  cardViewMode === 'grid' ? 'bg-white shadow-2xs text-[#111827]' : 'text-[#9CA3AF] hover:text-[#111827]'
+                }`}
+                title="Grid View"
+              >
                 <LayoutGrid size={14} />
               </button>
             </div>
@@ -438,9 +451,9 @@ export const PortfolioOverview = ({ onSwitch, userName }: { onSwitch: (val: 'por
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6">
+        <div className={cardViewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6" : "grid grid-cols-1 gap-5 sm:gap-6 mb-6"}>
           {cards.map((card, idx) => {
-            const isLastCard = idx === cards.length - 1;
+            const isLastCard = cardViewMode === 'grid' && idx === cards.length - 1;
             return (
               <PortfolioCard
                 key={idx}

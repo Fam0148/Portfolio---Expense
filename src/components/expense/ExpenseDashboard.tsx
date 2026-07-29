@@ -681,6 +681,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
     const saved = localStorage.getItem('show_portfolio_values')
     return saved === null ? true : saved === 'true'
   })
+  const [cardViewMode, setCardViewMode] = useState<'grid' | 'rows'>('grid')
 
   useEffect(() => {
     localStorage.setItem('show_portfolio_values', String(showValues))
@@ -759,10 +760,22 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
 
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center bg-[#F0F1F3] p-1 rounded-xl border border-[#E5E7EB]">
-              <button className="p-1.5 rounded-lg bg-white shadow-2xs text-[#111827]">
+              <button
+                onClick={() => setCardViewMode('rows')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  cardViewMode === 'rows' ? 'bg-white shadow-2xs text-[#111827]' : 'text-[#9CA3AF] hover:text-[#111827]'
+                }`}
+                title="Single Column View"
+              >
                 <Rows size={14} />
               </button>
-              <button className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-[#111827]">
+              <button
+                onClick={() => setCardViewMode('grid')}
+                className={`p-1.5 rounded-lg transition-all cursor-pointer ${
+                  cardViewMode === 'grid' ? 'bg-white shadow-2xs text-[#111827]' : 'text-[#9CA3AF] hover:text-[#111827]'
+                }`}
+                title="Grid View"
+              >
                 <LayoutGrid size={14} />
               </button>
             </div>
@@ -816,7 +829,7 @@ export const ExpenseDashboard = ({ onSwitch, userName }: { onSwitch: (val: 'port
         </div>
 
         {/* Quick Stats Grid with Illustrations matching Portfolio Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6">
+        <div className={cardViewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 mb-6" : "grid grid-cols-1 gap-5 sm:gap-6 mb-6"}>
           {cards.map((card, idx) => (
             <StatCard key={idx} {...card} showValues={showValues} />
           ))}
