@@ -808,9 +808,9 @@ export const AssetManagement = ({ onUpdate, showValues = true }: { onUpdate?: ()
                       {activeTab === 'BOND' && (
                         <td className="py-3.5 px-4 font-semibold text-emerald-600 text-xs whitespace-nowrap">
                           <div className="flex flex-col">
-                            <span>{showValues ? `+₹${bondPayout.monthly.toLocaleString('en-IN', { maximumFractionDigits: 0 })} / mo` : '+₹****'}</span>
+                            <span>{showValues ? `+₹${(bondPayout?.monthly || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })} / mo` : '+₹****'}</span>
                             <span className="text-[10px] text-[#6B7280] font-normal">
-                              {showValues ? `+₹${bondPayout.total.toLocaleString('en-IN', { maximumFractionDigits: 0 })} total` : '****'}
+                              {showValues ? `+₹${((bondPayout?.tillDate ?? bondPayout?.total) || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })} total` : '****'}
                             </span>
                           </div>
                         </td>

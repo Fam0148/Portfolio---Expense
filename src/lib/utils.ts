@@ -16,12 +16,12 @@ export function calculateBondPayouts(s: {
 }, now: Date = new Date()) {
   const type = s.asset_type || s.asset_type_c || (s.ytm || s.tenure ? 'BOND' : 'STOCK')
   if (type !== 'BOND' || !s.ytm) {
-    return { monthly: 0, fullTenure: 0, tillDate: 0, elapsedMonths: 0 }
+    return { monthly: 0, fullTenure: 0, tillDate: 0, total: 0, elapsedMonths: 0 }
   }
 
   const ytm = parseFloat(String(s.ytm))
   if (isNaN(ytm)) {
-    return { monthly: 0, fullTenure: 0, tillDate: 0, elapsedMonths: 0 }
+    return { monthly: 0, fullTenure: 0, tillDate: 0, total: 0, elapsedMonths: 0 }
   }
 
   const investment = (s.purchase_price || 0) * (s.quantity || 1)
@@ -30,17 +30,17 @@ export function calculateBondPayouts(s: {
   const fullTenurePayout = monthlyPayout * tenureMonths
 
   if (!s.purchase_date) {
-    return { monthly: monthlyPayout, fullTenure: fullTenurePayout, tillDate: 0, elapsedMonths: 0 }
+    return { monthly: monthlyPayout, fullTenure: fullTenurePayout, tillDate: 0, total: 0, elapsedMonths: 0 }
   }
 
   const [pY, pM, pD] = String(s.purchase_date).split('-').map(Number)
   if (!pY || !pM) {
-    return { monthly: monthlyPayout, fullTenure: fullTenurePayout, tillDate: 0, elapsedMonths: 0 }
+    return { monthly: monthlyPayout, fullTenure: fullTenurePayout, tillDate: 0, total: 0, elapsedMonths: 0 }
   }
 
   const purchaseDate = new Date(pY, pM - 1, pD || 1)
   if (purchaseDate > now) {
-    return { monthly: monthlyPayout, fullTenure: fullTenurePayout, tillDate: 0, elapsedMonths: 0 }
+    return { monthly: monthlyPayout, fullTenure: fullTenurePayout, tillDate: 0, total: 0, elapsedMonths: 0 }
   }
 
   let elapsedMonths = (now.getFullYear() - purchaseDate.getFullYear()) * 12 + (now.getMonth() - purchaseDate.getMonth())
@@ -55,6 +55,7 @@ export function calculateBondPayouts(s: {
     monthly: monthlyPayout,
     fullTenure: fullTenurePayout,
     tillDate: payoutTillDate,
+    total: payoutTillDate,
     elapsedMonths
   }
 }
