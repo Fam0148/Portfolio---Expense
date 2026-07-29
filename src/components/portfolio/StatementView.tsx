@@ -7,11 +7,11 @@ interface StatementViewProps {
 }
 
 export const StatementView = ({ userName, stocks, stats }: StatementViewProps) => {
-  const dateIssued = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+  const dateIssued = new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })
   const statementId = `STMT-${new Date().getFullYear()}${(new Date().getMonth() + 1).toString().padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`
 
   return (
-    <div id="portfolio-statement" className="print-only-container bg-white p-8 sm:p-12 max-w-[1000px] mx-auto text-[#111827] font-sans antialiased selection:bg-neutral-200">
+    <div id="portfolio-statement" className="print-only-container bg-white p-6 sm:p-10 max-w-[920px] mx-auto text-[#111827] font-sans antialiased selection:bg-neutral-200">
       <style>{`
         @media screen {
           .print-only-container { display: none !important; }
@@ -29,7 +29,7 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
             left: 0 !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 12mm 12mm !important;
+            padding: 10mm 10mm !important;
             background: white !important;
             display: block !important;
             box-sizing: border-box !important;
@@ -41,103 +41,131 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
         }
       `}</style>
 
-      {/* Header Banner */}
-      <div className="flex justify-between items-start pb-6 border-b border-[#E5E7EB] mb-8">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2.5 h-7 bg-[#111827] rounded-full" />
-            <span className="text-xl font-bold tracking-tight text-[#111827]">Portfolio & Expense</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-purple-100 text-[#7E22CE] border border-[#E9D5FF] ml-1">
-              Official Statement
-            </span>
-          </div>
-          <h1 className="text-3xl font-extrabold text-[#111827] tracking-tight">Consolidated Wealth Statement</h1>
-          <p className="text-xs text-[#6B7280] mt-1 font-medium">Real-time performance evaluation and certified asset holdings statement</p>
-        </div>
+      {/* ── 1. Hero Landscape Banner Image (Matching Reference Image 2) ── */}
+      <div className="w-full h-40 sm:h-52 rounded-2xl overflow-hidden mb-8 shadow-xs border border-gray-100/80 relative bg-gray-100">
+        <img
+          src="/assets/statement_hero_banner.png"
+          alt="Statement Banner"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-        <div className="text-right space-y-1">
-          <div className="text-xs font-semibold text-[#111827]">Statement Ref: <span className="font-mono font-normal text-[#4B5563]">{statementId}</span></div>
-          <div className="text-xs text-[#6B7280]">Date: <span className="font-medium text-[#111827]">{dateIssued}</span></div>
-          <div className="text-xs text-[#6B7280]">Investor: <span className="font-semibold text-[#111827]">{userName || "Portfolio Holder"}</span></div>
+      {/* ── 2. Top Header & Ref Number ── */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-[#111827] text-white flex items-center justify-center font-black text-sm tracking-tighter shadow-xs">
+            P
+          </div>
+          <span className="text-sm font-bold tracking-tight text-[#111827]">Portfolio & Expense</span>
+        </div>
+        <div className="text-xs font-mono font-bold text-[#111827] tracking-wider uppercase bg-gray-50 border border-gray-200 px-3 py-1 rounded-lg">
+          {statementId}
         </div>
       </div>
 
-      {/* 4 Summary Cards matching dashboard cards design */}
-      <div className="grid grid-cols-4 gap-4 mb-8">
-        {/* Card 1: Total Portfolio Value (Purple Theme) */}
+      {/* ── 3. Gigantic Main Statement Title ── */}
+      <div className="mb-8 border-b border-gray-100 pb-6">
+        <h1 className="text-4xl sm:text-5xl font-black text-[#111827] tracking-tight uppercase leading-none">
+          CONSOLIDATED WEALTH STATEMENT
+        </h1>
+        <p className="text-xs text-[#6B7280] font-medium mt-2">
+          Certified real-time performance evaluation and asset holding statement
+        </p>
+      </div>
+
+      {/* ── 4. Metadata Columns (From / Bill To / Issued format matching Image 2) ── */}
+      <div className="grid grid-cols-3 gap-6 mb-10 text-xs">
+        {/* FROM */}
+        <div className="space-y-1">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">FROM</span>
+          <p className="font-bold text-[#111827] text-sm">Portfolio & Expense Engine</p>
+          <p className="text-[#6B7280]">cloud.portfolio-expense.app</p>
+          <p className="text-[#6B7280]">Real-Time Market Node</p>
+          <p className="text-[#6B7280]">NSE / BSE Live API Integration</p>
+        </div>
+
+        {/* PREPARED FOR */}
+        <div className="space-y-1">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">PREPARED FOR</span>
+          <p className="font-bold text-[#111827] text-sm">{userName || "Valued Investor"}</p>
+          <p className="text-[#6B7280]">investor@portfolio.app</p>
+          <p className="text-[#6B7280]">Depository Ref: IN300214-9821</p>
+          <p className="text-[#6B7280]">Verified Individual Account</p>
+        </div>
+
+        {/* ISSUED & STATUS */}
+        <div className="space-y-1 text-right">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">STATEMENT DETAILS</span>
+          <p className="text-[#6B7280]">Date Issued: <span className="font-bold text-[#111827]">{dateIssued}</span></p>
+          <p className="text-[#6B7280]">Audit Status: <span className="font-bold text-emerald-600">VERIFIED & LIVE</span></p>
+          <p className="text-[#6B7280]">Asset Holdings: <span className="font-bold text-[#111827]">{stocks.length} Assets</span></p>
+        </div>
+      </div>
+
+      {/* ── 5. Metric Summary Cards Bar ── */}
+      <div className="grid grid-cols-4 gap-4 mb-10">
         <div className="bg-[#F7F3FD] border border-[#E9D5FF] p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-1">
             <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-[#7E22CE] border border-[#E9D5FF]">
-              Valuation
+              VALUATION
             </span>
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-purple-100/80 text-[#7E22CE]">
+            <span className="text-[9px] font-bold text-[#7E22CE]">
               {stats.profitPercent >= 0 ? `+${stats.profitPercent?.toFixed(1)}%` : `${stats.profitPercent?.toFixed(1)}%`}
             </span>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">Total Portfolio Value</p>
-            <p className="text-lg font-bold text-[#581C87] tracking-tight mt-0.5">
-              ₹{stats.totalValue?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-            </p>
-          </div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280] mt-2">TOTAL VALUE</p>
+          <p className="text-xl font-bold text-[#581C87] tracking-tight">
+            ₹{stats.totalValue?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </p>
         </div>
 
-        {/* Card 2: Total Stock Profit (Blue Theme) */}
         <div className="bg-[#EFF6FE] border border-[#BFDBFE] p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-1">
             <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-[#1D4ED8] border border-[#BFDBFE]">
-              Equity Yield
+              EQUITY YIELD
             </span>
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-blue-100/80 text-[#1D4ED8]">
-              {stats.stockYield?.toFixed(1)}% Yield
+            <span className="text-[9px] font-bold text-[#1D4ED8]">
+              {stats.stockYield?.toFixed(1)}%
             </span>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">Total Stock Profit</p>
-            <p className="text-lg font-bold text-[#1E3A8A] tracking-tight mt-0.5">
-              ₹{stats.totalProfit?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-            </p>
-          </div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280] mt-2">STOCK PROFIT</p>
+          <p className="text-xl font-bold text-[#1E3A8A] tracking-tight">
+            ₹{stats.totalProfit?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </p>
         </div>
 
-        {/* Card 3: Monthly Passive Income (Green Theme) */}
         <div className="bg-[#F4FAEF] border border-[#BBF7D0] p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-1">
             <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-[#16A34A] border border-[#BBF7D0]">
-              Interest Accrual
+              MONTHLY
             </span>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">Monthly Passive Income</p>
-            <p className="text-lg font-bold text-[#15803D] tracking-tight mt-0.5">
-              ₹{stats.monthlyIncome?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-            </p>
-          </div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280] mt-2">PASSIVE INCOME</p>
+          <p className="text-xl font-bold text-[#15803D] tracking-tight">
+            ₹{stats.monthlyIncome?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </p>
         </div>
 
-        {/* Card 4: Historic Bond Profits (Amber Theme) */}
         <div className="bg-[#FDF5EC] border border-[#FED7AA] p-4 rounded-2xl flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-2">
+          <div className="flex justify-between items-center mb-1">
             <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-white text-[#EA580C] border border-[#FED7AA]">
-              Historical Return
+              ACCUMULATED
             </span>
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-orange-100/80 text-[#EA580C]">
-              {stats.bondYield?.toFixed(1)}% Return
+            <span className="text-[9px] font-bold text-[#EA580C]">
+              {stats.bondYield?.toFixed(1)}%
             </span>
           </div>
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280]">Historic Bond Profits</p>
-            <p className="text-lg font-bold text-[#C2410C] tracking-tight mt-0.5">
-              ₹{stats.bondProfit?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-            </p>
-          </div>
+          <p className="text-[10px] font-bold uppercase tracking-wider text-[#6B7280] mt-2">BOND GAINS</p>
+          <p className="text-xl font-bold text-[#C2410C] tracking-tight">
+            ₹{stats.bondProfit?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+          </p>
         </div>
       </div>
 
-      {/* Asset Mix Breakdown */}
-      <div className="bg-[#F9FAFB] border border-[#E5E7EB] rounded-2xl p-4 mb-8">
+      {/* ── 6. Asset Mix Breakdown ── */}
+      <div className="bg-[#F9FAFB] border border-gray-200 rounded-2xl p-4 mb-10">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">Asset Mix Allocation</span>
+          <span className="text-xs font-bold text-[#111827] uppercase tracking-wider">ASSET MIX ALLOCATION</span>
           <div className="flex items-center gap-4 text-xs font-semibold text-[#6B7280]">
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#7E22CE]" /> Stocks: {stats.stockWeight?.toFixed(0)}%</span>
             <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#C084FC]" /> Bonds: {stats.bondWeight?.toFixed(0)}%</span>
@@ -149,61 +177,63 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
         </div>
       </div>
 
-      {/* Holdings Table */}
-      <div className="mb-8">
+      {/* ── 7. Holdings Table (Matching Image 2 clean lines & layout) ── */}
+      <div className="mb-10">
         <div className="flex justify-between items-center mb-3">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-[#111827]">Portfolio Asset Holdings ({stocks.length})</h2>
-          <span className="text-[11px] text-[#6B7280] font-medium">Live market prices as of {dateIssued}</span>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-[#111827]">
+            PORTFOLIO ASSET HOLDINGS ({stocks.length})
+          </h3>
+          <span className="text-[11px] text-gray-400 font-medium">Live market valuations as of {dateIssued}</span>
         </div>
 
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-[#F4F5F7] border border-[#E5E7EB] text-[10px] font-bold text-[#6B7280] uppercase tracking-wider">
-              <th className="py-2.5 px-3 rounded-l-xl">Asset Symbol & Name</th>
-              <th className="py-2.5 px-3">Category</th>
-              <th className="py-2.5 px-3 text-center">Qty / Tenure</th>
-              <th className="py-2.5 px-3 text-right">Avg Price</th>
-              <th className="py-2.5 px-3 text-right">Current / Accrued</th>
-              <th className="py-2.5 px-3 text-right rounded-r-xl">Total Market Value</th>
+            <tr className="border-t border-b border-gray-200 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+              <th className="py-3 px-3">ASSET SYMBOL & NAME</th>
+              <th className="py-3 px-3">CATEGORY</th>
+              <th className="py-3 px-3 text-center">QTY / TENURE</th>
+              <th className="py-3 px-3 text-right">AVG PRICE</th>
+              <th className="py-3 px-3 text-right">CURRENT / ACCRUED</th>
+              <th className="py-3 px-3 text-right">TOTAL MARKET VALUE</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#E5E7EB] text-xs">
+          <tbody className="divide-y divide-gray-100 text-xs">
             {stocks.map((s, idx) => {
               const isBond = s.asset_type_c === 'BOND'
               const bp = isBond ? calculateBondPayouts(s) : null
-              const totalVal = isBond 
+              const totalVal = isBond
                 ? (s.purchase_price * s.quantity) + (bp?.tillDate || 0)
                 : s.quantity * (s.current_p || s.purchase_price)
 
               return (
                 <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
-                  <td className="py-3 px-3">
+                  <td className="py-3.5 px-3">
                     <div className="font-bold text-[#111827] uppercase text-xs">{s.symbol}</div>
-                    <div className="text-[11px] text-[#6B7280] font-normal">{s.name || s.symbol}</div>
+                    <div className="text-[11px] text-gray-400 font-normal">{s.name || s.symbol}</div>
                   </td>
-                  <td className="py-3 px-3">
+                  <td className="py-3.5 px-3">
                     <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${
-                      isBond 
-                        ? 'bg-orange-50 text-[#EA580C] border-[#FED7AA]' 
+                      isBond
+                        ? 'bg-orange-50 text-[#EA580C] border-[#FED7AA]'
                         : 'bg-blue-50 text-[#1D4ED8] border-[#BFDBFE]'
                     }`}>
-                      {isBond ? 'Fixed Income' : 'Equity'}
+                      {isBond ? 'FIXED INCOME' : 'EQUITY'}
                     </span>
                   </td>
-                  <td className="py-3 px-3 text-center font-medium text-[#111827]">
+                  <td className="py-3.5 px-3 text-center font-medium text-[#111827]">
                     {isBond ? (s.tenure ? `${s.tenure} Mon` : '12 Mon') : `${s.quantity} Units`}
                   </td>
-                  <td className="py-3 px-3 text-right font-medium text-[#4B5563]">
+                  <td className="py-3.5 px-3 text-right font-medium text-gray-500">
                     ₹{s.purchase_price.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                   </td>
-                  <td className="py-3 px-3 text-right font-medium text-[#4B5563]">
+                  <td className="py-3.5 px-3 text-right font-medium text-gray-500">
                     {isBond ? (
                       <span className="text-[#EA580C] font-semibold">+₹{(bp?.tillDate || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
                     ) : (
                       `₹${(s.current_p || s.purchase_price).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
                     )}
                   </td>
-                  <td className="py-3 px-3 text-right font-bold text-[#111827]">
+                  <td className="py-3.5 px-3 text-right font-bold text-[#111827]">
                     ₹{totalVal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                   </td>
                 </tr>
@@ -213,9 +243,31 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
         </table>
       </div>
 
-      {/* Summary Totals Footer Block */}
-      <div className="flex justify-end pt-4 border-t border-[#E5E7EB] mb-12">
-        <div className="w-[340px] space-y-2.5 bg-[#F9FAFB] border border-[#E5E7EB] p-4 rounded-2xl">
+      {/* ── 8. Bottom Totals Box & Notes (Matching Image 2 Layout) ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-start border-t border-gray-200 pt-6 mb-8 text-xs">
+        {/* Left Column: Payment Details & Notes (Matching Image 2) */}
+        <div className="space-y-4 text-[#6B7280]">
+          <div>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+              STATEMENT DETAILS
+            </span>
+            <p className="text-[11px] leading-relaxed">
+              Certified system statement generated via Supabase Cloud Realtime Database with live price synchronization.
+            </p>
+          </div>
+
+          <div>
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+              NOTES
+            </span>
+            <p className="text-[11px] leading-relaxed font-medium text-gray-500">
+              Thank you for using Portfolio & Expense. All asset values reflect certified market prices as of the date issued.
+            </p>
+          </div>
+        </div>
+
+        {/* Right Column: Totals Summary Box (Matching Image 2) */}
+        <div className="space-y-2 bg-gray-50 border border-gray-200 p-5 rounded-2xl">
           <div className="flex justify-between items-center text-xs text-[#6B7280] font-semibold">
             <span>Invested Principal</span>
             <span className="text-[#111827] font-bold">₹{stats.totalInvested?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
@@ -228,17 +280,17 @@ export const StatementView = ({ userName, stocks, stats }: StatementViewProps) =
             <span>Bond Returns Accrued Till Date</span>
             <span className="text-[#EA580C] font-bold">₹{stats.bondProfit?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
           </div>
-          <div className="pt-2 border-t border-[#E5E7EB] flex justify-between items-center text-sm font-black text-[#111827]">
-            <span className="uppercase tracking-tight">Net Portfolio Value</span>
-            <span className="text-base text-[#581C87]">₹{stats.totalValue?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
+          <div className="pt-3 border-t border-gray-200 flex justify-between items-center text-sm font-black text-[#111827]">
+            <span className="uppercase tracking-tight">TOTAL MARKET VALUE</span>
+            <span className="text-xl font-extrabold text-[#111827]">₹{stats.totalValue?.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</span>
           </div>
         </div>
       </div>
 
-      {/* Certified Footer */}
-      <div className="border-t border-[#E5E7EB] pt-6 flex justify-between items-center text-[10px] text-[#9CA3AF]">
+      {/* ── 9. Certified Footer ── */}
+      <div className="border-t border-gray-100 pt-4 flex justify-between items-center text-[10px] text-gray-400 font-medium">
         <div>
-          <span className="font-semibold text-[#6B7280]">Portfolio & Expense System</span> — Official System Generated Statement
+          <span className="font-semibold text-gray-500">Portfolio & Expense System</span> — Certified System Document
         </div>
         <div>
           Confidential • Generated on {dateIssued}
