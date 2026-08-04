@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/tradingview/:path*",
+      "destination": "https://scanner.tradingview.com/:path*"
+    },
+    {
+      "source": "/api/tickertape/:path*",
+      "destination": "https://api.tickertape.in/:path*"
+    }
+  ]
+}
